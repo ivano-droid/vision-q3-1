@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
+/* ---------- Gilroy (MrQ brand font) ----------
+   The font files live in /public/fonts/ as .ttf/.otf (provided by the user).
+   `font-display: swap` shows fallback text immediately and swaps in Gilroy
+   once it loads — no FOIT.
+   Note: Gilroy "Heavy" (between ExtraBold and Black in the distribution)
+   doesn't map cleanly to CSS's 100-step weights; we skip it and let
+   `font-weight: 800 / 900` resolve to ExtraBold / Black respectively. */
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Thin.ttf") format("truetype"); font-weight: 100; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-ThinItalic.ttf") format("truetype"); font-weight: 100; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-UltraLight.ttf") format("truetype"); font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-UltraLightItalic.ttf") format("truetype"); font-weight: 200; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Light.otf") format("opentype"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-LightItalic.ttf") format("truetype"); font-weight: 300; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-RegularItalic.ttf") format("truetype"); font-weight: 400; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-MediumItalic.ttf") format("truetype"); font-weight: 500; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-SemiBold.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-SemiBoldItalic.ttf") format("truetype"); font-weight: 600; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-BoldItalic.ttf") format("truetype"); font-weight: 700; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-ExtraBold.otf") format("opentype"); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-ExtraBoldItalic.ttf") format("truetype"); font-weight: 800; font-style: italic; font-display: swap; }
+
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-Black.ttf") format("truetype"); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gilroy"; src: url("/fonts/Gilroy-BlackItalic.ttf") format("truetype"); font-weight: 900; font-style: italic; font-display: swap; }
+
+/* ---------- Design tokens (from Figma node 43:13039) ---------- */
 :root {
+  /* MrQ brand */
+  --mrq-blue: #0a2ecb;           /* border/brand + primary background */
+  --mrq-blue-dark: #0c2287;      /* pill text + accents */
+  --mrq-border-tertiary: #cccdd0;
+  --mrq-divider: #d9d9d9;
+
+  /* App chrome */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0c2287;
+
+  /* Mobile frame width (iPhone 14 design width) */
+  --mobile-width: 375px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-mrq-blue: var(--mrq-blue);
+  --color-mrq-blue-dark: var(--mrq-blue-dark);
+  --color-mrq-divider: var(--mrq-divider);
+
+  /* Real Gilroy (loaded from /public/fonts/ via @font-face above). Manrope is
+     kept as a fallback in case any weight files are missing. */
+  --font-display: "Gilroy", var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Formula Condensed Bold (proprietary) — using Anton as a close free substitute. */
+  --font-headline: var(--font-anton), "Bebas Neue", "Oswald", sans-serif;
+  --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
+html, body {
+  background: #e9ebef;          /* outside-the-phone backdrop on desktop */
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Hero carousel ---------- */
+/* Hide scrollbar but keep scroll behavior — applied to the carousel rail. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* "BIG WEEKENDER"-style headline: yellow fill, white stroked outline.
+   Uses paint-order so the stroke sits behind the fill instead of eating it. */
+.outlined-headline {
+  font-family: var(--font-headline);
+  color: #ffd400;
+  -webkit-text-stroke: 4px #ffffff;
+  paint-order: stroke fill;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  /* Soft drop shadow to lift it off the radial background */
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.25));
+}
+
+/* The mobile "frame" — centers and constrains everything to 375px on desktop,
+   takes full width on actual mobile devices. NOTE: we intentionally avoid
+   `overflow: hidden` here because it would silently turn the frame into a
+   scroll container and break `position: sticky` for the top nav. */
+.mobile-frame {
+  width: 100%;
+  max-width: var(--mobile-width);
+  margin-inline: auto;
+  background: #ffffff;
+  min-height: 100dvh;
+  position: relative;
+  /* subtle shadow on desktop so the frame feels like a device */
+  box-shadow: 0 24px 64px -16px rgba(12, 34, 135, 0.18);
 }
