@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useFilter, type LobbyFilter } from "@/lib/filter-context";
 import { HomeView } from "./views/HomeView";
@@ -12,34 +12,53 @@ import { BingoView } from "./views/BingoView";
  * Lobby content shell.
  *
  * Home view stands alone — when the user is at `home`, we render just the
- * default lobby (HomeView).
+ * default lobby (HomeView). The three filter views (Casino / Live / Bingo)
+ * are rendered together as a horizontal swipe strip.
  *
- * The three filter views (Casino / Live / Bingo) are rendered together as a
- * single horizontal strip — `[Casino | Live | Bingo]`. When the user switches
- * between filters, the strip animates its `translateX` so the matching panel
- * slides into the viewport. Going Casino → Bingo visibly passes through Live
- * in the middle, matching the "three panels side-by-side" prototype.
+ * Transition behaviour:
+ *   - home ⇄ filter views: cross-fade via AnimatePresence (so the home view
+ *     doesn't pop instantly while the filter views slide cleanly)
+ *   - between filter views: the SwipeStrip handles its own X-translate; the
+ *     wrapper stays mounted so no fade fires
  *
- * Height handling:
- *   - All three panels are in the DOM so the strip can translateX between
- *     them. Without intervention, the wrapper would always be the height of
- *     the *tallest* panel, leaving a big gap under shorter ones (e.g. Bingo).
- *   - We measure each panel via ResizeObserver and animate the wrapper height
- *     to the active panel's height. The off-strip panels become unreachable
- *     (overflow-y: clip) but their content still mounts so the slide can
- *     show them in transit.
+ * Strip height handling:
+ *   - All three filter panels are in the DOM so the strip can translateX
+ *     between them. We measure each panel via ResizeObserver and animate
+ *     the wrapper height to the active panel's height, so shorter views
+ *     (Bingo) don't leave empty space below.
  */
 
 const FILTERED_ORDER: Exclude<LobbyFilter, "home">[] = ["casino", "live", "bingo"];
 
 export function LobbyContent() {
   const { filter } = useFilter();
+  const isHome = filter === "home";
 
-  if (filter === "home") {
-    return <HomeView />;
-  }
-
-  return <SwipeStrip activeIndex={FILTERED_ORDER.indexOf(filter)} />;
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {isHome ? (
+        <motion.div
+          key="home"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <HomeView />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="strip"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <SwipeStrip activeIndex={FILTERED_ORDER.indexOf(filter)} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
 function SwipeStrip({ activeIndex }: { activeIndex: number }) {

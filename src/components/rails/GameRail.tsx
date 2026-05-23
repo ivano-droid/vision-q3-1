@@ -89,7 +89,7 @@ function GameTile({
   return (
     <button
       type="button"
-      className="relative shrink-0 overflow-hidden rounded-[12px] active:scale-[0.97] transition-transform"
+      className="relative shrink-0 overflow-hidden rounded-[12px] active:scale-[0.99] transition-transform"
       style={{
         width: `${width}px`,
         height: `${height}px`,

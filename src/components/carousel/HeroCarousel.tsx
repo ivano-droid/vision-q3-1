@@ -84,11 +84,12 @@ export function HeroCarousel() {
     >
       <div
         ref={railRef}
-        // Free-scrolling rail (no snap). 28px top padding lifts the active
-        // (scaled-up) card off the pills band above so it doesn't feel
-        // squashed against the top. Mouse drag inertia comes from the
-        // useDraggableScroll hook.
-        className="no-scrollbar flex gap-[12px] overflow-x-auto overflow-y-hidden px-[16px] pt-[28px] pb-[14px]"
+        // Snap-mandatory with snap-align: center on every card. The first
+        // card's natural centre would require negative scroll to reach, so
+        // the browser clamps it to scrollLeft=0 — meaning card 1 anchors at
+        // the left with `pl-[16px]`. Subsequent cards snap to the centre of
+        // the rail. Mouse drag inertia still comes from useDraggableScroll.
+        className="no-scrollbar flex gap-[12px] overflow-x-auto overflow-y-hidden px-[16px] pt-[28px] pb-[14px] snap-x snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {CARDS.map((card, i) => {
@@ -99,7 +100,7 @@ export function HeroCarousel() {
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="shrink-0"
+              className="shrink-0 snap-center"
               style={{
                 width: `${BASE_W}px`,
                 height: `${BASE_H}px`,
@@ -132,7 +133,7 @@ function PromoCard({
   return (
     <button
       type="button"
-      className="relative block h-full w-full overflow-hidden rounded-[16px] active:scale-[0.98] transition-transform"
+      className="relative block h-full w-full overflow-hidden rounded-[16px] active:scale-[0.995] transition-transform"
       style={{ boxShadow: "0 8px 24px -8px rgba(10, 46, 203, 0.35)" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
