@@ -31,7 +31,7 @@ import { useFilter, type LobbyFilter } from "@/lib/filter-context";
  */
 const ALWAYS_VISIBLE_BELOW = 100;
 const DIRECTION_THRESHOLD = 4;
-const BAND_HEIGHT = 42; // pills (32) + pb-[10px] (10). The matching 10px
+const BAND_HEIGHT = 46; // pills (36) + pb-[10px] (10). The matching 10px
 // gap *above* the pills comes from the brand bar's own pb-[10px], so the
 // space above and below the pill row reads as visually consistent.
 
@@ -109,7 +109,7 @@ function FilterPill({
       type="button"
       onClick={() => togglePill(pillKey)}
       aria-pressed={filter === pillKey}
-      className="flex flex-1 items-center justify-center gap-[6px] rounded-full px-[14px] py-[6px] h-[32px]"
+      className="flex flex-1 items-center justify-center gap-[6px] rounded-full px-[14px] py-[6px] h-[36px]"
       style={{
         backgroundColor: active ? "#ffffff" : "#0c2287",
         color: active ? "#0c2287" : "#ffffff",
@@ -123,8 +123,8 @@ function FilterPill({
         aria-hidden
         className="block bg-current"
         style={{
-          width: "20px",
-          height: "16px",
+          width: "22px",
+          height: "18px",
           maskImage: `url(${icon})`,
           WebkitMaskImage: `url(${icon})`,
           maskRepeat: "no-repeat",
@@ -136,7 +136,7 @@ function FilterPill({
         }}
       />
       <span
-        className="text-[14px] leading-none font-extrabold whitespace-nowrap"
+        className="text-[16px] leading-none font-extrabold whitespace-nowrap"
         style={{ letterSpacing: "0.2px" }}
       >
         {label}
