@@ -84,12 +84,13 @@ export function HeroCarousel() {
     >
       <div
         ref={railRef}
-        // Snap-mandatory with snap-align: center on every card. The first
-        // card's natural centre would require negative scroll to reach, so
-        // the browser clamps it to scrollLeft=0 — meaning card 1 anchors at
-        // the left with `pl-[16px]`. Subsequent cards snap to the centre of
-        // the rail. Mouse drag inertia still comes from useDraggableScroll.
-        className="no-scrollbar flex gap-[12px] overflow-x-auto overflow-y-hidden px-[16px] pt-[28px] pb-[14px] snap-x snap-mandatory"
+        // Free-scrolling rail — no snap. 28px top padding lifts the active
+        // (scaled-up) card off the pills band above so it doesn't feel
+        // squashed against the top. Mouse drag inertia comes from the
+        // useDraggableScroll hook; the active card detection (centre-distance
+        // check on every scroll event) handles the scale-up regardless of
+        // where the user releases the drag.
+        className="no-scrollbar flex gap-[12px] overflow-x-auto overflow-y-hidden px-[16px] pt-[28px] pb-[14px]"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {CARDS.map((card, i) => {
@@ -100,7 +101,7 @@ export function HeroCarousel() {
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="shrink-0 snap-center"
+              className="shrink-0"
               style={{
                 width: `${BASE_W}px`,
                 height: `${BASE_H}px`,
