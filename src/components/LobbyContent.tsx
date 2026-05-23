@@ -16,10 +16,12 @@ import { BingoView } from "./views/BingoView";
  * are rendered together as a horizontal swipe strip.
  *
  * Transition behaviour:
- *   - home ⇄ filter views: cross-fade via AnimatePresence (so the home view
- *     doesn't pop instantly while the filter views slide cleanly)
- *   - between filter views: the SwipeStrip handles its own X-translate; the
- *     wrapper stays mounted so no fade fires
+ *   - home → filter view: filter slides in from the right (feels like a
+ *     swipe to the right); home fades out underneath.
+ *   - filter view → home: filter fades out; home fades in. Pure crossfade,
+ *     no slide — going back to the lobby shouldn't feel like a swipe.
+ *   - between filter views (casino ⇄ live ⇄ bingo): the SwipeStrip handles
+ *     its own X-translate; the wrapper stays mounted so no fade fires.
  *
  * Strip height handling:
  *   - All three filter panels are in the DOM so the strip can translateX
@@ -37,22 +39,31 @@ export function LobbyContent() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       {isHome ? (
+        // Home: fades both in and out. We're either arriving back at the
+        // lobby (fade in) or leaving it (fade out — its replacement will
+        // slide in over the top).
         <motion.div
           key="home"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.18 }}
         >
           <HomeView />
         </motion.div>
       ) : (
+        // Filter strip: slides IN from the right (when arriving from home),
+        // fades OUT (when going back to home). Asymmetric on purpose so
+        // forward motion feels like a swipe and backward feels like a
+        // dismiss.
         <motion.div
           key="strip"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ x: "100%" }}
+          animate={{
+            x: 0,
+            transition: { type: "spring", stiffness: 360, damping: 36, mass: 0.7 },
+          }}
+          exit={{ opacity: 0, transition: { duration: 0.18 } }}
         >
           <SwipeStrip activeIndex={FILTERED_ORDER.indexOf(filter)} />
         </motion.div>
