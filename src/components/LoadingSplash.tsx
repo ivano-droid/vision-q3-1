@@ -46,13 +46,17 @@ const PANEL_H_PCT = (490 / FH) * 100;          // 60.34%
 const LOGO_TOP_PCT = (327 / 490) * 100;        // 66.73%
 const LOGO_LEFT_PCT = (15 / FW) * 100;          // 4%
 const LOGO_W_PCT = (347 / FW) * 100;            // 92.53%
-const LOGO_H_PCT = (136 / 490) * 100;           // 27.76%
+// Width-only sizing + aspect-ratio: avoid setting an explicit height (which
+// would stretch the SVG vertically when the viewport's aspect ratio differs
+// from the 375:812 Figma design — exactly what was making the assets look
+// squashed in mobile Safari).
+const LOGO_ASPECT = "347 / 136";
 
 // Tagline (lives in the white area, positioned relative to the *viewport*).
 const TAG_TOP_PCT = (507 / FH) * 100;           // 62.44%
 const TAG_LEFT_PCT = (6 / FW) * 100;            // 1.6%
 const TAG_W_PCT = (353.133 / FW) * 100;         // 94.17%
-const TAG_H_PCT = (84.136 / FH) * 100;          // 10.36%
+const TAG_ASPECT = "353.133 / 84.136";
 
 export function LoadingSplash() {
   const [mounted, setMounted] = useState(true);
@@ -117,7 +121,8 @@ export function LoadingSplash() {
                 top: `${LOGO_TOP_PCT}%`,
                 left: `${LOGO_LEFT_PCT}%`,
                 width: `${LOGO_W_PCT}%`,
-                height: `${LOGO_H_PCT}%`,
+                aspectRatio: LOGO_ASPECT,
+                height: "auto",
               }}
               // Starts far above the viewport. Spring drops it into its slot
               // after a delay long enough for the blue panel to settle.
@@ -144,7 +149,8 @@ export function LoadingSplash() {
               top: `${TAG_TOP_PCT}%`,
               left: `${TAG_LEFT_PCT}%`,
               width: `${TAG_W_PCT}%`,
-              height: `${TAG_H_PCT}%`,
+              aspectRatio: TAG_ASPECT,
+              height: "auto",
             }}
             initial={{ opacity: 0, y: 0 }}
             animate={{
