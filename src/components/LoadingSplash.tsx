@@ -92,17 +92,17 @@ export function LoadingSplash() {
     damping: 18,
     mass: 0.9,
   };
-  // Logo drop — heavily damped so it lands once and stays put. Previous
-  // damping (14) was visibly oscillating "boing-boing-boing"; 28 gives a
-  // single soft settle with no perceptible second bounce.
+  // Logo drop — just one subtle bounce, then settled. Damping 22 keeps a
+  // single hint of springiness (visible micro-overshoot) without the
+  // boing-boing oscillation that 14 was producing.
   const logoDrop = {
     type: "spring" as const,
-    stiffness: 280,
-    damping: 28,
+    stiffness: 260,
+    damping: 22,
     mass: 0.9,
   };
   const exitEase = {
-    duration: 0.5,
+    duration: 0.4,
     ease: [0.55, 0, 0.45, 1] as [number, number, number, number],
   };
 
@@ -114,11 +114,13 @@ export function LoadingSplash() {
           className="fixed inset-0 z-[60] overflow-hidden bg-white"
           initial={{ opacity: 1 }}
           // The whole splash wrapper (including the white background)
-          // fades while the blue panel slides up. Lobby behind shows
-          // through, so the cards' deal-in is visible mid-dissolve.
+          // fades QUICKLY (250ms) so the lobby behind is revealed while
+          // the cards are still mid deal-in — the user actually sees the
+          // tiles arriving, instead of the deal-in finishing behind an
+          // opaque wrapper.
           animate={{ opacity: exiting ? 0 : 1 }}
           exit={{ opacity: 0 }}
-          transition={exiting ? { duration: 0.5, ease: [0.55, 0, 0.45, 1] } : { duration: 0 }}
+          transition={exiting ? { duration: 0.25, ease: [0.55, 0, 0.45, 1] } : { duration: 0 }}
           aria-hidden
         >
           {/* Blue panel — top 60.34% of viewport. Slides + bounces down on

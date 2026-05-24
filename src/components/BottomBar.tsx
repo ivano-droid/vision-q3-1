@@ -91,9 +91,12 @@ export function BottomBar() {
   // re-firing the slide-up from below. A CSS transition fires once when
   // the class flips and never re-triggers, so the bar stays put.
   const shown = reduce || bootDone;
+  // Delay timing: splash dissolves 0–250ms, hero animates 200–500ms, rail
+  // title 250–430ms, rail cards stagger from 350ms onward (last card lands
+  // ~900ms in for a 6-card rail). Bottom bar arrives just after, at ~900ms.
   const entranceCss = reduce
     ? "none"
-    : "opacity 0.3s 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s 0.5s cubic-bezier(0.22, 1, 0.36, 1)";
+    : "opacity 0.3s 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s 0.9s cubic-bezier(0.22, 1, 0.36, 1)";
 
   return (
     <>

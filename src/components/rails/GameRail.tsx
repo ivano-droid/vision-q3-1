@@ -43,9 +43,13 @@ export function GameRail({
     [tiles],
   );
 
+  // Entrance timing is offset from `bootDone` so the splash wrapper has
+  // 250ms to fade away before any cards start moving. Without these
+  // delays the tiles deal in behind an opaque-then-fading splash and the
+  // user only sees the tail end as the splash unmounts.
   const titleVariants: Variants = {
     hidden: { opacity: 0, y: 6 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.18 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.18, delay: reduce ? 0 : 0.25 } },
   };
 
   const dealRowVariants: Variants = {
@@ -53,7 +57,9 @@ export function GameRail({
     visible: {
       transition: {
         staggerChildren: 0.06,
-        delayChildren: 0.12, // wait for the title fade-in
+        // Wait for the splash wrapper to clear (~250ms) + a beat for the
+        // title to fade in (~100ms) before the first card starts.
+        delayChildren: reduce ? 0 : 0.35,
       },
     },
   };

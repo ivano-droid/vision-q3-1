@@ -85,17 +85,18 @@ export function HeroCarousel() {
       className="relative"
       data-node-id="48:1732"
       // Casino "deal-in" entrance: subtle slide-up + scale-in. Holds in the
-      // hidden state until the loading splash flips `bootDone` (~2.6s in,
-      // just before the splash starts dissolving) so the animation isn't
-      // wasted while the splash still covers the screen. Respects
-      // prefers-reduced-motion (skips the animation entirely).
+      // hidden state until the loading splash flips `bootDone` (fires the
+      // moment the splash begins dissolving). A 200ms transition delay
+      // then waits for the splash wrapper to clear, so the hero visibly
+      // animates IN over the revealed lobby rather than finishing behind
+      // a still-fading veil. Respects prefers-reduced-motion.
       initial={reduce ? false : { opacity: 0, y: 24, scale: 0.96 }}
       animate={
         reduce || bootDone
           ? { opacity: 1, y: 0, scale: 1 }
           : { opacity: 0, y: 24, scale: 0.96 }
       }
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.3, delay: reduce ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
     >
       <div
         ref={railRef}
