@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useFilter } from "@/lib/filter-context";
 
 /**
  * App loading splash — Figma node 71:14585.
@@ -63,15 +64,22 @@ const TAG_ASPECT = "353.133 / 84.136";
 export function LoadingSplash() {
   const [mounted, setMounted] = useState(true);
   const [exiting, setExiting] = useState(false);
+  const { markBootDone } = useFilter();
 
   useEffect(() => {
+    // Kick the lobby's entrance animations slightly *before* the splash
+    // starts physically dissolving, so the deal-in is already in motion
+    // when the blue panel finishes sliding off — the two motions overlap
+    // and the lobby never appears static behind a half-faded splash.
+    const bootTimer = setTimeout(() => markBootDone(), 2600);
     const exitTimer = setTimeout(() => setExiting(true), 2800);
     const unmountTimer = setTimeout(() => setMounted(false), 3400);
     return () => {
+      clearTimeout(bootTimer);
       clearTimeout(exitTimer);
       clearTimeout(unmountTimer);
     };
-  }, []);
+  }, [markBootDone]);
 
   // Spring tunings tuned for "bounces down" feel.
   const panelDrop = {

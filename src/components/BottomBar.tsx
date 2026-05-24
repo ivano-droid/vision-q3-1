@@ -38,7 +38,7 @@ const FAST_SPRING = { type: "spring" as const, stiffness: 500, damping: 40, mass
 export function BottomBar() {
   const [collapsed, setCollapsed] = useState(false);
   const reduce = useReducedMotion();
-  const { goHome, openSearch, searchInputRef } = useFilter();
+  const { goHome, openSearch, searchInputRef, bootDone } = useFilter();
 
   // Open the search overlay AND focus the input in one synchronous call
   // stack. iOS requires `.focus()` to happen inside the user-gesture handler
@@ -80,12 +80,14 @@ export function BottomBar() {
   const floorHeight = "env(safe-area-inset-bottom)";
   const barOffset = "calc(env(safe-area-inset-bottom) + 12px)";
 
-  // Casino "deal-in" entrance: bar + floor fade/scale in LAST, after the hero
-  // and rails have settled (~500ms delay puts us at the tail end of the
-  // 600–800ms total page-load transition window).
+  // Casino "deal-in" entrance: bar + floor fade/scale in LAST, after the
+  // hero and rails have settled. Gated on `bootDone` (flipped by the loading
+  // splash on its way out), then a 500ms delay puts the bar's arrival at
+  // the tail end of the deal-in choreography.
   const entranceTransition = reduce
     ? { duration: 0 }
     : { duration: 0.3, delay: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] };
+  const shown = reduce || bootDone;
 
   return (
     <>
@@ -105,7 +107,7 @@ export function BottomBar() {
           WebkitBackdropFilter: "blur(24px)",
         }}
         initial={reduce ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: shown ? 1 : 0 }}
         transition={entranceTransition}
         aria-hidden
       />
@@ -117,7 +119,11 @@ export function BottomBar() {
         style={{ bottom: barOffset }}
         data-node-id="50:3305"
         initial={reduce ? false : { opacity: 0, y: 12, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
+        animate={
+          shown
+            ? { opacity: 1, y: 0, scale: 1 }
+            : { opacity: 0, y: 12, scale: 0.96 }
+        }
         transition={entranceTransition}
       >
       <nav

@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
+import { useFilter } from "@/lib/filter-context";
 
 /**
  * Hero carousel — Figma node 48:1732.
@@ -47,6 +48,7 @@ export function HeroCarousel() {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const reduce = useReducedMotion();
+  const { bootDone } = useFilter();
 
   useEffect(() => {
     const rail = railRef.current;
@@ -83,10 +85,17 @@ export function HeroCarousel() {
       aria-label="Featured promotions"
       className="relative"
       data-node-id="48:1732"
-      // Casino "deal-in" entrance: subtle slide-up + scale-in on first paint.
-      // Respects prefers-reduced-motion (skips the animation entirely).
+      // Casino "deal-in" entrance: subtle slide-up + scale-in. Holds in the
+      // hidden state until the loading splash flips `bootDone` (~2.6s in,
+      // just before the splash starts dissolving) so the animation isn't
+      // wasted while the splash still covers the screen. Respects
+      // prefers-reduced-motion (skips the animation entirely).
       initial={reduce ? false : { opacity: 0, y: 24, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      animate={
+        reduce || bootDone
+          ? { opacity: 1, y: 0, scale: 1 }
+          : { opacity: 0, y: 24, scale: 0.96 }
+      }
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
       <div

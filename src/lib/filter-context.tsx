@@ -26,6 +26,16 @@ type FilterContextValue = {
    *  can focus it synchronously (iOS requires focus inside the user-gesture
    *  call stack to auto-open the keyboard). */
   searchInputRef: { current: HTMLInputElement | null };
+
+  /** One-shot "splash is gone" flag. The lobby mounts behind the loading
+   *  splash, so its entrance animations would otherwise fire and finish
+   *  invisibly while the splash still covers the screen. Components gate
+   *  their `animate` state on this — they sit in their `hidden` variant
+   *  until `markBootDone()` flips it true (called by LoadingSplash as it
+   *  starts exiting). Stays true for the session, so subsequent re-mounts
+   *  of the home view (navigating back from a filter) animate as normal. */
+  bootDone: boolean;
+  markBootDone: () => void;
 };
 
 const FilterContext = createContext<FilterContextValue | null>(null);
@@ -39,6 +49,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [filter, setFilter] = useState<LobbyFilter>("home");
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [bootDone, setBootDone] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // NOTE: we intentionally do NOT scroll the page when switching filters
@@ -70,6 +81,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         openSearch: () => setSearchOpen(true),
         closeSearch: () => setSearchOpen(false),
         searchInputRef,
+        bootDone,
+        markBootDone: () => setBootDone(true),
       }}
     >
       {children}

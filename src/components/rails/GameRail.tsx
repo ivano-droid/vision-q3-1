@@ -3,6 +3,7 @@
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useMemo } from "react";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
+import { useFilter } from "@/lib/filter-context";
 
 /**
  * Generic horizontal-scroll game tile rail — matches the structure of every
@@ -32,6 +33,7 @@ export function GameRail({
 }) {
   const railRef = useDraggableScroll<HTMLDivElement>();
   const reduce = useReducedMotion();
+  const { bootDone } = useFilter();
 
   // Stable per-card rotations between -4° and +4°. Memoised on the tile list
   // so the values don't churn on every render — each card keeps the same
@@ -60,8 +62,11 @@ export function GameRail({
     <motion.section
       aria-label={title}
       className="py-3"
+      // Hold the cards in their hidden variant until the loading splash flips
+      // `bootDone`. Otherwise the entire deal-in plays out behind the splash
+      // and the user never sees a single card actually arrive.
       initial={reduce ? false : "hidden"}
-      animate="visible"
+      animate={reduce || bootDone ? "visible" : "hidden"}
     >
       {/* Header row */}
       <motion.div
