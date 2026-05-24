@@ -35,11 +35,22 @@ export function GameRail({
   const reduce = useReducedMotion();
   const { bootDone } = useFilter();
 
-  // Stable per-card rotations between -4° and +4°. Memoised on the tile list
-  // so the values don't churn on every render — each card keeps the same
-  // "lean" through its entrance.
+  // Stable per-card rotations between -4° and +4°. DETERMINISTIC — derived
+  // from a hash of the tile src + index — so server-rendered and
+  // client-rendered output match (Math.random() here was causing React
+  // hydration mismatch warnings). Each card still gets a different lean,
+  // but the same lean every render and across SSR/CSR.
   const rotations = useMemo(
-    () => tiles.map(() => (Math.random() - 0.5) * 8),
+    () =>
+      tiles.map((tile, i) => {
+        const key = `${tile.src}-${i}`;
+        let h = 0;
+        for (let c = 0; c < key.length; c++) {
+          h = ((h << 5) - h + key.charCodeAt(c)) | 0;
+        }
+        // Map to a stable -4..+4 range.
+        return ((Math.abs(h) % 800) / 100) - 4;
+      }),
     [tiles],
   );
 
