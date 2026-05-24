@@ -37,8 +37,31 @@ const FAST_SPRING = { type: "spring" as const, stiffness: 500, damping: 40, mass
 
 export function BottomBar() {
   const [collapsed, setCollapsed] = useState(false);
+  // Intro choreography: bar pans up from below with the search pill in its
+  // closed (circle) state, then expands to "Search all games" to draw the
+  // eye to it. `introClosed` is true during the bar's entrance, then
+  // flipped off ~300ms after the bar lands so the user sees the expansion
+  // as a distinct, deliberate motion.
+  const [introClosed, setIntroClosed] = useState(true);
   const reduce = useReducedMotion();
   const { goHome, openSearch, searchInputRef, bootDone } = useFilter();
+
+  // Trigger the search-pill expansion after the bar's slide-in completes.
+  // Bar timing: bootDone + 900ms delay + 300ms duration = 1200ms → bar
+  // landed. Add a 300ms beat so the expansion reads as a follow-up motion,
+  // not a continuation of the slide-up. Total: 1500ms post-bootDone.
+  useEffect(() => {
+    if (!bootDone || reduce) {
+      // Reduced motion: open immediately, no intro choreography.
+      if (reduce) setIntroClosed(false);
+      return;
+    }
+    const t = setTimeout(() => setIntroClosed(false), 1500);
+    return () => clearTimeout(t);
+  }, [bootDone, reduce]);
+
+  // The pill is shown in compact form during the intro AND when scrolled.
+  const compact = collapsed || introClosed;
 
   // Open the search overlay AND focus the input in one synchronous call
   // stack. iOS requires `.focus()` to happen inside the user-gesture handler
@@ -150,8 +173,8 @@ export function BottomBar() {
               "0 16px 36px -12px rgba(10, 46, 203, 0.32), 0 2px 8px -2px rgba(10, 46, 203, 0.12)",
           }}
           animate={{
-            width: collapsed ? 104 : "100%",
-            maxWidth: collapsed ? 104 : 9999,
+            width: compact ? 104 : "100%",
+            maxWidth: compact ? 104 : 9999,
           }}
           transition={transition}
         >
@@ -180,8 +203,8 @@ export function BottomBar() {
               border: "1px solid #ced5f5",
             }}
             animate={{
-              width: collapsed ? 44 : "100%",
-              flex: collapsed ? "0 0 44px" : "1 1 auto",
+              width: compact ? 44 : "100%",
+              flex: compact ? "0 0 44px" : "1 1 auto",
             }}
             transition={transition}
             whileTap={{ scale: 0.98 }}
@@ -191,9 +214,9 @@ export function BottomBar() {
               className="overflow-hidden whitespace-nowrap text-[15px] font-semibold text-mrq-blue"
               style={{ display: "inline-block" }}
               animate={{
-                opacity: collapsed ? 0 : 1,
-                maxWidth: collapsed ? 0 : 240,
-                marginLeft: collapsed ? 0 : 8,
+                opacity: compact ? 0 : 1,
+                maxWidth: compact ? 0 : 240,
+                marginLeft: compact ? 0 : 8,
               }}
               transition={transition}
             >
