@@ -162,10 +162,7 @@ body::-webkit-scrollbar {
 }
 
 /* When the app is launched from the home screen (display-mode: standalone),
-   it owns the whole device screen — no frame, no shadow, no blue backdrop.
-   The bottom-bar's white floor is also hidden because there's no Safari
-   chrome to land on it; without that, the floor just shows as an empty
-   white strip at the device edge. */
+   it owns the whole device screen — no frame, no shadow, no blue backdrop. */
 @media (display-mode: standalone) {
   html, body {
     background: #ffffff;
@@ -174,7 +171,21 @@ body::-webkit-scrollbar {
     max-width: none;
     box-shadow: none;
   }
+  /* The bottom-bar floor (used in browser mode to land behind iOS
+     Safari's chrome strip) is hidden — there's no Safari chrome to
+     land on it, just the home indicator. */
   .bottom-bar-floor {
     display: none;
+  }
+  /* In browser mode, env(safe-area-inset-bottom) is the height of the
+     Safari URL bar chrome, so we use the full inset on the BottomNav
+     to keep tab touch targets above Safari's chrome. In standalone
+     mode the inset is just the home-indicator strip (~34px) and the
+     full inset leaves a visible band of white below the tabs. Reduce
+     the padding so the tabs sit ~10–14px above the home indicator
+     and the bar background continues into the indicator strip (which
+     iOS overlays on top anyway). */
+  .bottom-nav-pad {
+    padding-bottom: max(6px, calc(env(safe-area-inset-bottom) - 24px)) !important;
   }
 }

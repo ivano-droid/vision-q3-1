@@ -74,7 +74,12 @@ export function BottomNav() {
     // (replacing the old separate "floor" div).
     <nav
       aria-label="Primary"
-      className="fixed bottom-0 z-40"
+      // bottom-nav-pad: sets padding-bottom to env(safe-area-inset-bottom)
+      // in browser mode (full inset to clear iOS Safari's URL bar), and a
+      // reduced inset in standalone PWA mode so the tabs sit closer to
+      // the home indicator instead of floating above a band of white.
+      // See globals.css for the @media (display-mode: standalone) rule.
+      className="bottom-nav-pad fixed bottom-0 z-40"
       style={{
         left: "var(--frame-right-offset)",
         right: "var(--frame-right-offset)",
