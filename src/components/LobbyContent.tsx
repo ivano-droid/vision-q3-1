@@ -7,6 +7,7 @@ import { HomeView } from "./views/HomeView";
 import { CasinoView } from "./views/CasinoView";
 import { LiveView } from "./views/LiveView";
 import { BingoView } from "./views/BingoView";
+import { ArenaView } from "./views/ArenaView";
 
 /**
  * Lobby content shell.
@@ -30,7 +31,7 @@ import { BingoView } from "./views/BingoView";
  *     (Bingo) don't leave empty space below.
  */
 
-const FILTERED_ORDER: Exclude<LobbyFilter, "home">[] = ["casino", "live", "bingo"];
+const FILTERED_ORDER: Exclude<LobbyFilter, "home">[] = ["casino", "live", "bingo", "arena"];
 
 export function LobbyContent() {
   const { filter } = useFilter();
@@ -73,7 +74,11 @@ export function LobbyContent() {
 }
 
 function SwipeStrip({ activeIndex }: { activeIndex: number }) {
-  const panelRefs = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+  // Panel count drives the strip math — add a view → no extra wiring needed.
+  const panelCount = FILTERED_ORDER.length;
+  const panelRefs = useRef<(HTMLDivElement | null)[]>(
+    Array(panelCount).fill(null),
+  );
   const [activeHeight, setActiveHeight] = useState<number | null>(null);
 
   // Keep the active panel's height in sync via ResizeObserver. The wrapper
@@ -88,6 +93,8 @@ function SwipeStrip({ activeIndex }: { activeIndex: number }) {
     return () => ro.disconnect();
   }, [activeIndex]);
 
+  const panelWidthPct = 100 / panelCount;
+
   return (
     <motion.div
       className="relative overflow-x-clip overflow-y-clip"
@@ -96,13 +103,14 @@ function SwipeStrip({ activeIndex }: { activeIndex: number }) {
     >
       <motion.div
         className="flex items-start"
-        style={{ width: "300%" }}
-        animate={{ x: `${-activeIndex * (100 / 3)}%` }}
+        style={{ width: `${panelCount * 100}%` }}
+        animate={{ x: `${-activeIndex * panelWidthPct}%` }}
         transition={{ type: "spring", stiffness: 240, damping: 32, mass: 1.0 }}
       >
-        <Panel innerRef={(el) => (panelRefs.current[0] = el)}><CasinoView /></Panel>
-        <Panel innerRef={(el) => (panelRefs.current[1] = el)}><LiveView /></Panel>
-        <Panel innerRef={(el) => (panelRefs.current[2] = el)}><BingoView /></Panel>
+        <Panel widthPct={panelWidthPct} innerRef={(el) => (panelRefs.current[0] = el)}><CasinoView /></Panel>
+        <Panel widthPct={panelWidthPct} innerRef={(el) => (panelRefs.current[1] = el)}><LiveView /></Panel>
+        <Panel widthPct={panelWidthPct} innerRef={(el) => (panelRefs.current[2] = el)}><BingoView /></Panel>
+        <Panel widthPct={panelWidthPct} innerRef={(el) => (panelRefs.current[3] = el)}><ArenaView /></Panel>
       </motion.div>
     </motion.div>
   );
@@ -111,12 +119,14 @@ function SwipeStrip({ activeIndex }: { activeIndex: number }) {
 function Panel({
   children,
   innerRef,
+  widthPct,
 }: {
   children: React.ReactNode;
   innerRef: (el: HTMLDivElement | null) => void;
+  widthPct: number;
 }) {
   return (
-    <div ref={innerRef} className="shrink-0" style={{ width: "33.3333%" }}>
+    <div ref={innerRef} className="shrink-0" style={{ width: `${widthPct}%` }}>
       {children}
     </div>
   );

@@ -79,11 +79,22 @@ export function ScrollAwareFilters() {
       aria-hidden={!visible}
       style={{ pointerEvents: visible ? "auto" : "none" }}
     >
-      <div className="px-[23px] pb-[10px]">
-        <nav className="flex items-center gap-[8px]" aria-label="Section filters">
+      {/* Container padding tightened (was 23 → 16) so the 4 pills fit
+          comfortably in the 375px viewport with breathing room. */}
+      <div className="px-[16px] pb-[10px]">
+        <nav className="flex items-center gap-[6px]" aria-label="Section filters">
           <FilterPill pillKey="casino" icon="/assets/icon-casino.svg" label="Casino" />
           <FilterPill pillKey="live" icon="/assets/icon-live.svg" label="Live" />
           <FilterPill pillKey="bingo" icon="/assets/icon-bingo.svg" label="Bingo" />
+          {/* Arena uses pink as its brand accent — passed through to the
+              text/icon when the pill is active, and as the pill fill when
+              another filter is selected. */}
+          <FilterPill
+            pillKey="arena"
+            icon="/assets/icon-arena.svg"
+            label="Arena"
+            accent="#e0007a"
+          />
         </nav>
       </div>
     </motion.div>
@@ -94,25 +105,36 @@ function FilterPill({
   pillKey,
   icon,
   label,
+  accent,
 }: {
   pillKey: Exclude<LobbyFilter, "home">;
   icon: string;
   label: string;
+  /** Per-pill accent colour. When the pill is active the icon + label
+   *  take this colour (defaults to navy). When inactive, the pill fill
+   *  takes this colour (defaults to dark navy). Used for Arena's pink. */
+  accent?: string;
 }) {
   const { filter, togglePill } = useFilter();
   // In `home`, every pill reads as active so the row matches the original
   // unfiltered look. Once a filter is selected, only that pill stays active.
   const active = filter === "home" || filter === pillKey;
+  const activeColor = accent ?? "#0c2287";
+  const inactiveColor = accent ?? "#0c2287";
 
   return (
     <motion.button
       type="button"
       onClick={() => togglePill(pillKey)}
       aria-pressed={filter === pillKey}
-      className="flex flex-1 items-center justify-center gap-[6px] rounded-full px-[14px] py-[6px] h-[36px]"
+      // Tighter padding + smaller height + min-w-0 so 4 pills can share the
+      // 375px viewport without one being squeezed out. flex-1 keeps them
+      // evenly distributed, min-w-0 lets the flexbox actually shrink them
+      // (default min-width: auto would force them to their content width).
+      className="flex flex-1 min-w-0 items-center justify-center gap-[4px] rounded-full px-[8px] py-[6px] h-[34px]"
       style={{
-        backgroundColor: active ? "#ffffff" : "#0c2287",
-        color: active ? "#0c2287" : "#ffffff",
+        backgroundColor: active ? "#ffffff" : inactiveColor,
+        color: active ? activeColor : "#ffffff",
       }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 500, damping: 35 }}
@@ -121,10 +143,10 @@ function FilterPill({
           single SVG asset works for both active and inactive states. */}
       <span
         aria-hidden
-        className="block bg-current"
+        className="block bg-current shrink-0"
         style={{
-          width: "22px",
-          height: "18px",
+          width: "18px",
+          height: "14px",
           maskImage: `url(${icon})`,
           WebkitMaskImage: `url(${icon})`,
           maskRepeat: "no-repeat",
@@ -136,8 +158,8 @@ function FilterPill({
         }}
       />
       <span
-        className="text-[16px] leading-none font-extrabold whitespace-nowrap"
-        style={{ letterSpacing: "0.2px" }}
+        className="text-[13px] leading-none font-extrabold whitespace-nowrap"
+        style={{ letterSpacing: "0" }}
       >
         {label}
       </span>

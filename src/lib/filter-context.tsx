@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 
-export type LobbyFilter = "home" | "casino" | "live" | "bingo";
+export type LobbyFilter = "home" | "casino" | "live" | "bingo" | "arena";
 
 type FilterContextValue = {
   filter: LobbyFilter;
