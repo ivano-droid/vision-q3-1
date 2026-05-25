@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Tinder-style swipeable hero card.
@@ -62,45 +62,55 @@ export function SwipeableHero({ games }: { games: HeroGame[] }) {
         margin: "0 auto",
       }}
     >
-      {/* Underlay: the NEXT card, peeking from behind. Slightly
-          smaller and pushed down a few pixels so the user can see
-          there's another card waiting. When the top card swipes
+      {/* Underlay: the NEXT card, peeking from behind. Translated
+          down enough that ~14px of the next card visibly sticks out
+          below the front card — that's the "depth" affordance so the
+          user knows there's more behind. When the top card swipes
           away, this underlay grows into the front position (handled
           by the `key`-driven remount on the front card). */}
       <NextCardPreview key={`peek-${index}`} game={next} />
 
       {/* Front: the active draggable card. Remounted (via the
           changing key) each time the user swipes one away, so the
-          motion value resets cleanly to centre. */}
+          motion value resets cleanly to centre. `showHint` is only
+          true for the very first card on mount — drives a one-off
+          fade-in pulse on the LIKE / NOPE icons so the swipe
+          affordance is discoverable. */}
       <SwipeCard
         key={`top-${index}`}
         game={current}
+        showHint={index === 0}
         onSwiped={() => setIndex((i) => i + 1)}
       />
     </div>
   );
 }
 
-/** The peek behind the active card — non-interactive, slightly
- *  smaller, dimmed by a soft scrim. When the front card swipes off,
- *  this one expands into the front position with a quick spring. */
+/** The peek behind the active card — non-interactive, sized so a
+ *  visible band of it sticks out below the front card's bottom edge.
+ *  That band is the "there's more behind here" affordance on first
+ *  load (and stays throughout the swiping). */
 function NextCardPreview({ game }: { game: HeroGame }) {
   return (
     <motion.div
       className="absolute inset-0 pointer-events-none"
-      initial={{ scale: 0.92, y: 14, opacity: 0.75 }}
-      animate={{ scale: 0.95, y: 10, opacity: 0.92 }}
+      // Mount initial slightly more compressed so the entrance has a
+      // little spring as it settles into the resting peek state.
+      initial={{ scale: 0.92, y: 24, opacity: 0.7 }}
+      // Resting peek: scale 0.95, translated down 22px so ~12px of
+      // the bottom edge protrudes below the front card.
+      animate={{ scale: 0.95, y: 22, opacity: 0.95 }}
       transition={{ type: "spring", stiffness: 280, damping: 32, mass: 0.9 }}
       aria-hidden
     >
       <CardSurface game={game} />
-      {/* Subtle scrim so the back card reads as "behind" rather than
-          competing for attention with the front. Goes away as the
-          front card is dragged (could be wired to drag progress
-          later; static for now). */}
+      {/* Soft scrim so the peek reads as "behind" rather than
+          competing with the front for attention. Light overlay
+          rather than heavy darkening so the artwork is still
+          recognisable. */}
       <div
         className="absolute inset-0 rounded-[18px] pointer-events-none"
-        style={{ backgroundColor: "rgba(245, 245, 245, 0.22)" }}
+        style={{ backgroundColor: "rgba(245, 245, 245, 0.18)" }}
       />
     </motion.div>
   );
@@ -108,16 +118,57 @@ function NextCardPreview({ game }: { game: HeroGame }) {
 
 function SwipeCard({
   game,
+  showHint,
   onSwiped,
 }: {
   game: HeroGame;
+  showHint: boolean;
   onSwiped: () => void;
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-12, 0, 12]);
-  // Opacity dips slightly at the edges of the drag — a subtle cue that
-  // you're close to dismissing.
   const opacity = useTransform(x, [-300, -50, 0, 50, 300], [0.5, 1, 1, 1, 0.5]);
+
+  // Drag-tied opacity for the swipe affordance icons:
+  //   • Heart (right side, "Like")  → visible as the card moves right
+  //   • Cross (left side,  "Nope")  → visible as the card moves left
+  // Same threshold (100px) used for the actual swipe action, so the
+  // icon hits full opacity right at the commit point — a clean visual
+  // promise of what's about to happen.
+  const likeOpacityFromDrag = useTransform(x, [10, 100], [0, 1]);
+  const nopeOpacityFromDrag = useTransform(x, [-100, -10], [1, 0]);
+  // Slight scale-up as they appear so they feel like they're "rising
+  // into view" instead of just fading.
+  const likeScaleFromDrag = useTransform(x, [10, 100], [0.7, 1]);
+  const nopeScaleFromDrag = useTransform(x, [-100, -10], [1, 0.7]);
+
+  // One-off discoverability pulse — only fires for the very first
+  // card on mount. Both icons fade in to ~35% then back out over
+  // ~1.4s, so the user sees "you can swipe left or right" without
+  // the icons being permanent UI. Composed with the drag-tied
+  // opacity below so dragging immediately takes over.
+  const hintOpacity = useMotionValue(0);
+  useEffect(() => {
+    if (!showHint) return;
+    const controls = animate(hintOpacity, [0, 0.4, 0.4, 0], {
+      duration: 1.6,
+      times: [0, 0.18, 0.7, 1],
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [showHint, hintOpacity]);
+
+  // Combine drag-based opacity with the hint pulse: take whichever
+  // is higher at any given moment. Once the user starts dragging, the
+  // drag-based opacity climbs past the hint and naturally takes over.
+  const likeOpacity = useTransform(
+    [likeOpacityFromDrag, hintOpacity],
+    ([drag, hint]) => Math.max(drag as number, hint as number),
+  );
+  const nopeOpacity = useTransform(
+    [nopeOpacityFromDrag, hintOpacity],
+    ([drag, hint]) => Math.max(drag as number, hint as number),
+  );
 
   return (
     <motion.div
@@ -143,7 +194,77 @@ function SwipeCard({
       }}
     >
       <CardSurface game={game} />
+
+      {/* Swipe-direction affordances. Rendered OUTSIDE CardSurface so
+          their opacity isn't gated by the card image's stacking; they
+          float on top of the artwork with their own translucent
+          chip. pointer-events: none so they never steal taps. */}
+      <SwipeAffordance side="left" opacity={nopeOpacity} scale={nopeScaleFromDrag}>
+        <CrossIcon className="size-[28px] text-[#ff4259]" />
+      </SwipeAffordance>
+      <SwipeAffordance side="right" opacity={likeOpacity} scale={likeScaleFromDrag}>
+        <HeartIcon className="size-[28px] text-[#ff4f8b]" />
+      </SwipeAffordance>
     </motion.div>
+  );
+}
+
+function SwipeAffordance({
+  side,
+  opacity,
+  scale,
+  children,
+}: {
+  side: "left" | "right";
+  opacity: import("framer-motion").MotionValue<number>;
+  scale: import("framer-motion").MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      aria-hidden
+      className="absolute top-1/2 grid place-items-center pointer-events-none"
+      style={{
+        // Anchor each chip to the corresponding edge of the card,
+        // vertically centred. Tilted a few degrees outward so they
+        // feel like Tinder's "LIKE/NOPE" stamps.
+        [side]: "18px",
+        translate: "0 -50%",
+        rotate: side === "left" ? "-12deg" : "12deg",
+        width: "78px",
+        height: "78px",
+        borderRadius: "9999px",
+        backgroundColor: "rgba(255, 255, 255, 0.92)",
+        boxShadow:
+          "0 12px 28px -12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
+        border:
+          side === "left"
+            ? "2px solid rgba(255, 66, 89, 0.8)"
+            : "2px solid rgba(255, 79, 139, 0.8)",
+        opacity,
+        scale,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function CrossIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+      focusable={false}
+    >
+      <path d="m6 6 12 12M18 6 6 18" />
+    </svg>
   );
 }
 

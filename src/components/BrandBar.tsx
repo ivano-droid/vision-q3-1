@@ -63,41 +63,48 @@ export function BrandBar() {
           </Link>
         )}
 
-        {/* Right side: balance + divider + avatar pill (unchanged on every route) */}
+        {/* Right side: balance + divider + avatar pill (unchanged on every route).
+            Height bumped to match the filter-pill family and avatar grown to
+            keep the proportions balanced. Drop shadow removed — it was
+            making the pill look like it floated separately from the rest
+            of the glass system below. Keeps only the inset top highlight
+            for the "lit edge" Liquid Glass feel. */}
         <button
           type="button"
           onClick={openSideNav}
           aria-label="Open account menu"
-          className="flex items-center gap-[8px] h-[40px] pl-[16px] pr-[4px] rounded-full active:scale-[0.97] transition-transform"
+          className="flex items-center gap-[10px] h-[46px] pl-[18px] pr-[5px] rounded-full active:scale-[0.97] transition-transform"
           style={{
             backgroundColor: "rgba(8, 24, 100, 0.65)",
-            backdropFilter: "blur(12px) saturate(140%)",
-            WebkitBackdropFilter: "blur(12px) saturate(140%)",
-            border: "1px solid rgba(255, 255, 255, 0.10)",
-            boxShadow:
-              "inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 10px -4px rgba(0, 0, 0, 0.25)",
+            backdropFilter: "blur(20px) saturate(140%)",
+            WebkitBackdropFilter: "blur(20px) saturate(140%)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.14)",
           }}
         >
-          <span className="text-white text-[15px] leading-none font-extrabold pt-[1px]">
+          <span className="text-white text-[16px] leading-none font-extrabold pt-[1px]">
             £113.59
           </span>
           <span
-            className="h-[18px] w-px"
+            className="h-[20px] w-px"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.22)" }}
             aria-hidden
           />
+          {/* Avatar — sized 38px so it fits comfortably inside the 46px
+              pill with 4px of breathing room. Ring colour matches the
+              pill fill so it blends instead of standing out as a chip
+              within a chip. */}
           <div
-            className="relative size-[32px] rounded-full overflow-hidden bg-white"
+            className="relative size-[38px] rounded-full overflow-hidden bg-white"
             style={{
               border: "2px solid rgba(8, 24, 100, 0.65)",
-              boxShadow: "0 2px 6px 0 rgba(0, 0, 0, 0.2)",
             }}
           >
             <Image
               src="/assets/avatar.png"
               alt=""
               fill
-              sizes="32px"
+              sizes="38px"
               className="object-cover"
               priority
             />
