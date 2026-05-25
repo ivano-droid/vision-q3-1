@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFilter } from "@/lib/filter-context";
 
 /**
@@ -95,6 +95,13 @@ export function BottomBar() {
     searchInputRef.current?.focus({ preventScroll: true });
   };
 
+  // Mirror `introClosed` into a ref so the scroll handler (mounted once,
+  // captures state at mount time) can read the current value without
+  // re-binding. Without this, the handler would always see introClosed=true
+  // and never collapse, even after the intro is done.
+  const introClosedRef = useRef(introClosed);
+  introClosedRef.current = introClosed;
+
   useEffect(() => {
     let frame = 0;
     const onScroll = () => {
@@ -103,6 +110,12 @@ export function BottomBar() {
         frame = 0;
         const y = window.scrollY;
         setCollapsed((curr) => {
+          // Hold the bar fully expanded throughout the intro so the
+          // closed→open expansion can play uninterrupted, regardless of
+          // initial scroll position (browser scroll restoration was
+          // landing the page ~30px down and immediately collapsing the
+          // bar before the intro could fire).
+          if (introClosedRef.current) return false;
           if (!curr && y > COLLAPSE_AT) return true;
           if (curr && y <= EXPAND_AT) return false;
           return curr;
@@ -116,6 +129,22 @@ export function BottomBar() {
       if (frame) cancelAnimationFrame(frame);
     };
   }, []);
+
+  // Belt-and-braces: disable the browser's scroll restoration AND
+  // explicitly snap to top when the splash dismisses, so the lobby
+  // always starts at scrollY=0. Without this, refreshing the page
+  // mid-scroll left the lobby parked 30px down and the intro
+  // collapse-state logic above was the only thing keeping the search
+  // pill from being immediately squashed.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+  useEffect(() => {
+    if (!bootDone) return;
+    window.scrollTo(0, 0);
+  }, [bootDone]);
 
   // While the intro expansion is playing, swap in the slower, smoother
   // tween. Once it's settled, fall back to SPRING for snappy
