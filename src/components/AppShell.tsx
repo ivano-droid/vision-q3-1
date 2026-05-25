@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="mobile-frame">
         <BrandBar />
 
-        <main className="bg-white">
+        <main className="bg-[#f5f5f5]">
           {children}
           {/* Bottom safe area — clears the floating bottom nav so the
               last bit of page content isn't trapped behind the pill. */}
