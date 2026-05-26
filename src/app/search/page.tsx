@@ -1,7 +1,8 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 /**
  * Search page — full route.
@@ -119,15 +120,10 @@ export default function SearchPage() {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Auto-focus on mount so the on-screen keyboard pops the moment a
-  // user arrives. requestAnimationFrame defers past the initial paint
-  // so the focus doesn't race the navigation animation.
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      inputRef.current?.focus({ preventScroll: true });
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+  // Note: no auto-focus on mount. The user should LAND on the
+  // default state — the 4 Start Browsing cards + Recent big wins +
+  // Recommended sections — and only enter the search modal when
+  // they tap the input.
 
   // "Active" state — either the user is focused or has typed.
   // Switching off requires both: focus loss AND empty input. That way
@@ -178,25 +174,44 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {isActive ? (
-        // Page takeover: recently-searched list fills the canvas.
-        <RecentlySearched
-          items={RECENTLY_SEARCHED}
-          onRemove={(name) => {
-            // Stub — in a real build this would drop the item from
-            // user search history. Logged for now so the affordance
-            // is obviously wired up.
-            // eslint-disable-next-line no-console
-            console.log("[Search] remove from history →", name);
-          }}
-        />
-      ) : (
-        <div className="flex flex-col gap-[20px] pt-[14px]">
-          <StartBrowsing items={BROWSE} />
-          <RecentBigWins items={RECENT_BIG_WINS} />
-          <RecommendedForYou items={RECOMMENDED} />
-        </div>
-      )}
+      {/* Default state ↔ active "modal" state — crossfade so the
+          transition feels deliberate (matches the modal-style swap
+          rather than a hard cut). mode="wait" keeps them from
+          briefly stacking. */}
+      <AnimatePresence mode="wait" initial={false}>
+        {isActive ? (
+          <motion.div
+            key="active"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <RecentlySearched
+              items={RECENTLY_SEARCHED}
+              onRemove={(name) => {
+                // Stub — in a real build this would drop the item
+                // from the user's search history.
+                // eslint-disable-next-line no-console
+                console.log("[Search] remove from history →", name);
+              }}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="default"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col gap-[20px] pt-[14px]"
+          >
+            <StartBrowsing items={BROWSE} />
+            <RecentBigWins items={RECENT_BIG_WINS} />
+            <RecommendedForYou items={RECOMMENDED} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
