@@ -97,11 +97,9 @@ export function CasinoView() {
       <CategoryTabs tabs={CASINO_TABS} defaultTab="Home" />
 
       <div className="pt-[16px] flex flex-col gap-[18px]">
-        {/* Tinder-style swipeable hero. Sits with a small horizontal
-            inset so the card looks lifted off the page canvas. */}
-        <div className="px-[12px]">
-          <SwipeableHero games={HERO_DECK} />
-        </div>
+        {/* Tinder-style swipeable hero. The card handles its own
+            horizontal gutter (16px each side) inside SwipeableHero. */}
+        <SwipeableHero games={HERO_DECK} />
 
         {/* Game rails — small square thumbs. GameRail handles its own
             internal drag-to-scroll. */}
