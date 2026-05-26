@@ -29,23 +29,36 @@ import { useRef, useState } from "react";
  * Bottom nav is unchanged per the brief.
  */
 
-// Each tile's sticker is a single flattened PNG pulled from the
-// "Start Browsing assets" Figma frame (node 131:32203). The user
-// pre-composed the layered SVGs into single polished assets in
-// Figma, so we no longer have to stack 4 PNG layers per tile.
+// Each tile's sticker is built from one or more PNG layers, drawn
+// bottom-up (first item = back of the stack). The "flattened" SVG
+// exports from Figma turned out to be just the dark navy outline
+// layers, so we layer the colour body + details ourselves.
+//
+// Layers are positioned in PERCENTAGES of the sticker bounding box
+// so the same spec works at any rendered size — width:auto on each
+// layer preserves its native aspect ratio (so the crown gem doesn't
+// stretch into a fat ellipse, etc).
+type StickerLayer = {
+  src: string;
+  /** Horizontal anchor as % of the sticker bounding box width. */
+  leftPct: number;
+  /** Vertical anchor as % of the sticker bounding box height. */
+  topPct: number;
+  /** Layer width as % of the sticker bounding box width. */
+  widthPct: number;
+  /** Optional explicit height; if omitted, height: auto (image
+   *  keeps its native aspect ratio). */
+  heightPct?: number;
+};
 type TileSpec = {
   label: string;
   href: string;
-  sticker: string;
-  /** Sticker size + offset relative to the tile's right edge. */
   stickerW: number;
   stickerH: number;
   stickerRight: number;
   stickerTop: number;
   stickerRotate: number;
-  /** Bingo also needs the "22" text overlaid on the ball PNG (the
-   *  number is HTML text in the Figma source, not part of the ball
-   *  SVG). All other tiles set this false. */
+  layers: StickerLayer[];
   bingoText?: boolean;
 };
 
@@ -53,45 +66,62 @@ const BROWSE: TileSpec[] = [
   {
     label: "Casino",
     href: "/casino",
-    sticker: "/assets/search/sticker-casino.png",
     stickerW: 60,
     stickerH: 60,
     stickerRight: -4,
     stickerTop: -4,
     stickerRotate: 14,
+    // Single layer — the 7 SVG already has the pink fill + white
+    // outline + dark details baked in.
+    layers: [
+      { src: "/assets/search/sticker-casino.png", leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
+    ],
   },
   {
     label: "Live Casino",
     href: "/live",
-    sticker: "/assets/search/sticker-crown.png",
-    // Crown viewBox is 54.8 × 41.4 (wider than tall, ~1.32:1).
     stickerW: 70,
-    stickerH: 53,
+    stickerH: 58,
     stickerRight: -2,
-    stickerTop: 0,
+    stickerTop: -2,
     stickerRotate: -9,
+    // Bottom → top: shadow → yellow crown body → white highlights →
+    // dark navy gem ellipse pinned at the top centre.
+    layers: [
+      { src: "/assets/search/crown-shadow.png", leftPct: 8,  topPct: 76, widthPct: 78 },
+      { src: "/assets/search/crown-body.png",   leftPct: 0,  topPct: 8,  widthPct: 100 },
+      { src: "/assets/search/crown-hi.png",     leftPct: 0,  topPct: 8,  widthPct: 100 },
+      { src: "/assets/search/crown-gem.png",    leftPct: 20, topPct: 6,  widthPct: 60 },
+    ],
   },
   {
     label: "Bingo",
     href: "/bingo",
-    sticker: "/assets/search/sticker-bingo.png",
     stickerW: 54,
     stickerH: 54,
     stickerRight: 4,
     stickerTop: 2,
     stickerRotate: -17,
     bingoText: true,
+    layers: [
+      { src: "/assets/search/bingo-ball.png",  leftPct: 0,  topPct: 0,  widthPct: 100, heightPct: 100 },
+      { src: "/assets/search/bingo-inner.png", leftPct: 18, topPct: 18, widthPct: 64,  heightPct: 64 },
+      { src: "/assets/search/bingo-hi.png",    leftPct: 25, topPct: 32, widthPct: 38 },
+    ],
   },
   {
     label: "Arena",
     href: "/arena",
-    sticker: "/assets/search/sticker-fist.png",
-    // Fist viewBox is 38.5 × 65.4 (taller than wide, ~0.59:1).
     stickerW: 40,
     stickerH: 68,
     stickerRight: 6,
     stickerTop: -6,
     stickerRotate: 32,
+    // Body: pink fist. Detail: navy fingernails/cuff lines on top.
+    layers: [
+      { src: "/assets/search/fist-body.png",   leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
+      { src: "/assets/search/fist-detail.png", leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
+    ],
   },
 ];
 
@@ -306,9 +336,10 @@ function BrowseTile({ item }: { item: TileSpec }) {
       <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[13px] font-extrabold text-white z-10">
         {item.label}
       </span>
-      {/* Single flattened sticker PNG (pre-composed in Figma). The
+      {/* Sticker bounding box. Layers inside use percentage
+          positioning so the layout scales cleanly at any size; the
           tile's overflow-hidden clips anything bleeding past the
-          rounded-rect, same effect as the Figma mask group. */}
+          rounded-rect (mirrors the Figma mask group). */}
       <span
         aria-hidden
         className="absolute pointer-events-none"
@@ -320,21 +351,31 @@ function BrowseTile({ item }: { item: TileSpec }) {
           transform: `rotate(${item.stickerRotate}deg)`,
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.sticker}
-          alt=""
-          draggable={false}
-          className="h-full w-full select-none object-contain"
-        />
-        {/* Bingo gets the "22" rendered on top — the number is HTML
-            text in the Figma source, not part of the ball SVG. */}
+        {item.layers.map((layer, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={`${layer.src}-${i}`}
+            src={layer.src}
+            alt=""
+            draggable={false}
+            className="absolute select-none"
+            style={{
+              left: `${layer.leftPct}%`,
+              top: `${layer.topPct}%`,
+              width: `${layer.widthPct}%`,
+              // No height → height:auto so the layer keeps its native
+              // aspect ratio. Explicit height only when the layer is
+              // square-ish and we want it constrained.
+              height: layer.heightPct ? `${layer.heightPct}%` : "auto",
+            }}
+          />
+        ))}
         {item.bingoText && (
           <span
             className="absolute font-extrabold leading-none"
             style={{
-              top: "21px",
-              left: "19px",
+              top: "37%",
+              left: "32%",
               color: "#0B2595",
               fontSize: "16px",
               transform: "rotate(-14deg)",
