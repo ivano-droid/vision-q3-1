@@ -32,10 +32,15 @@ type Tab = {
   Icon: React.ComponentType<{ className?: string }>;
 };
 
+// Tab keys still mirror the route segments (lobby = /, search-page
+// = /search, discover-page = /discover) for active-state matching;
+// only the visible labels + icons have moved. If we later want
+// `/search` → `/games` and `/discover` → `/for-you` as real URLs,
+// those are file-rename moves under src/app/.
 const TABS: Tab[] = [
-  { key: "lobby", href: "/", label: "Lobby", Icon: HomeIcon },
-  { key: "search", href: "/search", label: "Search", Icon: SearchIcon },
-  { key: "discover", href: "/discover", label: "Discover", Icon: DiscoverIcon },
+  { key: "lobby", href: "/", label: "Home", Icon: HomeIcon },
+  { key: "search", href: "/search", label: "Games", Icon: GamesIcon },
+  { key: "discover", href: "/discover", label: "For You", Icon: ForYouIcon },
   { key: "rewards", href: "/rewards", label: "Rewards", Icon: GiftIcon },
 ];
 
@@ -175,48 +180,41 @@ function HomeIcon({ className }: { className?: string }) {
   );
 }
 
-function SearchIcon({ className }: { className?: string }) {
+function GamesIcon({ className }: { className?: string }) {
+  // 2×2 grid of rounded tiles — reads as "games catalogue" rather
+  // than the old magnifying glass (which made sense for Search but
+  // not for the relabelled Games tab).
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden
       focusable={false}
     >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
+      <rect x="3" y="3" width="8" height="8" rx="2" />
+      <rect x="13" y="3" width="8" height="8" rx="2" />
+      <rect x="3" y="13" width="8" height="8" rx="2" />
+      <rect x="13" y="13" width="8" height="8" rx="2" />
     </svg>
   );
 }
 
-function DiscoverIcon({ className }: { className?: string }) {
-  // Compass — clearer "discover/explore" affordance. The lightning
-  // bolt we shipped first was reading as a play triangle on the
-  // bar (and confusingly close to the play CTA on the hero card).
+function ForYouIcon({ className }: { className?: string }) {
+  // Sparkle — iOS / Apple Music convention for personalised "For
+  // You" sections. Big star + one small accent star for the
+  // "twinkle" hint, the same idiom Apple uses on the For You
+  // tab in Music + the lightning-style favourites in Photos.
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden
       focusable={false}
     >
-      <circle cx="12" cy="12" r="9" />
-      {/* Needle: a slim rhombus pointing NNE */}
-      <path
-        d="m15.3 8.7-2.3 5.6-5.6 2.3 2.3-5.6 5.6-2.3Z"
-        fill="currentColor"
-        stroke="none"
-      />
+      <path d="M11 2.5l1.9 5.1L18 9.5l-5.1 1.9L11 16.5l-1.9-5.1L4 9.5l5.1-1.9L11 2.5Z" />
+      <path d="M18.5 14.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9.9-2.4Z" />
     </svg>
   );
 }
