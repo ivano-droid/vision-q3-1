@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
@@ -65,7 +66,10 @@ export function QClubCard() {
           // the page canvas without competing with the rails' own
           // tile shadows.
           boxShadow: "0 12px 28px -16px rgba(10, 46, 203, 0.45)",
-          aspectRatio: "357 / 269",
+          // Was 357/269 — pushed taller so the See all Rewards button
+          // gets clear breathing room above it (Figma version had the
+          // CTA crashing into the reward-tile sub-line).
+          aspectRatio: "357 / 290",
         }}
       >
         {/* Backdrop W-gradient — the dark "diamond" shape baked into
@@ -86,7 +90,7 @@ export function QClubCard() {
         <div
           className="absolute left-1/2 -translate-x-1/2"
           style={{
-            top: `${(14 / 269) * 100}%`,
+            top: `${(14 / 290) * 100}%`,
             width: `${(224 / 357) * 100}%`,
             aspectRatio: "224 / 49",
           }}
@@ -102,7 +106,7 @@ export function QClubCard() {
         {/* Two reward cards, side-by-side. */}
         <div
           className="absolute left-0 right-0 grid grid-cols-2 gap-[14px] px-[11px]"
-          style={{ top: `${(76 / 269) * 100}%` }}
+          style={{ top: `${(76 / 290) * 100}%` }}
         >
           {REWARDS.map((reward) => (
             <RewardTile key={reward.label} reward={reward} />
@@ -110,18 +114,19 @@ export function QClubCard() {
         </div>
 
         {/* "See all Rewards" — full-width white pill button anchored
-            to the bottom of the card. */}
-        <button
-          type="button"
-          className="absolute left-[14px] right-[14px] h-[48px] rounded-[12px] bg-white text-[18px] font-extrabold text-[var(--mrq-blue)] active:scale-[0.98] transition-transform"
+            to the bottom of the card. Drops the user onto /rewards. */}
+        <Link
+          href="/rewards"
+          aria-label="See all Rewards"
+          className="absolute left-[14px] right-[14px] h-[48px] rounded-[12px] bg-white grid place-items-center text-[18px] font-extrabold text-[var(--mrq-blue)] active:scale-[0.98] transition-transform"
           style={{
-            bottom: `${(14 / 269) * 100}%`,
+            bottom: `${(14 / 290) * 100}%`,
             letterSpacing: "-0.01em",
             boxShadow: "0 2px 8px -4px rgba(0, 0, 0, 0.18)",
           }}
         >
           See all Rewards
-        </button>
+        </Link>
       </div>
     </motion.section>
   );

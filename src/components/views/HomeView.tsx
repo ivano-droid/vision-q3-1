@@ -14,9 +14,9 @@ import { QClubCard } from "@/components/QClubCard";
  *   1. HeroCarousel                — landscape promo cards (snap rail)
  *   2. Recently Played Games        — 2×2 grid of recent games
  *   3. Your recent big wins        — horiz scroll w/ £ prize pills
- *   4. The Q Club                  — rewards card (Figma 203:42091)
- *   5. Same vibe as <game>         — horiz scroll large landscape promos
- *   6. Hot right now               — horiz scroll square game tiles
+ *   4. Same vibe as <game>         — horiz scroll large landscape promos
+ *   5. Hot right now               — horiz scroll square game tiles
+ *   6. The Q Club                  — rewards card (Figma 203:42091)
  *   7. Latest big wins             — horiz scroll social-style win cards
  *
  * Each section component owns its own padding + title style; this
@@ -105,11 +105,6 @@ export function HomeView() {
 
       <BigWinsRow title="Your recent big wins" items={RECENT_WINS} />
 
-      {/* The Q Club rewards card — sits in the slot the old "You've
-          got 100 free spins" banner used to occupy. Mid-feed feature
-          block between the big-wins row and the Same Vibe rail. */}
-      <QClubCard />
-
       <SameVibeRail
         title="Same vibe as Tiki Tumble"
         items={SAME_VIBE_TIKI_TUMBLE}
@@ -121,6 +116,11 @@ export function HomeView() {
         tileWidth={109}
         tileHeight={109}
       />
+
+      {/* The Q Club rewards card — sits below the Hot right now rail
+          as a mid-to-lower-feed feature block, leading into the
+          Latest big wins social row at the very bottom. */}
+      <QClubCard />
 
       <LatestBigWinsRow title="Latest big wins" items={LATEST_WINS} />
     </>
