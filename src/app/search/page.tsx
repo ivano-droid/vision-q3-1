@@ -3,6 +3,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import {
+  CategoryMegaCardsRail,
+  type MegaCardCategory,
+} from "@/components/rails/CategoryMegaCardsRail";
+import { GameRail } from "@/components/rails/GameRail";
+import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
 
 /**
  * Search page — full route.
@@ -125,21 +131,97 @@ const BROWSE: TileSpec[] = [
   },
 ];
 
-const RECENT_BIG_WINS: Array<{ src: string; alt: string; prize: string }> = [
-  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£32.34" },
-  { src: "/assets/games/slot-08.png", alt: "Golden Catch", prize: "£28.55" },
-  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£31.19" },
-  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£24.80" },
-  { src: "/assets/games/slot-01.png", alt: "Buffalo Bills", prize: "£18.50" },
+// Game tile pools — small re-usable arrays for the Hot Right Now,
+// Slots, Quick games and Live Casino rails. Tiles are 109×109
+// square (matches the lobby's "Hot right now" rail).
+const G = (i: number, alt: string) => ({
+  src: `/assets/games/slot-${String(i).padStart(2, "0")}.png`,
+  alt,
+});
+
+const TILES_HOT = [
+  G(1, "Buffalo Bills"),
+  G(7, "Mummy Mania"),
+  G(11, "Maze Escape"),
+  G(13, "Snake Arena"),
+  G(4, "Jewel Stepper"),
+  G(8, "Tiki Tumble"),
 ];
 
-const RECOMMENDED: Array<{ src: string; name: string }> = [
-  { src: "/assets/games/slot-04.png", name: "Jewel Stepper" },
-  { src: "/assets/games/slot-08.png", name: "Tiki Tumble" },
-  { src: "/assets/games/slot-13.png", name: "Big Bass Real Repeat" },
-  { src: "/assets/games/slot-04.png", name: "Jewel Stepper" },
-  { src: "/assets/games/slot-08.png", name: "Tiki Tumble" },
-  { src: "/assets/games/slot-13.png", name: "Big Bass Real Repeat" },
+const TILES_SLOTS = [
+  G(4, "Jewel Stepper"),
+  G(8, "Tiki Tumble"),
+  G(13, "Snake Arena"),
+  G(11, "Maze Escape"),
+  G(1, "Buffalo Bills"),
+  G(7, "Mummy Mania"),
+];
+
+const TILES_QUICK = [
+  G(13, "Snake Arena"),
+  G(11, "Maze Escape"),
+  G(1, "Buffalo Bills"),
+  G(4, "Jewel Stepper"),
+  G(8, "Tiki Tumble"),
+  G(7, "Mummy Mania"),
+];
+
+const TILES_LIVE = [
+  G(8, "Tiki Tumble"),
+  G(11, "Maze Escape"),
+  G(1, "Buffalo Bills"),
+  G(13, "Snake Arena"),
+  G(7, "Mummy Mania"),
+  G(4, "Jewel Stepper"),
+];
+
+// Category mega-cards (Casino, Live Casino, Bingo, Arena) — each is
+// a wide card with a category sticker + a small embedded grid of 6
+// games. Stickers reuse the single-layer PNGs already exported from
+// Figma; multi-layer compositing (gem/shadow/highlight) is reserved
+// for the Start Browsing tiles where the sticker is the focal point.
+const MEGA_CATEGORIES: MegaCardCategory[] = [
+  {
+    key: "casino",
+    title: "Casino",
+    subtitle: "Hot right now",
+    sticker: "/assets/search/sticker-casino.png",
+    tiles: TILES_HOT.slice(0, 6),
+  },
+  {
+    key: "live",
+    title: "Live Casino",
+    subtitle: "Hot right now",
+    sticker: "/assets/search/crown-body.png",
+    tiles: TILES_LIVE.slice(0, 6),
+  },
+  {
+    key: "bingo",
+    title: "Bingo",
+    subtitle: "Hot right now",
+    sticker: "/assets/search/bingo-ball.png",
+    tiles: TILES_SLOTS.slice(0, 6),
+  },
+  {
+    key: "arena",
+    title: "Arena",
+    subtitle: "Hot right now",
+    sticker: "/assets/search/fist-body.png",
+    tiles: TILES_QUICK.slice(0, 6),
+  },
+];
+
+// Browse all themes — 8 themed entry points, 2 columns. Each card
+// shows a fan of 3 thumbnails as a tease for the theme's content.
+const THEMES: Theme[] = [
+  { key: "animal",  label: "Animal",  thumbs: ["/assets/games/slot-08.png", "/assets/games/slot-04.png", "/assets/games/slot-13.png"] },
+  { key: "fishing", label: "Fishing", thumbs: ["/assets/games/slot-13.png", "/assets/games/slot-08.png", "/assets/games/slot-11.png"] },
+  { key: "history", label: "History", thumbs: ["/assets/games/slot-07.png", "/assets/games/slot-01.png", "/assets/games/slot-04.png"] },
+  { key: "jungle",  label: "Jungle",  thumbs: ["/assets/games/slot-11.png", "/assets/games/slot-13.png", "/assets/games/slot-08.png"] },
+  { key: "west",    label: "West",    thumbs: ["/assets/games/slot-01.png", "/assets/games/slot-04.png", "/assets/games/slot-07.png"] },
+  { key: "dragons", label: "Dragons", thumbs: ["/assets/games/slot-13.png", "/assets/games/slot-11.png", "/assets/games/slot-01.png"] },
+  { key: "horror",  label: "Horror",  thumbs: ["/assets/games/slot-07.png", "/assets/games/slot-13.png", "/assets/games/slot-08.png"] },
+  { key: "aliens",  label: "Aliens",  thumbs: ["/assets/games/slot-04.png", "/assets/games/slot-08.png", "/assets/games/slot-11.png"] },
 ];
 
 // Stub data for the "Recently searched" takeover state — would be
@@ -244,11 +326,14 @@ export default function SearchPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col gap-[20px] pt-[14px]"
+            className="flex flex-col pt-[14px]"
           >
             <StartBrowsing items={BROWSE} />
-            <RecentBigWins items={RECENT_BIG_WINS} />
-            <RecommendedForYou items={RECOMMENDED} />
+            <CategoryMegaCardsRail categories={MEGA_CATEGORIES} />
+            <GameRail title="Slots" tiles={TILES_SLOTS} tileWidth={109} tileHeight={109} />
+            <GameRail title="Quick games" tiles={TILES_QUICK} tileWidth={109} tileHeight={109} />
+            <GameRail title="Live Casino tables" tiles={TILES_LIVE} tileWidth={109} tileHeight={109} />
+            <ThemesGrid items={THEMES} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -388,87 +473,6 @@ function BrowseTile({ item }: { item: TileSpec }) {
         )}
       </span>
     </Link>
-  );
-}
-
-function RecentBigWins({ items }: { items: typeof RECENT_BIG_WINS }) {
-  return (
-    <section>
-      <h2 className="px-[16px] pb-[10px] text-[16px] font-extrabold text-[var(--mrq-blue-dark)]">
-        Recent big wins
-      </h2>
-      <div
-        className="no-scrollbar flex gap-[12px] overflow-x-auto pl-[16px] pr-[16px] pb-[14px]"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {items.map((win, i) => (
-          <WinCard key={`${win.alt}-${i}`} win={win} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function WinCard({ win }: { win: (typeof RECENT_BIG_WINS)[number] }) {
-  return (
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        className="block size-[109px] overflow-hidden rounded-[12px] active:scale-[0.98] transition-transform"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={win.src}
-          alt={win.alt}
-          draggable={false}
-          className="h-full w-full object-cover pointer-events-none"
-        />
-      </button>
-      <div
-        className="absolute -bottom-[10px] left-1/2 -translate-x-1/2 rounded-full bg-white px-[10px] py-[3px]"
-        style={{ boxShadow: "0 4px 10px -4px rgba(10, 46, 203, 0.18)" }}
-      >
-        <span className="text-[13px] font-extrabold text-[var(--mrq-blue)]">
-          {win.prize}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function RecommendedForYou({ items }: { items: typeof RECOMMENDED }) {
-  return (
-    <section className="pb-[6px]">
-      <h2 className="px-[16px] pb-[10px] text-[16px] font-extrabold text-[var(--mrq-blue-dark)]">
-        Recommended for you
-      </h2>
-      <ul className="flex flex-col gap-[10px] px-[16px]">
-        {items.map((rec, i) => (
-          <li key={`${rec.name}-${i}`}>
-            <button
-              type="button"
-              className="flex w-full items-center gap-[14px] rounded-[8px] bg-white pl-[6px] pr-[14px] h-[45px] text-left active:scale-[0.99] transition-transform"
-            >
-              <span className="relative h-[38px] w-[38px] shrink-0 overflow-hidden rounded-[4px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={rec.src}
-                  alt=""
-                  draggable={false}
-                  className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                />
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[13px] font-extrabold text-[#0e1120]">
-                {rec.name}
-              </span>
-              <span className="text-[14px] font-extrabold text-[var(--mrq-blue)]">
-                Play
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 
