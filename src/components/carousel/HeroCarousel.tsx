@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
-import { useFilter } from "@/lib/filter-context";
+import { useShell } from "@/lib/filter-context";
 
 /**
  * Hero promo carousel — landscape PNG cards just below the filter band.
@@ -61,40 +61,12 @@ const CARD_ASPECT = 303 / 162;
 // rather than bleeding past it on a centre-origin scale.
 const ACTIVE_SCALE = 1.04;
 
-// Hysteresis for the scroll-off behaviour. Hide once we're a few
-// pixels in, reveal only when fully back at the top.
-const HIDE_AT = 8;
-const REVEAL_AT = 2;
-
 export function HeroCarousel() {
   const railRef = useDraggableScroll<HTMLDivElement>();
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const reduce = useReducedMotion();
-  const { bootDone } = useFilter();
-
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    let frame = 0;
-    const onScroll = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        const y = window.scrollY;
-        setVisible((curr) => {
-          if (curr && y > HIDE_AT) return false;
-          if (!curr && y <= REVEAL_AT) return true;
-          return curr;
-        });
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
+  const { bootDone } = useShell();
 
   // Active-card detection — find whichever card is closest to the
   // rail's centre line on every horizontal scroll. The active card
@@ -131,24 +103,18 @@ export function HeroCarousel() {
   }, [railRef]);
 
   const dealIn = reduce || bootDone;
-  const hiddenTransform = reduce
-    ? { opacity: 0, y: 0 }
-    : { opacity: 0, y: -32 };
 
   return (
     <motion.section
       aria-label="Featured promotions"
-      className="relative overflow-hidden"
+      className="relative"
       initial={reduce ? false : { opacity: 0, y: 24, scale: 0.96 }}
       animate={
-        !dealIn
-          ? { opacity: 0, y: 24, scale: 0.96 }
-          : visible
-            ? { opacity: 1, y: 0, scale: 1, height: "auto" }
-            : { ...hiddenTransform, height: 0, scale: 1 }
+        dealIn
+          ? { opacity: 1, y: 0, scale: 1 }
+          : { opacity: 0, y: 24, scale: 0.96 }
       }
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      style={{ pointerEvents: visible ? "auto" : "none" }}
     >
       <div
         ref={railRef}

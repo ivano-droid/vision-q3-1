@@ -32,9 +32,13 @@ export type RecentlyPlayedGame = {
 
 export function RecentlyPlayedGrid({
   items,
+  title = "Recently played",
+  seeAllLabel = "Show all",
   showSeeAll = true,
 }: {
   items: RecentlyPlayedGame[];
+  title?: string;
+  seeAllLabel?: string;
   showSeeAll?: boolean;
 }) {
   const reduce = useReducedMotion();
@@ -82,7 +86,7 @@ export function RecentlyPlayedGrid({
 
   return (
     <motion.section
-      aria-label="Recently played"
+      aria-label={title}
       className="px-[16px] py-3"
       initial={reduce ? false : "hidden"}
       animate={reduce || bootDone ? "visible" : "hidden"}
@@ -94,14 +98,14 @@ export function RecentlyPlayedGrid({
         variants={titleVariants}
       >
         <h2 className="text-[18px] font-extrabold text-[var(--mrq-blue)]">
-          Recently played
+          {title}
         </h2>
         {showSeeAll && (
           <button
             type="button"
             className="text-[14px] font-extrabold text-[var(--mrq-blue)]"
           >
-            Show all
+            {seeAllLabel}
           </button>
         )}
       </motion.div>
