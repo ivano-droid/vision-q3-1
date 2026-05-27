@@ -24,12 +24,17 @@ export function GameRail({
   tileWidth,
   tileHeight,
   showSeeAll = true,
+  onSeeAll,
 }: {
   title: string;
   tiles: { src: string; alt: string }[];
   tileWidth: number;
   tileHeight: number;
   showSeeAll?: boolean;
+  /** Optional click handler for the "See all" button. When omitted the
+   *  button is still rendered (if `showSeeAll`) but does nothing —
+   *  useful for prototype rails without dedicated landing pages. */
+  onSeeAll?: () => void;
 }) {
   const railRef = useDraggableScroll<HTMLDivElement>();
   const reduce = useReducedMotion();
@@ -97,6 +102,7 @@ export function GameRail({
         {showSeeAll && (
           <button
             type="button"
+            onClick={onSeeAll}
             className="text-[14px] font-extrabold text-[var(--mrq-blue)]"
           >
             See all

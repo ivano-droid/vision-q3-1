@@ -8,10 +8,13 @@ import { useEffect, useRef, useState } from "react";
  * Lobby category pills — Casino / Live / Bingo / Arena.
  *
  * Hides on scroll-down and reveals on scroll-up (iOS-style sticky band).
- * Each pill is a `<Link>` to its dedicated route (`/casino`, `/live`,
- * `/bingo`, `/arena`) — previously they toggled a filter state in
- * context, but each vertical now has its own real page so navigation
- * goes through the router.
+ *
+ * Only the Casino pill currently links to a real route (`/casino`).
+ * Live, Bingo, and Arena are kept in the band as visual placeholders
+ * but their pages have been removed while we focus on perfecting the
+ * Casino flow — so they render as inert buttons (no href, no nav). Once
+ * those verticals are designed they can become `<Link>`s again by
+ * filling in the `href` prop on FilterPill below.
  *
  * Rendered ONLY on the Lobby page (imported by `src/app/page.tsx`).
  * Other routes don't show these pills — they have their own designs.
@@ -84,9 +87,10 @@ export function ScrollAwareFilters() {
       <div className="px-[16px] pb-[12px]">
         <nav className="flex items-center gap-[6px]" aria-label="Categories">
           <FilterPill href="/casino" label="Casino" />
-          <FilterPill href="/bingo" label="Bingo" />
-          <FilterPill href="/live" label="Live" />
-          <FilterPill href="/arena" label="Arena" />
+          {/* Inert until the corresponding routes return. */}
+          <FilterPill label="Bingo" />
+          <FilterPill label="Live" />
+          <FilterPill label="Arena" />
         </nav>
       </div>
     </motion.div>
@@ -110,30 +114,45 @@ export function ScrollAwareFilters() {
  *   5. `0 4px 10px -4px rgba(0,0,0,0.18)` — outer shadow grounds it
  *      against the deep-blue header.
  */
-function FilterPill({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-1 min-w-0 items-center justify-center rounded-full h-[36px] px-[14px] active:scale-[0.96] transition-transform"
-      style={{
-        backgroundColor: "rgba(255, 255, 255, 0.14)",
-        border: "1px solid rgba(255, 255, 255, 0.18)",
-        backdropFilter: "blur(20px) saturate(140%)",
-        WebkitBackdropFilter: "blur(20px) saturate(140%)",
-        // Softer highlight + shadow now that the pill is thinner —
-        // the previous values were tuned for a chunkier CTA-style
-        // pill and looked too lifted on a 36px filter chip.
-        boxShadow:
-          "inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 2px 6px -2px rgba(0, 0, 0, 0.14)",
-        color: "#ffffff",
-      }}
+function FilterPill({ href, label }: { href?: string; label: string }) {
+  // Pill chrome is identical whether the pill is a real link or an
+  // inert placeholder — only the wrapping element differs. Pulling the
+  // shared className/style out keeps the two branches in lockstep so a
+  // later tweak (e.g. press-state animation) doesn't drift between
+  // them.
+  const className =
+    "flex flex-1 min-w-0 items-center justify-center rounded-full h-[36px] px-[14px] active:scale-[0.96] transition-transform";
+  const style = {
+    backgroundColor: "rgba(255, 255, 255, 0.14)",
+    border: "1px solid rgba(255, 255, 255, 0.18)",
+    backdropFilter: "blur(20px) saturate(140%)",
+    WebkitBackdropFilter: "blur(20px) saturate(140%)",
+    boxShadow:
+      "inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 2px 6px -2px rgba(0, 0, 0, 0.14)",
+    color: "#ffffff",
+  } as const;
+  const labelEl = (
+    <span
+      className="text-[14px] leading-none font-extrabold whitespace-nowrap"
+      style={{ letterSpacing: "0.01em" }}
     >
-      <span
-        className="text-[14px] leading-none font-extrabold whitespace-nowrap"
-        style={{ letterSpacing: "0.01em" }}
-      >
-        {label}
-      </span>
+      {label}
+    </span>
+  );
+
+  if (!href) {
+    // No destination yet — render as an inert button so the pill still
+    // gets pressed-state feedback but never navigates.
+    return (
+      <button type="button" className={className} style={style} aria-disabled>
+        {labelEl}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={href} className={className} style={style}>
+      {labelEl}
     </Link>
   );
 }

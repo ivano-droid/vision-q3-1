@@ -21,7 +21,12 @@ import { useEffect, useState } from "react";
  *     — pointer-events:none so they DON'T interfere with the drag;
  *     they're visual affordances, not buttons
  *   • Title + RTP block at the bottom-left
- *   • LIKE / NOPE stamps that appear during drag (Tinder style)
+ *
+ * The LIKE / NOPE stamps that used to overlay the card during drag were
+ * removed (per design feedback that the page felt cluttered) — users
+ * are expected to discover the swipe gesture themselves. The drag
+ * physics still distinguish past-threshold vs. snap-back; only the
+ * visual stamps are gone.
  *
  * Interactions:
  *   • Tap (no drag)        → open game (stub: console.log)
@@ -30,19 +35,14 @@ import { useEffect, useState } from "react";
  *
  * Implementation notes:
  *   • The drag MotionValue lives at the SwipeableHero level so the
- *     stamps inside the card can read it without prop-drilling through
- *     CardSurface — affordance opacity is computed once at the parent
- *     and passed in.
+ *     parent can read it for any future drag-tied effects without
+ *     prop-drilling through CardSurface.
  *   • CardSurface internals are `pointer-events: none` everywhere
  *     except the motion.div itself, so the drag captures every touch
  *     on the card. The Info/Heart/Play icons are visual only.
- *   • The discoverability "pulse" on first mount is now ~2.5s (was
- *     1.6s) so the user has more time to register the affordances.
- *     `Math.max`-combined with the drag-tied opacity so dragging
- *     immediately overrides the pulse.
  *   • Snap-back spring on cancel is softer (stiffness 300, damping 38)
- *     so the stamps fade out more gracefully when the user releases
- *     under the threshold.
+ *     so the card settles gracefully when the user releases under the
+ *     threshold.
  */
 
 export type HeroGame = {
@@ -64,38 +64,9 @@ export function SwipeableHero({ games }: { games: HeroGame[] }) {
   const current = games[index % games.length];
   const next = games[(index + 1) % games.length];
 
-  // Shared MotionValue. SwipeCard binds its drag to this; the stamps
-  // inside the card surface read from it via useTransform.
+  // Shared MotionValue. SwipeCard binds its drag to this; kept at the
+  // parent so future siblings (e.g. progress dots) could read it.
   const x = useMotionValue(0);
-
-  // Drag-tied opacities for the LIKE/NOPE stamps on the card. Hit full
-  // opacity right at the commit threshold so the stamp = clean promise
-  // of what's about to happen on release.
-  const playOpacityFromDrag = useTransform(x, [10, 100], [0, 1]);
-  const nopeOpacityFromDrag = useTransform(x, [-100, -10], [1, 0]);
-
-  // One-off discoverability pulse — only fires for the very first
-  // card on mount. Both stamps fade in to ~40% over 2.5s so the user
-  // has plenty of time to see "you can swipe left or right".
-  const hintOpacity = useMotionValue(0);
-  useEffect(() => {
-    if (index !== 0) return;
-    const controls = animate(hintOpacity, [0, 0.4, 0.4, 0], {
-      duration: 2.5,
-      times: [0, 0.15, 0.78, 1],
-      ease: "easeOut",
-    });
-    return () => controls.stop();
-  }, [index, hintOpacity]);
-
-  const playOpacity = useTransform(
-    [playOpacityFromDrag, hintOpacity],
-    ([drag, hint]) => Math.max(drag as number, hint as number),
-  );
-  const nopeOpacity = useTransform(
-    [nopeOpacityFromDrag, hintOpacity],
-    ([drag, hint]) => Math.max(drag as number, hint as number),
-  );
 
   return (
     <div
@@ -121,8 +92,6 @@ export function SwipeableHero({ games }: { games: HeroGame[] }) {
         key={`top-${index}`}
         x={x}
         game={current}
-        playOpacity={playOpacity}
-        nopeOpacity={nopeOpacity}
         onSwiped={() => setIndex((i) => i + 1)}
         onTap={() => {
           if (typeof window !== "undefined") {
@@ -161,15 +130,11 @@ function NextCardPreview({ game }: { game: HeroGame }) {
 function SwipeCard({
   game,
   x,
-  playOpacity,
-  nopeOpacity,
   onSwiped,
   onTap,
 }: {
   game: HeroGame;
   x: MotionValue<number>;
-  playOpacity: MotionValue<number>;
-  nopeOpacity: MotionValue<number>;
   onSwiped: () => void;
   onTap: () => void;
 }) {
@@ -209,56 +174,12 @@ function SwipeCard({
           });
         } else {
           // Snap back to centre. Softer spring (300 / 38) than the
-          // previous 420 / 32 — feels more elastic and means the
-          // stamps fade out a touch more gracefully.
+          // previous 420 / 32 — feels more elastic.
           animate(x, 0, { type: "spring", stiffness: 300, damping: 38 });
         }
       }}
     >
       <CardSurface game={game} />
-
-      {/* LIKE / NOPE stamps overlaid on the card. Tinder style: tilted,
-          chunky outlined badges that pop in as the user drags. They
-          rotate with the card (because they're children of the drag
-          layer), reinforcing the "stamp on a moving card" effect. */}
-      <Stamp side="left" opacity={nopeOpacity} ringColor="#ff4259">
-        <CrossIcon className="size-[36px] text-[#ff4259]" />
-      </Stamp>
-      <Stamp side="right" opacity={playOpacity} ringColor="var(--mrq-blue)">
-        <PlayIcon className="size-[34px] text-mrq-blue translate-x-[3px]" />
-      </Stamp>
-    </motion.div>
-  );
-}
-
-function Stamp({
-  side,
-  opacity,
-  ringColor,
-  children,
-}: {
-  side: "left" | "right";
-  opacity: MotionValue<number>;
-  ringColor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.div
-      aria-hidden
-      className="absolute top-[20px] grid place-items-center pointer-events-none"
-      style={{
-        [side]: "20px",
-        width: "80px",
-        height: "80px",
-        borderRadius: "9999px",
-        backgroundColor: "rgba(255, 255, 255, 0.94)",
-        border: `3px solid ${ringColor}`,
-        boxShadow: "0 10px 24px -10px rgba(0, 0, 0, 0.35)",
-        rotate: side === "left" ? "-14deg" : "14deg",
-        opacity,
-      }}
-    >
-      {children}
     </motion.div>
   );
 }
@@ -387,24 +308,6 @@ function generateStarClip(points: number, innerR: number, outerR: number): strin
 }
 
 /* ----------- Inline icons ----------- */
-
-function CrossIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-      focusable={false}
-    >
-      <path d="m6 6 12 12M18 6 6 18" />
-    </svg>
-  );
-}
 
 function PlayIcon({ className }: { className?: string }) {
   return (

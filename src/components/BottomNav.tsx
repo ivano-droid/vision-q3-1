@@ -49,10 +49,10 @@ const TABS: Tab[] = [
 ];
 
 /** Which tab is "active" given the current pathname. Only the four
- *  top-level destinations light their tab. Category pages (/casino,
- *  /live, /bingo, /arena) return `null` — the user is "inside" one
- *  of the verticals, no bottom-nav tab represents that, so none are
- *  lit. (Previously these defaulted to "lobby"; the user noted it
+ *  top-level destinations light their tab. Category pages (`/casino`
+ *  and its `[category]` subpaths) return `null` — the user is "inside"
+ *  one of the verticals, no bottom-nav tab represents that, so none
+ *  are lit. (Previously these defaulted to "lobby"; the user noted it
  *  felt wrong since they're on a Casino page, not on the Lobby.) */
 function activeTabFor(pathname: string): string | null {
   if (pathname === "/" || pathname === "") return "lobby";

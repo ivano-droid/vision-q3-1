@@ -1,52 +1,51 @@
 "use client";
 
-import { CategoryTabs } from "../CategoryTabs";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { SwipeableHero, type HeroGame } from "../SwipeableHero";
 import { GameRail } from "@/components/rails/GameRail";
+import { Top10Rail } from "@/components/rails/Top10Rail";
+import { CategoriesSheet } from "../CategoriesSheet";
+import {
+  CATEGORIES,
+  CATEGORY_RAIL_TILES,
+  ctaLabelFor,
+  tileSet,
+} from "@/lib/casino-categories";
 
 /**
  * Casino category page.
  *
  *   ┌──────────────────────────────────────┐
- *   │  ← Casino                  £113.59 ▢ │  ← BrandBar (shared)
+ *   │  ←                          £113.59 ▢│  ← BrandBar (back arrow only)
  *   ├──────────────────────────────────────┤
- *   │  Home  Featured  New  Jackpot  …    │  ← CategoryTabs (sticky)
+ *   │  Casino                 Categories+  │  ← In-page header
  *   ├──────────────────────────────────────┤
  *   │  ┌────────────────────────────────┐  │
- *   │  │  exclusive   [hero artwork]    │  │
- *   │  │              ⓘ ♡ ▶︎            │  │  ← Swipeable hero
- *   │  │  Buffalo Bills · RTP 95%      │  │
+ *   │  │  [hero artwork]                │  │  ← Swipeable hero
  *   │  └────────────────────────────────┘  │
  *   ├──────────────────────────────────────┤
- *   │  Recently played Casino    Show all  │
- *   │  ▢▢▢▢▢▢…                            │  ← Game rails
+ *   │  Top 10 Casino Games      See all    │
+ *   │  ⓵▢ ⓶▢ ⓷▢ ⓸▢ ⓹▢ …                  │  ← Top 10 rail
+ *   │  New                      See all    │
+ *   │  ▢▢▢▢▢▢…                            │  ← Sub-category rails
+ *   │  Jackpot                  See all    │
+ *   │  ▢▢▢▢▢▢…                            │
+ *   │  Megaways                 See all    │
+ *   │  ▢▢▢▢▢▢…                            │
+ *   │  Slingo                   See all    │
+ *   │  ▢▢▢▢▢▢…                            │
  *   └──────────────────────────────────────┘
  *
- * The sub-tabs (Home / Featured / New / …) are visual + state-only
- * for now — they don't change the rails yet. Real per-tab content is
- * a follow-up; the scaffold's job is to land the chrome.
+ * The "Categories+" pill opens the CategoriesSheet bottom sheet, which
+ * filters the rails to the chosen sub-category (e.g. "Jackpots+") while
+ * keeping the user on `/casino`. Each rail's "See all" link still takes
+ * the user to the dedicated /casino/[category] page.
+ *
+ * Selecting "All games" from the sheet clears the filter, returning to
+ * the full multi-rail feed.
  */
 
-const CASINO_TABS = [
-  "Home",
-  "Featured",
-  "New",
-  "Jackpot",
-  "Megaways",
-  "Slingo",
-  "Tables",
-  "Live",
-];
-
-// Build the swipeable hero deck. The card is now 4:3 landscape (per
-// design feedback that the previous 2:3 portrait was too tall) so
-// we use only the landscape/wider promo art that fits naturally:
-//   birds-on-a-wire  800×600  → 4:3, perfect fit
-//   south-park       362×272  → 4:3, perfect fit
-//   fruit-warp       400×225  → 16:9, minor side crop
-//   wild-swarm       300×300  → 1:1,  small top/bottom crop
-// Slot-XX (2:3 portrait) artwork doesn't suit a landscape hero — it
-// gets harshly cropped — so it's dropped from the deck for now.
 const HERO_DECK: HeroGame[] = [
   {
     src: "/assets/games/birds-on-a-wire.png",
@@ -76,56 +75,79 @@ const HERO_DECK: HeroGame[] = [
   },
 ];
 
-const RECENTLY_PLAYED = [1, 2, 3, 4, 5, 6, 7].map((i) => ({
-  src: `/assets/games/slot-${String(i).padStart(2, "0")}.png`,
-  alt: `Recently played ${i}`,
-}));
-
-const FEATURED = [8, 9, 10, 11, 12, 13, 1].map((i) => ({
-  src: `/assets/games/slot-${String(i).padStart(2, "0")}.png`,
-  alt: `Featured ${i}`,
-}));
-
-const CLASSICS = [3, 5, 7, 2, 4, 6, 8].map((i) => ({
-  src: `/assets/games/slot-${String(i).padStart(2, "0")}.png`,
-  alt: `Classic ${i}`,
-}));
+// Top 10 is a cross-category curated feed, independent of the filter.
+const TOP_10 = tileSet([1, 4, 7, 2, 9, 11, 13, 5, 8, 3], "Top 10");
 
 export function CasinoView() {
+  const router = useRouter();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const ctaLabel = useMemo(() => ctaLabelFor(selected), [selected]);
+
+  // When a sub-category is active, show only that rail. Otherwise show
+  // all of them in CATEGORIES order. Top 10 is shown either way.
+  const visibleCategories = selected
+    ? CATEGORIES.filter((c) => c.key === selected)
+    : CATEGORIES;
+
   return (
     <>
-      <CategoryTabs tabs={CASINO_TABS} defaultTab="Home" />
-
-      {/* No `gap` here — each child controls its own top/bottom
-          spacing. The previous gap-[18px] was stacking on top of
-          GameRail's internal py-3 (12 + 12), giving 42px of total
-          space between adjacent rails which read as too airy. */}
-      <div className="pt-[16px] flex flex-col">
-        {/* Tinder-style swipeable hero. The card handles its own
-            horizontal gutter (16px each side) inside SwipeableHero. */}
-        <SwipeableHero games={HERO_DECK} />
-
-        {/* Game rails — small square thumbs. GameRail handles its own
-            internal drag-to-scroll. */}
-        <GameRail
-          title="Recently played Casino"
-          tiles={RECENTLY_PLAYED}
-          tileWidth={109}
-          tileHeight={109}
-        />
-        <GameRail
-          title="Featured slots"
-          tiles={FEATURED}
-          tileWidth={109}
-          tileHeight={109}
-        />
-        <GameRail
-          title="Casino classics"
-          tiles={CLASSICS}
-          tileWidth={109}
-          tileHeight={109}
-        />
+      {/* In-page header: title on the left, Categories CTA on the right.
+          Lives in the white content area (not the blue brand bar) so it
+          reads as a section heading on the page itself. */}
+      <div className="flex items-center justify-between px-[16px] pt-[16px] pb-[8px]">
+        <h1 className="text-[28px] font-extrabold leading-none text-[var(--mrq-blue-dark)]">
+          Casino
+        </h1>
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={sheetOpen}
+          // Matches Figma 177:35024: 30px tall, 4px rounded rect (NOT
+          // a pill), pale blue/200 fill, white extrabold label.
+          className="h-[30px] px-[14px] rounded-[4px] text-[16px] font-extrabold text-white active:scale-[0.97] transition-transform"
+          style={{ backgroundColor: "#9DABEA" }}
+        >
+          {ctaLabel}
+        </button>
       </div>
+
+      <div className="flex flex-col">
+        {/* Tinder-style swipeable hero (always on, regardless of filter).
+            pb-[24px] gives the hero breathing room above the next
+            section title; previously it was crashing into "Top 10". */}
+        <div className="pb-[24px]">
+          <SwipeableHero games={HERO_DECK} />
+        </div>
+
+        {/* Top 10 — present whether or not a category is filtered. */}
+        <Top10Rail tiles={TOP_10} />
+
+        {/* Per-category rails. When a sub-category is selected the rest
+            collapse away; when none is selected all six show. Each row
+            navigates to /casino/[key] via the See all link. */}
+        {visibleCategories.map((cat) => (
+          <GameRail
+            key={cat.key}
+            title={cat.label}
+            tiles={CATEGORY_RAIL_TILES[cat.key] ?? []}
+            tileWidth={109}
+            tileHeight={109}
+            onSeeAll={() => router.push(`/casino/${cat.key}`)}
+          />
+        ))}
+      </div>
+
+      <CategoriesSheet
+        open={sheetOpen}
+        selected={selected}
+        categories={CATEGORIES}
+        onSelect={setSelected}
+        onClose={() => setSheetOpen(false)}
+        title="Casino categories"
+      />
     </>
   );
 }

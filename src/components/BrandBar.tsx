@@ -9,11 +9,18 @@ import { useShell } from "@/lib/filter-context";
  * Sticky brand bar — left side switches by route, right side is the
  * balance + avatar pill on every page.
  *
- *   On `/` (Lobby)            : MrQ logo (Link to `/`)
- *   On `/casino`, `/live`,
- *      `/bingo`, `/arena`     : back arrow + category title (Link to `/`)
+ *   On `/` (Lobby)              : MrQ logo (Link to `/`)
+ *   On `/casino`,
+ *     `/casino/[category]`      : back arrow (no title) — title lives in
+ *                                 the page content now so it sits beside
+ *                                 its category CTA (Categories+) instead
+ *                                 of stacking with the brand bar.
  *   On `/search`, `/discover`,
- *      `/rewards`             : MrQ logo (treated as top-level routes)
+ *      `/rewards`               : MrQ logo (treated as top-level routes)
+ *
+ * `/live`, `/bingo`, and `/arena` used to land here too, but those
+ * routes have been removed while we focus on perfecting the Casino
+ * flow. Re-add them here once their pages return.
  *
  * The back arrow always returns to `/` (the Lobby) rather than using
  * router.back() — predictable behaviour regardless of how the user got
@@ -22,17 +29,17 @@ import { useShell } from "@/lib/filter-context";
  * `history.length > 1` check.
  */
 
-const CATEGORY_TITLES: Record<string, string> = {
-  "/casino": "Casino",
-  "/live": "Live",
-  "/bingo": "Bingo",
-  "/arena": "Arena",
-};
+/** Routes that get a back arrow in the brand bar. The page itself owns
+ *  the visible title now (Casino page renders "Casino" next to its
+ *  Categories+ CTA, etc.), so we don't render a title here. */
+function showsBackArrow(pathname: string): boolean {
+  return pathname === "/casino" || pathname.startsWith("/casino/");
+}
 
 export function BrandBar() {
   const { openSideNav } = useShell();
   const pathname = usePathname();
-  const categoryTitle = CATEGORY_TITLES[pathname];
+  const backArrow = showsBackArrow(pathname);
 
   return (
     <header
@@ -40,17 +47,27 @@ export function BrandBar() {
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 10px)" }}
     >
       <div className="relative h-[48px] px-[16px] flex items-center justify-between">
-        {/* Left side: logo OR back-arrow + title, depending on route */}
-        {categoryTitle ? (
+        {/* Left side: logo OR back-arrow, depending on route. Title is
+            now rendered by the page itself so the brand bar stays
+            visually quiet. */}
+        {backArrow ? (
+          // Translucent white pill mirroring the balance/avatar pill on
+          // the right edge of the bar — matches Figma 177:35024 where
+          // the back arrow sits inside the same glass chrome instead of
+          // floating as a bare chevron.
           <Link
             href="/"
             aria-label="Back to lobby"
-            className="flex items-center gap-[10px] -ml-[6px] pr-[8px] active:scale-[0.96] transition-transform"
+            className="grid size-[40px] place-items-center rounded-full active:scale-[0.96] transition-transform"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.18)",
+              border: "1px solid rgba(255, 255, 255, 0.20)",
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.24)",
+            }}
           >
-            <BackIcon className="size-[24px] text-white" />
-            <h1 className="text-white text-[22px] font-extrabold leading-none">
-              {categoryTitle}
-            </h1>
+            <BackIcon className="size-[20px] text-white" />
           </Link>
         ) : (
           <Link

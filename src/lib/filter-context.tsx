@@ -11,9 +11,10 @@ import {
  * App-level shell state that's NOT route-driven.
  *
  * Filter/category selection used to live here too, but that's now expressed
- * as real routes (`/casino`, `/live`, `/bingo`, `/arena`, `/discover`,
- * `/search`, `/rewards`) — components read `usePathname()` directly when
- * they need to know the active section. The remaining context state is:
+ * as real routes (`/casino`, `/discover`, `/search`, `/rewards` — and
+ * eventually `/live`, `/bingo`, `/arena` once those return) — components
+ * read `usePathname()` directly when they need to know the active section.
+ * The remaining context state is:
  *
  *   • `sideNavOpen`     — the slide-in account drawer, fired from the
  *                         balance/avatar pill in the brand bar.

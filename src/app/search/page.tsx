@@ -7,8 +7,9 @@ import {
   CategoryMegaCardsRail,
   type MegaCardCategory,
 } from "@/components/rails/CategoryMegaCardsRail";
-import { GameRail } from "@/components/rails/GameRail";
+import { DiscoverNewGames, type DiscoverTile } from "@/components/rails/DiscoverNewGames";
 import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
+import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
 
 /**
  * Search page — full route.
@@ -58,7 +59,10 @@ type StickerLayer = {
 };
 type TileSpec = {
   label: string;
-  href: string;
+  /** Optional href. Tiles without one render as inert buttons — used
+   *  while Live/Bingo/Arena pages are unbuilt so the tiles still show
+   *  visually but don't navigate to a 404. */
+  href?: string;
   stickerW: number;
   stickerH: number;
   stickerRight: number;
@@ -85,7 +89,7 @@ const BROWSE: TileSpec[] = [
   },
   {
     label: "Live Casino",
-    href: "/live",
+    // No href — /live page is removed for now, tile is inert.
     stickerW: 70,
     stickerH: 58,
     stickerRight: -2,
@@ -102,7 +106,7 @@ const BROWSE: TileSpec[] = [
   },
   {
     label: "Bingo",
-    href: "/bingo",
+    // No href — /bingo page is removed for now, tile is inert.
     stickerW: 54,
     stickerH: 54,
     stickerRight: 4,
@@ -117,7 +121,7 @@ const BROWSE: TileSpec[] = [
   },
   {
     label: "Arena",
-    href: "/arena",
+    // No href — /arena page is removed for now, tile is inert.
     stickerW: 40,
     stickerH: 68,
     stickerRight: 6,
@@ -148,7 +152,21 @@ const TILES_HOT = [
   G(8, "Tiki Tumble"),
 ];
 
-const TILES_SLOTS = [
+// Game tile pools used by the mega-cards rail. The standalone Slots /
+// Quick games / Live Casino rails that used to live further down the
+// page were removed (per the Explore redesign — Figma 133:39525) in
+// favour of the Discover new games circular row up top + the Browse
+// all categories grid at the bottom.
+const TILES_LIVE_CASINO = [
+  G(8, "Tiki Tumble"),
+  G(11, "Maze Escape"),
+  G(1, "Buffalo Bills"),
+  G(13, "Snake Arena"),
+  G(7, "Mummy Mania"),
+  G(4, "Jewel Stepper"),
+];
+
+const TILES_BINGO = [
   G(4, "Jewel Stepper"),
   G(8, "Tiki Tumble"),
   G(13, "Snake Arena"),
@@ -157,7 +175,7 @@ const TILES_SLOTS = [
   G(7, "Mummy Mania"),
 ];
 
-const TILES_QUICK = [
+const TILES_ARENA = [
   G(13, "Snake Arena"),
   G(11, "Maze Escape"),
   G(1, "Buffalo Bills"),
@@ -166,13 +184,18 @@ const TILES_QUICK = [
   G(7, "Mummy Mania"),
 ];
 
-const TILES_LIVE = [
-  G(8, "Tiki Tumble"),
-  G(11, "Maze Escape"),
-  G(1, "Buffalo Bills"),
+// Circular thumbnails for the "Discover new games" row at the top of
+// the page. Standalone list (not tied to the mega cards) — these are
+// the curated "try something fresh" picks.
+const TILES_DISCOVER: DiscoverTile[] = [
   G(13, "Snake Arena"),
-  G(7, "Mummy Mania"),
+  G(11, "Maze Escape"),
+  G(8, "Tiki Tumble"),
+  G(1, "Buffalo Bills"),
   G(4, "Jewel Stepper"),
+  G(7, "Mummy Mania"),
+  G(3, "Big Bass"),
+  G(5, "Western Gold"),
 ];
 
 // Category mega-cards (Casino, Live Casino, Bingo, Arena) — each is
@@ -194,36 +217,94 @@ const MEGA_CATEGORIES: MegaCardCategory[] = [
     title: "Live Casino",
     subtitle: "Hot right now",
     sticker: "/assets/mega/live.svg",
-    tiles: TILES_LIVE.slice(0, 6),
+    tiles: TILES_LIVE_CASINO.slice(0, 6),
   },
   {
     key: "bingo",
     title: "Bingo",
     subtitle: "Hot right now",
     sticker: "/assets/mega/bingo.svg",
-    tiles: TILES_SLOTS.slice(0, 6),
+    tiles: TILES_BINGO.slice(0, 6),
   },
   {
     key: "arena",
     title: "Arena",
     subtitle: "Hot right now",
     sticker: "/assets/mega/arena.svg",
-    tiles: TILES_QUICK.slice(0, 6),
+    tiles: TILES_ARENA.slice(0, 6),
   },
 ];
 
-// Browse all themes — 8 themed entry points, 2 columns. Each card
-// shows a fan of 3 thumbnails as a tease for the theme's content.
-const THEMES: Theme[] = [
-  { key: "animal",  label: "Animal",  thumbs: ["/assets/games/slot-08.png", "/assets/games/slot-04.png", "/assets/games/slot-13.png"] },
-  { key: "fishing", label: "Fishing", thumbs: ["/assets/games/slot-13.png", "/assets/games/slot-08.png", "/assets/games/slot-11.png"] },
-  { key: "history", label: "History", thumbs: ["/assets/games/slot-07.png", "/assets/games/slot-01.png", "/assets/games/slot-04.png"] },
-  { key: "jungle",  label: "Jungle",  thumbs: ["/assets/games/slot-11.png", "/assets/games/slot-13.png", "/assets/games/slot-08.png"] },
-  { key: "west",    label: "West",    thumbs: ["/assets/games/slot-01.png", "/assets/games/slot-04.png", "/assets/games/slot-07.png"] },
-  { key: "dragons", label: "Dragons", thumbs: ["/assets/games/slot-13.png", "/assets/games/slot-11.png", "/assets/games/slot-01.png"] },
-  { key: "horror",  label: "Horror",  thumbs: ["/assets/games/slot-07.png", "/assets/games/slot-13.png", "/assets/games/slot-08.png"] },
-  { key: "aliens",  label: "Aliens",  thumbs: ["/assets/games/slot-04.png", "/assets/games/slot-08.png", "/assets/games/slot-11.png"] },
+// Browse all categories — 2-col grid of navigation cards.
+//
+// Two visually-distinct groups live in the same grid:
+//
+//   1. Other verticals (Bingo, Live Casino, Arena) — top of the list.
+//      Each gets a distinct brand colour so they stand out from the
+//      block of Casino cards below, and a single-line label (no
+//      sub-line) reinforcing "this is a top-level vertical". Pages
+//      for these verticals are currently removed, so the cards are
+//      inert (no `href`) — matches the Start Browsing tiles' state.
+//
+//   2. Casino sub-categories (New, Jackpot, Megaways, Slingo, Tables,
+//      Live) — brand-blue background, "Casino" sub-line, each links
+//      to /casino/[key].
+//
+// Thumb cluster per card is the same fanned trio in both groups, so
+// the layout reads as one coherent grid even with the colour split.
+const CATEGORY_THUMBS: Record<string, [string, string, string]> = {
+  bingo:    ["/assets/games/slot-08.png", "/assets/games/slot-04.png", "/assets/games/slot-11.png"],
+  live:     ["/assets/games/slot-05.png", "/assets/games/slot-10.png", "/assets/games/slot-07.png"],
+  arena:    ["/assets/games/slot-13.png", "/assets/games/slot-11.png", "/assets/games/slot-03.png"],
+  new:      ["/assets/games/slot-13.png", "/assets/games/slot-12.png", "/assets/games/slot-11.png"],
+  jackpot:  ["/assets/games/slot-01.png", "/assets/games/slot-03.png", "/assets/games/slot-05.png"],
+  megaways: ["/assets/games/slot-02.png", "/assets/games/slot-04.png", "/assets/games/slot-06.png"],
+  slingo:   ["/assets/games/slot-03.png", "/assets/games/slot-06.png", "/assets/games/slot-09.png"],
+  tables:   ["/assets/games/slot-04.png", "/assets/games/slot-08.png", "/assets/games/slot-12.png"],
+  "casino-live": ["/assets/games/slot-05.png", "/assets/games/slot-10.png", "/assets/games/slot-07.png"],
+};
+
+const VERTICAL_CARDS: Theme[] = [
+  // Hot pink — Bingo's traditional brand colour family.
+  {
+    key: "bingo",
+    label: "Bingo",
+    color: "#DB2777",
+    thumbs: CATEGORY_THUMBS.bingo,
+  },
+  // Deep violet — premium / "after-hours" feel for Live Casino.
+  {
+    key: "live",
+    label: "Live Casino",
+    color: "#7C3AED",
+    thumbs: CATEGORY_THUMBS.live,
+  },
+  // Warm red — competitive, energetic for Arena.
+  {
+    key: "arena",
+    label: "Arena",
+    color: "#DC2626",
+    thumbs: CATEGORY_THUMBS.arena,
+  },
 ];
+
+const CASINO_CARDS: Theme[] = CASINO_SUBCATEGORIES.map((cat) => ({
+  // Casino's own "Live" sub-category shares its key with the top-level
+  // Live vertical above — namespace the sub-cat to keep React keys
+  // unique inside this list.
+  key: cat.key === "live" ? "casino-live" : cat.key,
+  label: cat.label,
+  subtitle: "Casino",
+  href: `/casino/${cat.key}`,
+  thumbs:
+    CATEGORY_THUMBS[cat.key === "live" ? "casino-live" : cat.key] ?? [
+      "/assets/games/slot-01.png",
+      "/assets/games/slot-04.png",
+      "/assets/games/slot-08.png",
+    ],
+}));
+
+const BROWSE_CATEGORIES: Theme[] = [...VERTICAL_CARDS, ...CASINO_CARDS];
 
 // Stub data for the "Recently searched" takeover state — would be
 // driven by real user history once we have one.
@@ -329,12 +410,10 @@ export default function SearchPage() {
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col pt-[14px]"
           >
+            <DiscoverNewGames tiles={TILES_DISCOVER} />
             <StartBrowsing items={BROWSE} />
             <CategoryMegaCardsRail categories={MEGA_CATEGORIES} />
-            <GameRail title="Slots" tiles={TILES_SLOTS} tileWidth={109} tileHeight={109} />
-            <GameRail title="Quick games" tiles={TILES_QUICK} tileWidth={109} tileHeight={109} />
-            <GameRail title="Live Casino tables" tiles={TILES_LIVE} tileWidth={109} tileHeight={109} />
-            <ThemesGrid items={THEMES} />
+            <ThemesGrid title="Browse all categories" items={BROWSE_CATEGORIES} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -413,12 +492,15 @@ function StartBrowsing({ items }: { items: typeof BROWSE }) {
 }
 
 function BrowseTile({ item }: { item: TileSpec }) {
-  return (
-    <Link
-      href={item.href}
-      className="relative h-[58px] overflow-hidden rounded-[10px] active:scale-[0.98] transition-transform"
-      style={{ backgroundColor: "#0322ac" }}
-    >
+  const className =
+    "relative h-[58px] overflow-hidden rounded-[10px] active:scale-[0.98] transition-transform";
+  const style = { backgroundColor: "#0322ac" } as const;
+
+  // Tile interior is identical for linked vs inert tiles — only the
+  // wrapping element changes. Pulled out so a later visual tweak only
+  // needs to be made once.
+  const inner = (
+    <>
       <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[13px] font-extrabold text-white z-10">
         {item.label}
       </span>
@@ -473,6 +555,25 @@ function BrowseTile({ item }: { item: TileSpec }) {
           </span>
         )}
       </span>
+    </>
+  );
+
+  if (!item.href) {
+    return (
+      <button
+        type="button"
+        className={`${className} text-left`}
+        style={style}
+        aria-disabled
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={item.href} className={className} style={style}>
+      {inner}
     </Link>
   );
 }
