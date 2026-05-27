@@ -34,13 +34,17 @@ type Tab = {
 
 // Tab keys still mirror the route segments (lobby = /, search-page
 // = /search, discover-page = /discover) for active-state matching;
-// only the visible labels + icons change. If we later want `/search`
-// → `/explore` and `/discover` → `/for-you` as real URLs, those are
-// file-rename moves under src/app/.
+// only the visible order + labels + icons change. If we later want
+// `/search` → `/explore` and `/discover` → `/for-you` as real URLs,
+// those are file-rename moves under src/app/.
+//
+// Order swap: For You sits in the 2nd slot now, Explore in the 3rd.
+// Home is relabelled "My Q" but still routes to / and lights up on
+// every category page (no other tab represents those).
 const TABS: Tab[] = [
-  { key: "lobby", href: "/", label: "Home", Icon: HomeIcon },
-  { key: "search", href: "/search", label: "Explore", Icon: ExploreIcon },
+  { key: "lobby", href: "/", label: "My Q", Icon: HomeIcon },
   { key: "discover", href: "/discover", label: "For You", Icon: ForYouIcon },
+  { key: "search", href: "/search", label: "Explore", Icon: ExploreIcon },
   { key: "rewards", href: "/rewards", label: "Rewards", Icon: GiftIcon },
 ];
 
