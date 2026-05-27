@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { SwipeableHero, type HeroGame } from "../SwipeableHero";
 import { GameRail } from "@/components/rails/GameRail";
 import { Top10Rail } from "@/components/rails/Top10Rail";
-import { QClubCard } from "../QClubCard";
 import { CategoriesSheet } from "../CategoriesSheet";
 import {
   CATEGORIES,
@@ -125,11 +124,6 @@ export function CasinoView() {
 
         {/* Top 10 — present whether or not a category is filtered. */}
         <Top10Rail tiles={TOP_10} />
-
-        {/* The Q Club promo card — Figma 203:42091. Two free-reward
-            tiles inside a brand-blue panel, sits between Top 10 and
-            the per-category rails. */}
-        <QClubCard />
 
         {/* Per-category rails. When a sub-category is selected the rest
             collapse away; when none is selected all six show. Each row
