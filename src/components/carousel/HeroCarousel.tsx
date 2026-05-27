@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
 import { useFilter } from "@/lib/filter-context";
 
@@ -46,9 +46,15 @@ const CARDS: Array<{ key: string; src: string; alt: string }> = [
   },
 ];
 
-// 3:2 landscape — matches the Figma card aspect (303×162 ≈ 1.87:1
-// but 3:2 reads as cleaner with consistent rails below).
-const CARD_ASPECT = 3 / 2;
+// Native Figma card aspect: 303 × 162 (≈ 1.87:1). Matching exactly
+// means `object-cover` doesn't crop anything off the exported PNGs.
+const CARD_ASPECT = 303 / 162;
+
+// Active-card scale. Inactive cards stay at 1.0; whichever card is
+// closest to the centre of the rail scales up subtly so it reads as
+// the "focused" card (matches the Figma's active card being slightly
+// larger than the inactive ones).
+const ACTIVE_SCALE = 1.06;
 
 // Hysteresis for the scroll-off behaviour. Hide once we're a few
 // pixels in, reveal only when fully back at the top.
@@ -57,6 +63,8 @@ const REVEAL_AT = 2;
 
 export function HeroCarousel() {
   const railRef = useDraggableScroll<HTMLDivElement>();
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const reduce = useReducedMotion();
   const { bootDone } = useFilter();
 
@@ -83,6 +91,40 @@ export function HeroCarousel() {
     };
   }, []);
 
+  // Active-card detection — find whichever card is closest to the
+  // rail's centre line on every horizontal scroll. The active card
+  // gets the slight scale-up so the user has a clear visual anchor
+  // for "this is the one snapped into view".
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const updateActive = () => {
+      const railRect = rail.getBoundingClientRect();
+      const railCentre = railRect.left + railRect.width / 2;
+      let best = 0;
+      let bestDist = Infinity;
+      cardRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const dist = Math.abs(r.left + r.width / 2 - railCentre);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = i;
+        }
+      });
+      setActiveIndex((curr) => (curr === best ? curr : best));
+    };
+
+    updateActive();
+    rail.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("resize", updateActive);
+    return () => {
+      rail.removeEventListener("scroll", updateActive);
+      window.removeEventListener("resize", updateActive);
+    };
+  }, [railRef]);
+
   const dealIn = reduce || bootDone;
   const hiddenTransform = reduce
     ? { opacity: 0, y: 0 }
@@ -107,29 +149,46 @@ export function HeroCarousel() {
         ref={railRef}
         // Padding matches the rest of the page rhythm: px-[16px] for
         // horizontal (same as GameRail, ScrollAwareFilters,
-        // RecentlyPlayedGrid). Vertical: pt-[12px] pb-[10px] —
-        // symmetric-ish, leaves a hair more below so cards don't
-        // crash into the rail title that follows.
-        className="no-scrollbar flex gap-[10px] overflow-x-auto overflow-y-hidden px-[16px] pt-[12px] pb-[10px] snap-x snap-mandatory"
+        // RecentlyPlayedGrid). Vertical pt/pb is bumped a few px so
+        // the active card's scale-up has room to breathe without
+        // getting clipped against the band above or below.
+        className="no-scrollbar flex gap-[10px] overflow-x-auto overflow-y-visible px-[16px] pt-[14px] pb-[12px] snap-x snap-mandatory"
         style={{
           WebkitOverflowScrolling: "touch",
           scrollSnapStop: "always",
         }}
       >
-        {CARDS.map((card) => (
-          <div
-            key={card.key}
-            className="shrink-0 snap-start"
-            style={{
-              // 88% of available width so a sliver of the next card
-              // peeks on the right edge.
-              width: "min(88%, calc(var(--mobile-width) - 32px))",
-              aspectRatio: `${CARD_ASPECT}`,
-            }}
-          >
-            <PromoCard src={card.src} alt={card.alt} />
-          </div>
-        ))}
+        {CARDS.map((card, i) => {
+          const isActive = i === activeIndex;
+          return (
+            <div
+              key={card.key}
+              ref={(el) => {
+                cardRefs.current[i] = el;
+              }}
+              className="shrink-0 snap-start"
+              style={{
+                // 86% of available width so a sliver of the next
+                // card peeks at the right edge. Slightly tighter
+                // than before so the active scale-up doesn't push
+                // it off-screen.
+                width: "min(86%, calc(var(--mobile-width) - 40px))",
+                aspectRatio: `${CARD_ASPECT}`,
+                // Scale the active card up; others stay at 1.0.
+                // transform-origin keeps the growth symmetric so the
+                // card doesn't drift off its snap anchor.
+                transform: `scale(${isActive ? ACTIVE_SCALE : 1})`,
+                transformOrigin: "center",
+                transition: reduce
+                  ? "none"
+                  : "transform 240ms cubic-bezier(0.22, 1, 0.36, 1)",
+                zIndex: isActive ? 2 : 1,
+              }}
+            >
+              <PromoCard src={card.src} alt={card.alt} />
+            </div>
+          );
+        })}
       </div>
     </motion.section>
   );
