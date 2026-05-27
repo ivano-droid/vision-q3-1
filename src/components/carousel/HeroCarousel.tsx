@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
 import { useFilter } from "@/lib/filter-context";
+import { BigWeekenderCard, GetSpicyCard } from "./HeroPromoCards";
 
 /**
  * Hero promo carousel — landscape strip just below the filter band.
@@ -35,28 +36,33 @@ import { useFilter } from "@/lib/filter-context";
  *   hide so it doesn't take up layout space when hidden — the rails
  *   below shift up cleanly.
  */
-const CARDS = [
+// The two Figma cards (node 160:22811): BIG WEEKENDER + GET SPICY.
+// Composed in code (see HeroPromoCards.tsx) — the Figma assets are
+// dense multi-layer compositions that don't extract as clean PNGs,
+// so we use the actual photo asset from Figma + recompose the
+// text / sticker / background.
+//
+// Three slots so the carousel feels populated; for now we cycle BW →
+// Get Spicy → BW. Swap in a third distinct card when designed.
+const CARDS: Array<{
+  key: string;
+  alt: string;
+  render: () => React.ReactElement;
+}> = [
+  {
+    key: "big-weekender",
+    alt: "Big Weekender is back again",
+    render: () => <BigWeekenderCard />,
+  },
   {
     key: "get-spicy",
-    src: "/assets/carousel/card-get-spicy.png",
-    alt: "Play Now — Get Spicy with Spicy Meatballs Megaways",
-    // Where to anchor object-fit when we crop the portrait source
-    // into a landscape frame. The original art has the headline at
-    // the top, so anchor `top` to keep "PLAY NOW / GET SPICY"
-    // visible after the crop.
-    objectPosition: "center top",
+    alt: "Play Now — Get Spicy",
+    render: () => <GetSpicyCard />,
   },
   {
-    key: "limits-in-check",
-    src: "/assets/carousel/card-limits-in-check.png",
-    alt: "Keep your limits in check",
-    objectPosition: "center 35%",
-  },
-  {
-    key: "ready-to-play",
-    src: "/assets/carousel/card-ready-to-play.png",
-    alt: "Ready to play together? Join the Arena with 200K+ players",
-    objectPosition: "center 30%",
+    key: "big-weekender-2",
+    alt: "Big Weekender is back again",
+    render: () => <BigWeekenderCard />,
   },
 ];
 
@@ -157,12 +163,10 @@ export function HeroCarousel() {
               width: "min(88%, calc(var(--mobile-width) - 32px))",
               aspectRatio: `${CARD_ASPECT}`,
             }}
+            role="button"
+            aria-label={card.alt}
           >
-            <PromoCard
-              src={card.src}
-              alt={card.alt}
-              objectPosition={card.objectPosition}
-            />
+            {card.render()}
           </div>
         ))}
       </div>
@@ -170,33 +174,3 @@ export function HeroCarousel() {
   );
 }
 
-function PromoCard({
-  src,
-  alt,
-  objectPosition,
-}: {
-  src: string;
-  alt: string;
-  objectPosition: string;
-}) {
-  return (
-    <button
-      type="button"
-      className="relative block h-full w-full overflow-hidden rounded-[16px] active:scale-[0.985] transition-transform"
-      style={{ boxShadow: "0 8px 24px -10px rgba(10, 46, 203, 0.35)" }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        className="absolute inset-0 h-full w-full object-cover"
-        // object-position lets us crop the portrait source into a
-        // landscape frame while keeping the headline visible. Set
-        // per-card so each one anchors to the most important region
-        // of its artwork.
-        style={{ objectPosition }}
-        draggable={false}
-      />
-    </button>
-  );
-}
