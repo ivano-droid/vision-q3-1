@@ -96,7 +96,7 @@ export function CasinoView() {
       {/* In-page header: title on the left, Categories CTA on the right.
           Lives in the white content area (not the blue brand bar) so it
           reads as a section heading on the page itself. */}
-      <div className="flex items-center justify-between px-[16px] pt-[16px] pb-[8px]">
+      <div className="flex items-center justify-between px-[16px] pt-[16px] pb-[18px]">
         <h1 className="text-[28px] font-extrabold leading-none text-[var(--mrq-blue-dark)]">
           Casino
         </h1>
