@@ -74,14 +74,15 @@ export function Top10Rail({
       initial={reduce ? false : "hidden"}
       animate={reduce || bootDone ? "visible" : "hidden"}
     >
-      {/* Centred title, no "See all" — matches the Figma where Top 10
-          reads as a curated showcase, not a row that drills into a
-          larger list. */}
+      {/* Left-aligned title, no "See all" — Top 10 reads as a curated
+          showcase rather than a row that drills into a larger list, but
+          the heading still hangs off the 16px gutter so it stacks
+          cleanly with the rails above and below. */}
       <motion.div
         className="px-[16px] pb-[10px]"
         variants={titleVariants}
       >
-        <h2 className="text-center text-[18px] font-extrabold text-[var(--mrq-blue)]">
+        <h2 className="text-[18px] font-extrabold text-[var(--mrq-blue)]">
           {title}
         </h2>
       </motion.div>
