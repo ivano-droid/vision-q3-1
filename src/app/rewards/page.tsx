@@ -337,31 +337,50 @@ function AvailableToCollect() {
       >
         Available to collect
       </h2>
-      {/* Outer = overflow-x scroller (no padding).
-          Inner = flex row with max-content width + paddingLeft/
-                  paddingRight on the inner itself (NOT the
-                  scroller), plus gap-16 between cards.
-          Padding-on-the-inner is reliable in every browser
-          because the inner is just a regular flex item, not an
-          overflow container. First card sits at 16px from the
-          inner's left edge, which is the same as 16px from the
-          page's left edge at scroll-x=0 — matching the
-          "In Progress" card's 16px gutter. */}
+      {/* Carousel — REBUILT (~10th attempt). Every previous
+          variant (padding on the overflow container, padding
+          on a max-content inner, per-card marginLeft, padding
+          + class mix) ended up with the first card rendering
+          flush against the page edge in the deployed build.
+          Stripping back to the simplest possible construction:
+
+            outer = block div, overflowX: auto (inline style)
+            inner = INLINE-FLEX (so it naturally sizes to its
+                    content's intrinsic width — no need for
+                    `width: max-content`, which seems to be
+                    where browsers were dropping the padding)
+            inner has paddingLeft/paddingRight: 16 + gap: 16
+            each card wrapped in a flexShrink: 0 div
+
+          inline-flex behaves like inline-block at the outer
+          level — the parent (scroll) sees a single inline-flex
+          child with a definite intrinsic width INCLUDING its
+          padding. The padding never gets eaten by any flex
+          algorithm. First card visibly inset 16px from the
+          scroll's left edge, which equals 16px from the page
+          edge (matching the section title and the In Progress
+          card below). */}
       <div
-        className="mt-[12px] overflow-x-auto no-scrollbar"
-        style={{ scrollSnapType: "x mandatory" }}
+        className="no-scrollbar"
+        style={{
+          marginTop: 12,
+          overflowX: "auto",
+          scrollSnapType: "x mandatory",
+        }}
       >
         <div
-          className="flex pb-[2px]"
           style={{
-            width: "max-content",
+            display: "inline-flex",
             paddingLeft: 16,
             paddingRight: 16,
+            paddingBottom: 2,
             gap: 16,
           }}
         >
           {cards.map((c, i) => (
-            <AvailableCard key={i} {...c} />
+            <div key={i} style={{ flexShrink: 0 }}>
+              <AvailableCard {...c} />
+            </div>
           ))}
         </div>
       </div>
@@ -682,8 +701,10 @@ function ThisWeeksOffers() {
 }
 
 /** Single "This weeks offers" card — white outer container,
- *  image at top (rounded corners via overflow-hidden), then
- *  title + meta + full-width "View offer" CTA below. */
+ *  with the image sitting INSET from the card edges via an 8px
+ *  white margin around it (the image has its own rounded
+ *  corners). Below the image: title + meta + full-width
+ *  "View offer" CTA. */
 function WeekOfferCard({
   src,
   title,
@@ -694,18 +715,25 @@ function WeekOfferCard({
   meta: string;
 }) {
   return (
-    <div className="bg-white rounded-[16px] overflow-hidden flex flex-col">
-      {/* Image fills the top section of the card. */}
-      <div style={{ aspectRatio: "162 / 110" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          className="size-full object-cover"
-        />
+    <div className="bg-white rounded-[16px] flex flex-col">
+      {/* Image — wrapped in an 8px white padding box so the
+          card's white bg shows on all four sides of the image.
+          Image itself has its own rounded-12 corners. */}
+      <div className="p-[8px]">
+        <div
+          className="rounded-[12px] overflow-hidden"
+          style={{ aspectRatio: "162 / 110" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            className="size-full object-cover"
+          />
+        </div>
       </div>
       {/* Text + CTA block. */}
-      <div className="flex flex-col gap-[6px] p-[12px]">
+      <div className="flex flex-col gap-[6px] px-[12px] pb-[12px]">
         <p
           className="font-extrabold text-[14px]"
           style={{ color: BRAND_DARK, lineHeight: 1.4 }}
