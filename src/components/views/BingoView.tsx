@@ -41,10 +41,9 @@ export function BingoView() {
         </h1>
       </div>
 
+      {/* Rooms list — no section header, the "Bingo" h1 above is the
+          only label the page needs. */}
       <section className="px-[16px] pt-[4px] pb-[24px]">
-        <h2 className="text-[18px] font-extrabold leading-none text-[var(--mrq-blue)] mb-[12px]">
-          All rooms
-        </h2>
         <div className="flex flex-col gap-[12px]">
           {BINGO_ROOMS.map((room) => (
             <RoomCard key={room.key} room={room} />
