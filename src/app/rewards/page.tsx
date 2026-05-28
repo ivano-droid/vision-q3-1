@@ -584,17 +584,13 @@ function InProgress() {
         className="relative mt-[12px] flex flex-col gap-[12px] rounded-[16px] px-[16px] pt-[16px] pb-[8px]"
         style={{ backgroundColor: SURFACE_GREY }}
       >
-        {/* Pink indicator dot — top-right corner with a soft halo
-            (Figma 238:5803). */}
-        <span
-          aria-hidden
-          className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 size-[10px] rounded-full"
-          style={{
-            backgroundColor: PINK,
-            boxShadow:
-              "0 0 0 6px rgba(208, 0, 202, 0.20), 0 0 0 12px rgba(208, 0, 202, 0.08)",
-          }}
-        />
+        {/* Indicator badge — Figma 238:5803. Concentric circles:
+            #D000CA pink centre, white middle ring, 5.75px
+            #12257C (brand-dark) outer ring. The badge is 22px
+            wide and its CENTRE sits exactly at the card's
+            top-right corner (top: -11, right: -11), so it
+            reads as a half-outside notification dot. */}
+        <IndicatorBadge />
 
         {/* Reward header — image + title/date/pill stack. Figma
             238:5786, gap is 17px (sic). */}
@@ -914,6 +910,48 @@ function QLogo({
         fill="white"
       />
     </svg>
+  );
+}
+
+/** Pink notification-dot indicator with white ring + dark-blue
+ *  outer ring — Figma 238:5803 indicator.svg ported to an inline
+ *  SVG for reliable rendering at a fixed size. Positioned by the
+ *  caller (absolute, top: -11, right: -11) so its CENTRE lands
+ *  on the card's top-right corner. */
+function IndicatorBadge() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: -11,
+        right: -11,
+        width: 22,
+        height: 22,
+        pointerEvents: "none",
+      }}
+    >
+      <svg
+        width={22}
+        height={22}
+        viewBox="0 0 21.5 21.5"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* White centre disc with the brand-dark outer stroke
+            (stroke-width 5.75 = the dark ring). */}
+        <circle
+          cx="10.75"
+          cy="10.75"
+          r="7.875"
+          fill="#ffffff"
+          stroke="#12257C"
+          strokeWidth="5.75"
+        />
+        {/* Pink dot — the actual indicator centre. */}
+        <circle cx="10.75" cy="10.75" r="4" fill="#D000CA" />
+      </svg>
+    </div>
   );
 }
 
