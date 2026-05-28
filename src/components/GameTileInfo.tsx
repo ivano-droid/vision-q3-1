@@ -36,57 +36,64 @@ export function GameTileInfo({
   size?: number;
   /** Diameter of the blue info chip (px). */
   chipSize?: number;
-  /** Tap handler for the chip. When provided, the chip becomes an
-   *  interactive tap target (with stop-propagation so the parent
-   *  tile's onClick doesn't also fire). The frosted backdrop stays
-   *  non-interactive — only the chip is. */
+  /** Tap handler for the corner. When provided, the entire frosted
+   *  backdrop becomes the tap target (with stop-propagation so the
+   *  parent tile's onClick doesn't also fire). The chip itself is
+   *  decorative — only the backdrop captures pointer events. */
   onClick?: () => void;
 }) {
+  const interactive = !!onClick;
+
   return (
     <span
-      // Backdrop stays non-interactive — taps fall through to the
-      // tile underneath unless they land on the chip itself.
-      aria-hidden
-      className="absolute bottom-0 right-0 pointer-events-none"
+      // Whole frosted corner is the tap target when onClick is set.
+      // That gives a ~36px hit area instead of the tiny 20px chip,
+      // which was easy to miss on touch. When non-interactive
+      // (decorative peek), it falls back to aria-hidden +
+      // pointer-events:none and taps drop through to the tile.
+      {...(interactive
+        ? {
+            role: "button",
+            tabIndex: 0,
+            "aria-label": "Game info",
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onClick?.();
+            },
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                e.preventDefault();
+                onClick?.();
+              }
+            },
+            // Touch events bubble first; stop them here too so
+            // the parent tile's onTouch/onMouse listeners (and
+            // any drag/swipe wiring) stay quiet.
+            onPointerDownCapture: (e: React.PointerEvent) =>
+              e.stopPropagation(),
+          }
+        : {
+            "aria-hidden": true,
+          })}
+      className="absolute bottom-0 right-0"
       style={{
         width: size,
         height: size,
-        // Quarter-circle concave cut into the tile. Radius equal to
-        // the box size gives a perfect 90° arc.
+        // Quarter-circle concave cut into the tile.
         borderTopLeftRadius: size,
         backgroundColor: "rgba(245, 245, 245, 0.42)",
         backdropFilter: "blur(10px) saturate(140%)",
         WebkitBackdropFilter: "blur(10px) saturate(140%)",
+        pointerEvents: interactive ? "auto" : "none",
+        cursor: interactive ? "pointer" : undefined,
       }}
     >
-      {/* Chip — tucked into the very bottom-right corner. Translucent
-          brand-blue dot. When onClick is provided, the chip captures
-          its own tap (with pointer-events:auto + stopPropagation) so
-          the parent tile's tap action doesn't also fire. */}
+      {/* Chip — tucked into the very bottom-right corner. Pure
+          decoration; the backdrop above is what captures taps. */}
       <span
-        role={onClick ? "button" : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        aria-label={onClick ? "Game info" : undefined}
-        onClick={
-          onClick
-            ? (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onClick();
-              }
-            : undefined
-        }
-        onKeyDown={
-          onClick
-            ? (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  onClick();
-                }
-              }
-            : undefined
-        }
+        aria-hidden
         className="absolute grid place-items-center rounded-full"
         style={{
           width: chipSize,
@@ -94,8 +101,7 @@ export function GameTileInfo({
           right: 4,
           bottom: 4,
           backgroundColor: "rgba(10, 46, 203, 0.5)",
-          pointerEvents: onClick ? "auto" : "none",
-          cursor: onClick ? "pointer" : undefined,
+          pointerEvents: "none",
         }}
       >
         <InfoGlyph size={Math.round(chipSize * 0.5)} />
