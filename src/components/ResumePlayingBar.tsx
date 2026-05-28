@@ -106,18 +106,22 @@ export function ResumePlayingBar() {
             right: "var(--frame-right-offset)",
             bottom: "calc(var(--bottom-nav-h) + 16px)",
           }}
-          // Entry: slides up from below the screen (y=140 puts the
-          // bar well behind the nav) to its resting spot 16px above
-          // the nav.
-          initial={{ y: 140, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          // Exit: fast tween — 130ms ease-in. The bar drops behind
-          // the nav and fades out together; staying at z-30 means
-          // the moment it starts moving down it gets clipped behind
-          // the nav, so visually it just vanishes.
+          // Entry: y-only slide. The bar starts at y=140 (well
+          // below the nav's footprint, hidden behind it at z-30)
+          // and slides up to y=0 (resting 16px above the nav).
+          // No opacity animation — bar renders at full opacity
+          // from frame one, so there's no opacity "click" when
+          // the animation completes. The y motion alone reveals
+          // the bar because it physically emerges from behind the
+          // nav as it climbs.
+          initial={{ y: 140 }}
+          animate={{ y: 0 }}
+          // Exit: fast 130ms y-slide down. With z-30 the bar gets
+          // clipped behind the nav the instant it moves down, so
+          // no opacity fade is needed — the bar just vanishes
+          // behind the nav.
           exit={{
             y: 80,
-            opacity: 0,
             transition: { duration: 0.13, ease: [0.4, 0, 1, 1] },
           }}
           // Entry transition only — critically-damped-ish spring,
