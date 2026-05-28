@@ -126,25 +126,15 @@ export function HomeView() {
 
       <LatestBigWinsRow title="Latest big wins" items={LATEST_WINS} />
 
-      {/* 96px clearance so the Latest big wins tiles aren't trapped
-          behind the floating BottomNav on a fresh load. AppShell
-          skips its own bottom spacer on the home route — we own the
-          flush here so the Q Club below can sit flush against the
-          page bottom (and visually against the BottomNav top edge
-          once the user scrolls to it). */}
-      <div
-        style={{
-          height: "max(96px, calc(env(safe-area-inset-bottom) + 96px))",
-        }}
-        aria-hidden
-      />
-
       {/* The Q Club rewards card — the final block on the home feed.
           `expandOnScroll` lets it morph from a normal mobile-frame
           card into a full-width section as the user scrolls toward
           it (gutter padding + corner radius + shadow all fade to
           zero), so it reads as a "finishing flourish" at the bottom
-          of the page. */}
+          of the page. AppShell's 96px footer spacer sits below this
+          element, so when scrolled to the bottom the Q Club's bottom
+          edge lands at the BottomNav's top edge — the whole card
+          stays visible and the nav doesn't cover any of it. */}
       <QClubCard expandOnScroll />
     </>
   );
