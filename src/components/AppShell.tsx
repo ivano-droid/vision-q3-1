@@ -7,6 +7,7 @@ import { BottomNav } from "./BottomNav";
 import { SideNav } from "./SideNav";
 import { DepositSheet } from "./DepositSheet";
 import { LoadingSplash } from "./LoadingSplash";
+import { ResumePlayingBar } from "./ResumePlayingBar";
 
 /**
  * App-wide chrome that wraps every route under `/app/layout.tsx`.
@@ -50,6 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         <BottomNav />
+        <ResumePlayingBar />
         <SideNav />
         <DepositSheet />
       </div>
