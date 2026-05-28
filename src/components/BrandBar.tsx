@@ -5,6 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useShell } from "@/lib/filter-context";
 
+// Tappable wallet pill = a flex row that's NOT a button, with the
+// cash text on the left acting as its own button (opens deposit
+// sheet) and the avatar on the right also its own button (opens
+// side nav). The divider between them lives inside the row and
+// stays neutral.
+
 /**
  * Sticky brand bar — left side switches by route, right side is the
  * balance + avatar pill on every page.
@@ -45,7 +51,7 @@ function backHrefFor(pathname: string): string {
 }
 
 export function BrandBar() {
-  const { openSideNav } = useShell();
+  const { openSideNav, openDeposit } = useShell();
   const pathname = usePathname();
   const backArrow = showsBackArrow(pathname);
   const backHref = backHrefFor(pathname);
@@ -111,17 +117,15 @@ export function BrandBar() {
             making the pill look like it floated separately from the rest
             of the glass system below. Keeps only the inset top highlight
             for the "lit edge" Liquid Glass feel. */}
-        <button
-          type="button"
-          onClick={openSideNav}
-          aria-label="Open account menu"
-          // Lifted from h-[46px] pl-[18px] gap-[10px] to h-[48px] pl-[22px]
-          // gap-[12px] so the balance + avatar pill has more breathing
-          // room around the number. Background is the pale brand-blue
-          // (#9DABEA) shifted to ~32% opacity — reads as a lighter
-          // translucent surface against the brand-blue header instead
-          // of the darker navy fill it had before.
-          className="flex items-center gap-[12px] h-[48px] pl-[22px] pr-[5px] rounded-full active:scale-[0.97] transition-transform"
+        {/* Wallet pill — two tappable halves inside one rounded
+            container. The cash text on the left opens the deposit
+            sheet (mirrors the vision-01 pattern); the avatar on the
+            right opens the side nav. A neutral divider sits between
+            them inside the row. The container itself is a div, not a
+            button, so each half captures its own taps without one
+            stealing from the other. */}
+        <div
+          className="flex items-center gap-[12px] h-[48px] pl-[22px] pr-[5px] rounded-full"
           style={{
             backgroundColor: "rgba(157, 171, 234, 0.32)",
             backdropFilter: "blur(20px) saturate(140%)",
@@ -130,20 +134,24 @@ export function BrandBar() {
             boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
           }}
         >
-          <span className="text-white text-[16px] leading-none font-extrabold pt-[1px]">
+          <button
+            type="button"
+            onClick={openDeposit}
+            aria-label="Make a deposit"
+            className="text-white text-[16px] leading-none font-extrabold pt-[1px] active:scale-[0.95] transition-transform"
+          >
             £113.59
-          </span>
+          </button>
           <span
             className="h-[20px] w-px"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.22)" }}
             aria-hidden
           />
-          {/* Avatar — sized 38px so it fits comfortably inside the 46px
-              pill with 4px of breathing room. Ring colour matches the
-              pill fill so it blends instead of standing out as a chip
-              within a chip. */}
-          <div
-            className="relative size-[38px] rounded-full overflow-hidden bg-white"
+          <button
+            type="button"
+            onClick={openSideNav}
+            aria-label="Open account menu"
+            className="relative size-[38px] rounded-full overflow-hidden bg-white shrink-0 active:scale-[0.95] transition-transform"
             style={{
               border: "2px solid rgba(8, 24, 100, 0.65)",
             }}
@@ -156,8 +164,8 @@ export function BrandBar() {
               className="object-cover"
               priority
             />
-          </div>
-        </button>
+          </button>
+        </div>
       </div>
     </header>
   );

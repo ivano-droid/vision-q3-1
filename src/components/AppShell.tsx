@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BrandBar } from "./BrandBar";
 import { BottomNav } from "./BottomNav";
 import { SideNav } from "./SideNav";
+import { DepositSheet } from "./DepositSheet";
 import { LoadingSplash } from "./LoadingSplash";
 
 /**
@@ -43,6 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <BottomNav />
         <SideNav />
+        <DepositSheet />
       </div>
 
       {/* Splash uses position:fixed + the --frame-right-offset CSS var
