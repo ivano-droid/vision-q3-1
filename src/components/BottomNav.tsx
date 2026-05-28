@@ -211,7 +211,12 @@ export function BottomNav() {
               paddingLeft: BAR_PAD_L,
               paddingRight: BAR_PAD_R,
               gap: TAB_GAP,
-              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              // 0.82 alpha + 18px backdrop-blur: the bar still
+              // reads as a confidently white surface, but content
+              // scrolling under it gives a visible frosted-glass
+              // tint through the bar. At 0.95 (the previous value)
+              // the bar was too opaque and the blur was invisible.
+              backgroundColor: "rgba(255, 255, 255, 0.82)",
               backdropFilter: "blur(18px) saturate(140%)",
               WebkitBackdropFilter: "blur(18px) saturate(140%)",
               boxShadow: "0 4px 22px 0 rgba(17, 17, 17, 0.12)",
