@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -43,20 +43,8 @@ const SURFACE_GREY = "#f2f3f3"; // Surface/primary
 const TEXT_SECONDARY = "#4d505b"; // Text/secondary
 const INNER_CARD = "#eff2ff"; // light blue card
 
-const TAB_ORDER: Tab[] = ["rewards", "offers"];
-
 export default function RewardsPage() {
   const [tab, setTab] = useState<Tab>("rewards");
-
-  // Track previous tab so the AnimatePresence slide animation
-  // knows which direction to slide content from (positive →
-  // moving toward the right tab, negative → toward the left).
-  const prevTabRef = useRef<Tab>(tab);
-  const direction =
-    TAB_ORDER.indexOf(tab) - TAB_ORDER.indexOf(prevTabRef.current);
-  useEffect(() => {
-    prevTabRef.current = tab;
-  }, [tab]);
 
   return (
     <div
@@ -83,51 +71,18 @@ export default function RewardsPage() {
       }}
     >
       {tab === "rewards" && <RewardsBackdrop />}
-      {/* Tab switcher — Figma 238:5736. White pill, 4px padding,
-          two flex-1 inner buttons.  */}
-      <div className="px-[16px]">
-        <div className="bg-white flex items-center p-[4px] rounded-full">
-          <TabButton
-            label="My Rewards"
-            active={tab === "rewards"}
-            onClick={() => setTab("rewards")}
-          />
-          <TabButton
-            label="Offers"
-            active={tab === "offers"}
-            onClick={() => setTab("offers")}
-          />
-        </div>
-      </div>
+      <TabSwitcher tab={tab} setTab={setTab} />
 
-      {/* Tab content with a directional slide transition.
-          AnimatePresence's `custom` prop carries the slide
-          direction into each variant function:
-            • Moving toward offers (dir > 0): new content slides
-              in from the right, old exits to the left.
-            • Moving toward rewards (dir < 0): new content slides
-              in from the left, old exits to the right.
-          mode="wait" keeps both contents from rendering
-          stacked during the swap, so the slide reads cleanly. */}
-      <AnimatePresence mode="wait" initial={false} custom={direction}>
+      {/* Tab content — soft opacity fade only. Content stays in
+          place; the toggle pill above is what animates between
+          tabs (see <TabSwitcher />). */}
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={tab}
-          custom={direction}
-          variants={{
-            enter: (dir: number) => ({
-              x: dir > 0 ? 60 : -60,
-              opacity: 0,
-            }),
-            center: { x: 0, opacity: 1 },
-            exit: (dir: number) => ({
-              x: dir > 0 ? -60 : 60,
-              opacity: 0,
-            }),
-          }}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         >
           {tab === "rewards" ? <MyRewardsContent /> : <OffersContent />}
         </motion.div>
@@ -181,32 +136,109 @@ function RewardsBackdrop() {
   );
 }
 
-function TabButton({
-  label,
-  active,
-  onClick,
+/** Tab switcher (Figma 238:5736). White outer pill with a
+ *  brand-dark inner "pill" that slides between the two tabs as
+ *  the user swaps. Pill x/width are measured from the active
+ *  tab button's DOM rect, then animated via a soft spring. */
+function TabSwitcher({
+  tab,
+  setTab,
 }: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
+  tab: Tab;
+  setTab: (t: Tab) => void;
 }) {
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const rewardsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const offersBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(
+    null,
+  );
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const row = rowRef.current;
+      const el =
+        tab === "rewards" ? rewardsBtnRef.current : offersBtnRef.current;
+      if (!row || !el) return;
+      const rowRect = row.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      setPill({
+        x: elRect.left - rowRect.left,
+        w: elRect.width,
+      });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [tab]);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex-1 min-w-0 flex items-center justify-center px-[12px] py-[8px] rounded-full transition-colors"
-      style={{
-        backgroundColor: active ? BRAND_DARK : "transparent",
-        color: active ? "#ffffff" : BRAND_DARK,
-      }}
-    >
-      <span
-        className="font-extrabold text-[14px]"
-        style={{ letterSpacing: 0.1, lineHeight: 1.6 }}
+    <div className="px-[16px]">
+      <div
+        ref={rowRef}
+        className="relative bg-white flex items-center p-[4px] rounded-full"
       >
-        {label}
-      </span>
-    </button>
+        {/* Sliding pill — absolute, animates x/width when the
+            active tab changes. left: 0 anchors the x transform
+            to the row's outer-left edge. */}
+        {pill && (
+          <motion.span
+            aria-hidden
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              top: 4,
+              bottom: 4,
+              left: 0,
+              backgroundColor: BRAND_DARK,
+            }}
+            initial={false}
+            animate={{ x: pill.x, width: pill.w }}
+            transition={{
+              type: "spring",
+              stiffness: 380,
+              damping: 35,
+              mass: 0.9,
+            }}
+          />
+        )}
+
+        <button
+          ref={rewardsBtnRef}
+          type="button"
+          onClick={() => setTab("rewards")}
+          className="relative z-[1] flex-1 min-w-0 flex items-center justify-center px-[12px] py-[8px] rounded-full"
+          style={{
+            color: tab === "rewards" ? "#ffffff" : BRAND_DARK,
+            transition: "color 200ms",
+          }}
+        >
+          <span
+            className="font-extrabold text-[14px]"
+            style={{ letterSpacing: 0.1, lineHeight: 1.6 }}
+          >
+            My Rewards
+          </span>
+        </button>
+        <button
+          ref={offersBtnRef}
+          type="button"
+          onClick={() => setTab("offers")}
+          className="relative z-[1] flex-1 min-w-0 flex items-center justify-center px-[12px] py-[8px] rounded-full"
+          style={{
+            color: tab === "offers" ? "#ffffff" : BRAND_DARK,
+            transition: "color 200ms",
+          }}
+        >
+          <span
+            className="font-extrabold text-[14px]"
+            style={{ letterSpacing: 0.1, lineHeight: 1.6 }}
+          >
+            Offers
+          </span>
+        </button>
+      </div>
+    </div>
   );
 }
 
