@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 /**
  * Persistent bottom navigation — Figma 226:52056.
  *
- * Reproduces the exact pill geometry of the Figma source.
+ * Reproduces the exact pill geometry of the Figma source, sized
+ * to match ResumePlayingBar so both floating elements line up.
  *
- * Bar shape (343 × 60, rounded-full):
+ * Bar shape (351 × 60, rounded-full):
  *
  *   ╭─────────────────────────────────────────────────────────╮
  *   │ ╭─────╮              ╭───────╮                  ╭─────╮ │
@@ -46,7 +47,12 @@ import { motion, AnimatePresence } from "framer-motion";
  */
 
 // ── Figma constants ────────────────────────────────────────────────
-const BAR_MAX_W = 343; // mobile-frame interior (375 - 32 outer gutter)
+// Bar width is matched to the ResumePlayingBar's inner card width
+// (mobile-frame 375 minus 12px gutter on each side = 351). Both
+// floating elements above the safe area now occupy the same
+// horizontal footprint, so the nav doesn't read as narrower than
+// the resume bar that sits above it.
+const BAR_MAX_W = 351;
 const BAR_H = 60;
 const BAR_PAD_L = 4; // Figma pl-4
 const BAR_PAD_R = 8; // Figma pr-8 (asymmetric — see notes above)
@@ -197,8 +203,10 @@ export function BottomNav() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {/* 16px gutter to mobile-frame edge + 8px bottom lift. */}
-        <div className="px-[16px] pb-[8px]">
+        {/* 12px gutter to mobile-frame edge + 8px bottom lift —
+            matches ResumePlayingBar's mx-12, so both floating
+            elements share the same outer footprint. */}
+        <div className="px-[12px] pb-[8px]">
           {/* Pill bar — Figma geometry: 343 wide, 60 tall, pl-4 pr-8,
               tabs gap-4. The asymmetric padding is a design choice;
               see header notes for the math behind it. */}
