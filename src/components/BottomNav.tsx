@@ -254,7 +254,11 @@ export function BottomNav() {
                   top: PILL_TOP,
                   left: 0,
                   height: PILL_H,
-                  backgroundColor: "#dee3f7",
+                  // Was #dee3f7 — a touch pale on the white bar.
+                  // Stepped down to #c5d1ef (same hue family,
+                  // about 10% darker) so the active state reads
+                  // with a bit more presence behind the icon.
+                  backgroundColor: "#c5d1ef",
                 }}
                 initial={false}
                 animate={{ x: pill.x, width: pill.w }}
