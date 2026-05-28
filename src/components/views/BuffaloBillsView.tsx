@@ -117,9 +117,13 @@ export function BuffaloBillsView() {
           reduce
             ? { duration: 0.2 }
             : {
-                duration: 1.4,
-                delay: 0.3,
-                times: [0, 0.45, 1],
+                // Quick rise (~0.5s) so the peek registers, then a
+                // slow ~2s glide back down so the user has time to
+                // read the cards before they leave the viewport.
+                // Total path: 2.4s, peak at 22% in.
+                duration: 2.4,
+                delay: 0.25,
+                times: [0, 0.22, 1],
                 ease: "easeInOut",
               }
         }
