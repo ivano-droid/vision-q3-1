@@ -514,13 +514,17 @@ export default function SearchPage() {
             aria-label="Search games"
           >
             <div
-              className="px-[16px] pb-[12px]"
+              className="flex items-center gap-[10px] px-[16px] pb-[12px]"
               style={{
                 paddingTop: "calc(env(safe-area-inset-top) + 14px)",
               }}
             >
+              {/* Input pill — magnifying glass + text input + inline
+                  clear-X (only shown when there's a query). Clearing
+                  the text keeps the modal open with the keyboard up
+                  so the user can keep typing. */}
               <div
-                className="flex items-center gap-[10px] rounded-full bg-white h-[48px] px-[18px]"
+                className="flex flex-1 items-center gap-[10px] rounded-full bg-white h-[48px] px-[18px]"
                 style={{ border: "1px solid rgba(3, 34, 172, 0.3)" }}
               >
                 <SearchIcon className="size-[18px] shrink-0 text-[#0322ac]" />
@@ -536,16 +540,41 @@ export default function SearchPage() {
                   onBlur={() => setFocused(false)}
                   className="flex-1 bg-transparent text-[15px] font-bold text-[#0322ac] placeholder:text-[#0322ac] outline-none text-left"
                 />
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  aria-label="Close search"
-                  className="grid size-[28px] place-items-center rounded-full shrink-0 active:scale-[0.9] transition-transform"
-                  style={{ backgroundColor: "rgba(10, 46, 203, 0.10)" }}
-                >
-                  <CloseIcon className="size-[14px] text-[var(--mrq-blue)]" />
-                </button>
+                {query.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      // Keep focus so the keyboard stays up and the
+                      // user can keep typing immediately.
+                      inputRef.current?.focus();
+                    }}
+                    aria-label="Clear search text"
+                    className="grid size-[22px] place-items-center rounded-full shrink-0 active:scale-[0.9] transition-transform"
+                    style={{
+                      backgroundColor: "rgba(10, 46, 203, 0.12)",
+                    }}
+                  >
+                    <CloseIcon className="size-[10px] text-[var(--mrq-blue)]" />
+                  </button>
+                )}
               </div>
+
+              {/* Close-modal X — sits OUTSIDE the input pill so it
+                  reads as a separate action (dismiss the modal vs.
+                  clear the text). Same brand-blue surface as the
+                  pill border for visual coherence. */}
+              <button
+                type="button"
+                onClick={closeModal}
+                aria-label="Close search"
+                className="grid size-[40px] place-items-center rounded-full shrink-0 active:scale-[0.92] transition-transform"
+                style={{
+                  backgroundColor: "rgba(10, 46, 203, 0.10)",
+                }}
+              >
+                <CloseIcon className="size-[16px] text-[var(--mrq-blue)]" />
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto">

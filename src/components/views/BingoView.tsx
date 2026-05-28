@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import { BINGO_ROOMS, type BingoRoom } from "@/lib/bingo-rooms";
 
 /**
@@ -12,10 +11,6 @@ import { BINGO_ROOMS, type BingoRoom } from "@/lib/bingo-rooms";
  *   ├──────────────────────────────────────┤
  *   │  Bingo                                │  ← Title only
  *   ├──────────────────────────────────────┤
- *   │  ┌──────────────────────────────────┐│
- *   │  │  ☆35       [room artwork]    ⓿30 ││  ← Featured "next up" hero
- *   │  │   ▲ Next game in 4 min            ││    (kept with countdown pill)
- *   │  └──────────────────────────────────┘│
  *   │  All rooms                            │
  *   │  ┌────────────────────────────────┐  │
  *   │  │ ☆35   [artwork]            30  │  │
@@ -25,20 +20,17 @@ import { BINGO_ROOMS, type BingoRoom } from "@/lib/bingo-rooms";
  *   │  ... (5 rooms)                        │
  *   └──────────────────────────────────────┘
  *
- * The room cards now mirror MrQ's bingo lobby tile language: each
- * room's lobby PNG carries the branded title art, with a white
- * player-count pill overlaid top-left, a pink/magenta ball-count
- * badge top-right, and a 3-cell info strip (clock + countdown,
- * tag + ticket, crown + jackpot) underneath. Way more glanceable
- * than the earlier horizontal pill with a tagline.
+ * The room cards mirror MrQ's bingo lobby tile language: each room's
+ * lobby PNG carries the branded title art, with a white player-count
+ * pill overlaid top-left, a pink/magenta ball-count badge top-right,
+ * and a 3-cell info strip (clock + countdown, tag + ticket, crown +
+ * jackpot) underneath.
+ *
+ * Previously this view had a "featured" hero card at the top
+ * (Tropic Like It's Hot) — dropped because it duplicated the first
+ * tile of the All Rooms list with no extra information.
  */
 export function BingoView() {
-  const reduce = useReducedMotion();
-
-  // First room is the "featured" hero — Tropic Like It's Hot, the
-  // brand flagship room.
-  const featured = BINGO_ROOMS[0];
-
   return (
     <>
       {/* In-page header — title only. No CTA pill on bingo since the
@@ -49,9 +41,7 @@ export function BingoView() {
         </h1>
       </div>
 
-      <FeaturedRoom room={featured} reduce={reduce} />
-
-      <section className="px-[16px] pt-[8px] pb-[24px]">
+      <section className="px-[16px] pt-[4px] pb-[24px]">
         <h2 className="text-[18px] font-extrabold leading-none text-[var(--mrq-blue)] mb-[12px]">
           All rooms
         </h2>
@@ -62,75 +52,6 @@ export function BingoView() {
         </div>
       </section>
     </>
-  );
-}
-
-/* ============================================================
-   Featured hero — single big room card at the top of the page.
-
-   The "Next game in" indicator is a floating yellow badge in the
-   top-left of the hero: clock icon + countdown text in a high-
-   contrast pill. Subtle pulse keeps the timer feeling live.
-   ============================================================ */
-function FeaturedRoom({
-  room,
-  reduce,
-}: {
-  room: BingoRoom;
-  reduce: boolean | null;
-}) {
-  return (
-    <motion.section
-      className="px-[16px] pb-[20px]"
-      initial={false}
-      animate={reduce ? undefined : { opacity: [0, 1], y: [6, 0] }}
-      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <button
-        type="button"
-        aria-label={`Join ${room.name}`}
-        className="relative w-full overflow-hidden rounded-[18px] active:scale-[0.99] transition-transform"
-        style={{
-          aspectRatio: "5 / 4",
-          boxShadow:
-            "0 14px 32px -16px rgba(10, 46, 203, 0.4), 0 2px 6px -2px rgba(10, 46, 203, 0.18)",
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={room.image}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-        />
-
-        {/* Floating countdown badge — top-left, yellow + navy. */}
-        <motion.div
-          className="absolute top-[14px] left-[14px] flex items-center rounded-full"
-          style={{
-            backgroundColor: "#FFBD29",
-            color: "var(--mrq-blue-dark)",
-            height: 30,
-            paddingLeft: 10,
-            paddingRight: 14,
-            gap: 6,
-            boxShadow:
-              "0 4px 12px -4px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
-          }}
-          animate={reduce ? undefined : { scale: [1, 1.04, 1] }}
-          transition={
-            reduce
-              ? undefined
-              : { duration: 2, repeat: Infinity, ease: "easeInOut" }
-          }
-        >
-          <ClockIcon className="size-[14px]" />
-          <span className="text-[13px] font-extrabold leading-none">
-            Next game in {room.nextGameTime}
-          </span>
-        </motion.div>
-      </button>
-    </motion.section>
   );
 }
 
@@ -262,25 +183,6 @@ function VDivider() {
    The "bubble" variants are filled circles holding a glyph, used
    in the info strip. Matches MrQ's branded round-icon style.
    ============================================================ */
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-      focusable={false}
-    >
-      <circle cx="7" cy="7" r="5.5" />
-      <path d="M7 4v3l2 1.4" />
-    </svg>
-  );
-}
-
 function ClockBubbleIcon() {
   return (
     <span
