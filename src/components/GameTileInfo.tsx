@@ -54,8 +54,8 @@ export function GameTileInfo({
       {/* Chip is absolute-positioned in the bottom-right of the
           backdrop so it tucks into the very corner of the tile —
           not centred in the cutout. 4px inset from each edge.
-          White surface with a brand-blue glyph reads as a quieter
-          chrome affordance than the previous solid-blue chip. */}
+          Brand-blue at 50% opacity with no drop shadow — sits as
+          a soft translucent dot, not a stamped chrome chip. */}
       <span
         className="absolute grid place-items-center rounded-full"
         style={{
@@ -63,9 +63,7 @@ export function GameTileInfo({
           height: chipSize,
           right: 4,
           bottom: 4,
-          backgroundColor: "#ffffff",
-          boxShadow:
-            "0 2px 6px -2px rgba(10, 46, 203, 0.32), inset 0 0 0 1px rgba(10, 46, 203, 0.06)",
+          backgroundColor: "rgba(10, 46, 203, 0.5)",
         }}
       >
         <InfoGlyph size={Math.round(chipSize * 0.5)} />
@@ -80,10 +78,8 @@ function InfoGlyph({ size }: { size: number }) {
       width={size}
       height={size}
       viewBox="0 0 14 14"
-      fill="var(--mrq-blue)"
-      // Glyph at 70% opacity — soft enough to feel like a quiet
-      // affordance, still legible against the white chip.
-      style={{ opacity: 0.7 }}
+      // White glyph reads cleanly on the semi-transparent blue chip.
+      fill="white"
       aria-hidden
       focusable={false}
     >
