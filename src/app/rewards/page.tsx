@@ -630,68 +630,8 @@ function InProgress() {
 function OffersContent() {
   return (
     <div className="mt-[24px] flex flex-col gap-[24px]">
-      <FeaturedOffers />
       <ThisWeeksOffers />
       <AllOffers />
-    </div>
-  );
-}
-
-function FeaturedOffers() {
-  return (
-    <section>
-      <h2
-        className="px-[16px] text-white font-extrabold text-[16px]"
-        style={{ lineHeight: 1.6 }}
-      >
-        Featured offers
-      </h2>
-      <div
-        className="mt-[12px] flex gap-[12px] overflow-x-auto no-scrollbar px-[16px]"
-        style={{ scrollSnapType: "x mandatory" }}
-      >
-        <FeaturedOfferCard
-          src="/assets/rewards/offer-friday-frenzy.png"
-          alt="Q's Friday Night Frenzy"
-          ctaLabel="More info"
-        />
-        <FeaturedOfferCard
-          src="/assets/rewards/offer-extra-2.png"
-          alt="Featured offer"
-          ctaLabel="More info"
-        />
-      </div>
-    </section>
-  );
-}
-
-function FeaturedOfferCard({
-  src,
-  alt,
-  ctaLabel,
-}: {
-  src: string;
-  alt: string;
-  ctaLabel: string;
-}) {
-  return (
-    <div
-      className="relative shrink-0 w-[320px] rounded-[14px] overflow-hidden"
-      style={{ aspectRatio: "320 / 122", scrollSnapAlign: "start" }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        className="absolute inset-0 size-full object-cover"
-      />
-      <button
-        type="button"
-        className="absolute bottom-[12px] right-[12px] bg-white px-[14px] py-[8px] rounded-full text-[13px] font-extrabold active:scale-[0.97] transition-transform"
-        style={{ color: BRAND_DARK, letterSpacing: 0.1 }}
-      >
-        {ctaLabel}
-      </button>
     </div>
   );
 }
@@ -713,7 +653,7 @@ function ThisWeeksOffers() {
         />
         <WeekOfferCard
           src="/assets/rewards/offer-lobstermania.png"
-          title="Catch 25 free spins"
+          title="Slingo spins"
           meta="Lobstermania is back in the house!"
         />
       </div>
@@ -721,6 +661,9 @@ function ThisWeeksOffers() {
   );
 }
 
+/** Single "This weeks offers" card — white outer container,
+ *  image at top (rounded corners via overflow-hidden), then
+ *  title + meta + full-width "View offer" CTA below. */
 function WeekOfferCard({
   src,
   title,
@@ -731,11 +674,9 @@ function WeekOfferCard({
   meta: string;
 }) {
   return (
-    <div className="flex flex-col gap-[8px]">
-      <div
-        className="rounded-[12px] overflow-hidden"
-        style={{ aspectRatio: "162 / 96" }}
-      >
+    <div className="bg-white rounded-[16px] overflow-hidden flex flex-col">
+      {/* Image fills the top section of the card. */}
+      <div style={{ aspectRatio: "162 / 110" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -743,25 +684,32 @@ function WeekOfferCard({
           className="size-full object-cover"
         />
       </div>
-      <p
-        className="text-white font-extrabold text-[14px]"
-        style={{ letterSpacing: 0.1, lineHeight: 1.4 }}
-      >
-        {title}
-      </p>
-      <p
-        className="text-white text-[10px] font-medium opacity-80"
-        style={{ letterSpacing: 0.2, lineHeight: 1.45 }}
-      >
-        {meta}
-      </p>
-      <button
-        type="button"
-        className="self-start bg-white px-[14px] py-[6px] rounded-full text-[13px] font-extrabold active:scale-[0.97] transition-transform"
-        style={{ color: BRAND_DARK, letterSpacing: 0.1 }}
-      >
-        View offer
-      </button>
+      {/* Text + CTA block. */}
+      <div className="flex flex-col gap-[6px] p-[12px]">
+        <p
+          className="font-extrabold text-[14px]"
+          style={{ color: BRAND_DARK, lineHeight: 1.4 }}
+        >
+          {title}
+        </p>
+        <p
+          className="text-[11px] font-medium"
+          style={{
+            color: TEXT_SECONDARY,
+            letterSpacing: 0.2,
+            lineHeight: 1.45,
+          }}
+        >
+          {meta}
+        </p>
+        <button
+          type="button"
+          className="mt-[6px] w-full h-[40px] rounded-[10px] font-extrabold text-[13px] text-white active:scale-[0.98] transition-transform"
+          style={{ backgroundColor: BRAND_DARK, letterSpacing: 0.1 }}
+        >
+          View offer
+        </button>
+      </div>
     </div>
   );
 }
@@ -782,7 +730,7 @@ function AllOffers() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/rewards/offer-best-deals.png"
+            src="/assets/rewards/offer_bannerimg.png"
             alt=""
             className="absolute inset-0 size-full object-cover"
           />
