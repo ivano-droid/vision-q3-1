@@ -101,6 +101,7 @@ const BROWSE: TileSpec[] = [
   },
   {
     label: "Arena",
+    href: "/arena",
     icon: "/assets/search/arena.svg",
     iconW: ICON_W,
     iconH: ICON_H,
