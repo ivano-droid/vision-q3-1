@@ -55,30 +55,53 @@ export function AppShell({ children }: { children: ReactNode }) {
   const BRAND_TOP_BG = "#0a2ecb"; // brand-blue (matches BrandBar)
   const BRAND_BOTTOM_BG = "#0C2287"; // Brand/900 — darker blue
 
+  // /play/* are full-bleed game pages — they paint their own dark
+  // navy backdrop and their own in-game header (back + balance pill),
+  // so the global BrandBar and BottomNav must step out of the way.
+  // The mobile-frame surface is set to the same dark navy so overscroll
+  // / safe-area padding doesn't reveal the default #f5f5f5 underneath.
+  const isGameSurface = pathname.startsWith("/play");
+  const GAME_BG = "#101626";
+
   return (
     <>
       <div
         className="mobile-frame"
         // mobile-frame gets the brand-blue tone so the BrandBar's
         // rounded bottom corners reveal a matching surface
-        // through the curve wedge.
+        // through the curve wedge — or dark navy on /play/* so
+        // the immersive game page reads edge-to-edge.
         style={
-          isBrandSurface ? { background: BRAND_TOP_BG } : undefined
+          isGameSurface
+            ? { background: GAME_BG }
+            : isBrandSurface
+              ? { background: BRAND_TOP_BG }
+              : undefined
         }
       >
-        <BrandBar />
+        {!isGameSurface && <BrandBar />}
 
         <main
           // main gets the darker tone so any overscroll below
           // the page content shows the same colour the page
-          // ends on.
-          className={isBrandSurface ? "" : "bg-[#f5f5f5]"}
+          // ends on. /play/* uses the dark navy game surface.
+          className={
+            isGameSurface
+              ? ""
+              : isBrandSurface
+                ? ""
+                : "bg-[#f5f5f5]"
+          }
           style={
-            isBrandSurface ? { background: BRAND_BOTTOM_BG } : undefined
+            isGameSurface
+              ? { background: GAME_BG }
+              : isBrandSurface
+                ? { background: BRAND_BOTTOM_BG }
+                : undefined
           }
         >
           {children}
-          {!ownsBottomFlush && (
+          {!ownsBottomFlush && !isGameSurface && (
             <div
               style={{
                 height: "max(96px, calc(env(safe-area-inset-bottom) + 96px))",
@@ -88,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </main>
 
-        <BottomNav />
+        {!isGameSurface && <BottomNav />}
         <ResumePlayingBar />
         <SideNav />
         <DepositSheet />

@@ -254,12 +254,15 @@ export function BottomNav() {
                   top: PILL_TOP,
                   left: 0,
                   height: PILL_H,
-                  // Was #dee3f7 → #c5d1ef → #b1c0e6 → #bccae9.
-                  // #b1c0e6 read too heavy on the lighter (#f5f5f5)
-                  // pages, so we dialled back to #bccae9 — a touch
-                  // darker than #c5d1ef but lighter than #b1c0e6.
-                  // Same lavender hue family throughout.
-                  backgroundColor: "#bccae9",
+                  // Was #dee3f7 → #c5d1ef → #b1c0e6 → #bccae9. The
+                  // solid #bccae9 still felt too bright sitting on
+                  // the translucent-white bar, so we switched to a
+                  // lavender at lower opacity — the same hue family
+                  // shows through softer because the bar's
+                  // backdrop-blur tinted white blends in. 75%
+                  // opacity reads as "lit" without competing with
+                  // the active icon for attention.
+                  backgroundColor: "rgba(188, 202, 233, 0.75)",
                 }}
                 initial={false}
                 animate={{ x: pill.x, width: pill.w }}

@@ -77,16 +77,6 @@ const REELS: Reel[] = [
     studio: "Hacksaw Gaming",
     video: "/assets/videos/video4.mp4",
   },
-  // Brand spot — appears once per loop. Renders with zero overlaid UI
-  // (set ad: true) so the video does the entire job. game/studio are
-  // never displayed for ads but kept here for completeness.
-  {
-    id: "v5",
-    game: "",
-    studio: "",
-    video: "/assets/videos/video5.mp4",
-    ad: true,
-  },
 ];
 
 // How many reels to render in the very first batch. Each loop is
@@ -110,13 +100,15 @@ export default function DiscoverPage() {
   // → REELS[0] → REELS[2] → ... — without ever ending.
   const [loops, setLoops] = useState(INITIAL_LOOPS);
   const [activeIndex, setActiveIndex] = useState(0);
-  // Browser autoplay policy: muted-autoplay is the only flavour that
-  // works on a cold page load (no user gesture yet). So videos start
-  // muted, and the user opts in to sound by tapping the speaker
-  // toggle in the action stack (TikTok / Reels convention). The
-  // single page-level `muted` state is mirrored onto every <video>
-  // so toggling is instant and consistent across reels.
-  const [muted, setMuted] = useState(true);
+  // Music ON by default. Browser autoplay policy will block this
+  // on a cold load (no user gesture yet) — the <video> elements
+  // start muted by hardware default, but the user toggles via the
+  // speaker icon and the page-level `muted` state flips to false on
+  // first interaction. Setting initial state to `false` means the
+  // first tap (and any future tap-to-mute) lines up with the
+  // page's intent — and once the page has a gesture, subsequent
+  // reels play with audio without needing a second tap.
+  const [muted, setMuted] = useState(false);
 
   // Materialise the rendered feed by cycling REELS. Each rendered
   // article gets a unique `key` (sourceId + position in the feed)

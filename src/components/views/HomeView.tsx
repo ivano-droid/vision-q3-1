@@ -34,7 +34,9 @@ const G = (i: number, alt: string) => ({
 const PICK_UP_GRID = [
   { src: "/assets/games/slot-04.png", name: "Jewel Stepper" },
   { src: "/assets/games/slot-08.png", name: "Tiki Tumble" },
-  { src: "/assets/games/slot-01.png", name: "Buffalo Bills" },
+  // Buffalo Bills has a real game page now — clicking the tile drops
+  // the user into the /play/buffalo-bills experience (Figma 1485:95206).
+  { src: "/assets/games/slot-01.png", name: "Buffalo Bills", href: "/play/buffalo-bills" },
   { src: "/assets/games/slot-13.png", name: "Big Bass Bonanza" },
 ];
 
