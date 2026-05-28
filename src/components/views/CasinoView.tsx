@@ -59,15 +59,19 @@ const HERO_DECK: HeroGame[] = [
     provider: "Thunderkick",
   },
   {
-    src: "/assets/games/south-park.png",
-    alt: "South Park",
-    title: "South Park",
-    rtp: "96.55%",
+    // Buffalo Bills sits in slot #2 of the hero deck so users land on
+    // a real game page when they tap the second card or its play
+    // button. /play/buffalo-bills is the Figma 1485:95206 build.
+    src: "/assets/games/slot-01.png",
+    alt: "Buffalo Bills",
+    title: "Buffalo Bills",
+    rtp: "94%",
+    href: "/play/buffalo-bills",
     volatility: "Medium",
-    maxWin: "2,500x",
-    betRange: "£0.20–£250",
+    maxWin: "5,000x",
+    betRange: "£0.10–£100",
     gameType: "Slot",
-    provider: "NetEnt",
+    provider: "Goosicorn",
   },
   {
     src: "/assets/games/fruit-warp.png",

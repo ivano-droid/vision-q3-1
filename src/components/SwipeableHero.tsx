@@ -9,6 +9,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /**
  * Tinder-style swipeable hero card.
@@ -57,6 +58,11 @@ export type HeroGame = {
   rtp: string;
   /** Yellow "Exclusive" sticker top-left of the artwork. */
   exclusive?: boolean;
+  /** Optional destination — when set, tapping the card OR the play
+   *  button drops the user into that route (e.g. the Buffalo Bills
+   *  hero links to /play/buffalo-bills). Cards without an href stay
+   *  on the stub console.log behaviour. */
+  href?: string;
   /** Optional metadata surfaced by the info overlay. Falls back to
    *  sensible defaults when omitted so old data still renders. */
   volatility?: string;
@@ -72,9 +78,24 @@ const SWIPE_THRESHOLD = 100;
 const SWIPE_EXIT_DISTANCE = 700;
 
 export function SwipeableHero({ games }: { games: HeroGame[] }) {
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const current = games[index % games.length];
   const next = games[(index + 1) % games.length];
+
+  // Tap-to-open behaviour: when the active card has an `href`, route
+  // there; otherwise stay on the stub console.log for cards that
+  // haven't been wired to game pages yet.
+  const openCurrent = () => {
+    if (current.href) {
+      router.push(current.href);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.log("[SwipeableHero] open game →", current.title);
+    }
+  };
 
   // Shared MotionValue. SwipeCard binds its drag to this; kept at the
   // parent so future siblings (e.g. progress dots) could read it.
@@ -107,12 +128,7 @@ export function SwipeableHero({ games }: { games: HeroGame[] }) {
         game={current}
         isFirst={index === 0}
         onSwiped={() => setIndex((i) => i + 1)}
-        onTap={() => {
-          if (typeof window !== "undefined") {
-            // eslint-disable-next-line no-console
-            console.log("[SwipeableHero] open game →", current.title);
-          }
-        }}
+        onTap={openCurrent}
       />
     </div>
   );
@@ -156,6 +172,7 @@ function SwipeCard({
   onSwiped: () => void;
   onTap: () => void;
 }) {
+  const router = useRouter();
   const [infoOpen, setInfoOpen] = useState(false);
   const rotate = useTransform(x, [-300, 0, 300], [-12, 0, 12]);
   const opacity = useTransform(x, [-300, -50, 0, 50, 300], [0.5, 1, 1, 1, 0.5]);
@@ -231,6 +248,12 @@ function SwipeCard({
         infoOpen={infoOpen}
         onToggleInfo={() => setInfoOpen((open) => !open)}
         onPlay={() => {
+          // Play button shares the card's destination — same route
+          // as a card tap, just from a more deliberate target.
+          if (game.href) {
+            router.push(game.href);
+            return;
+          }
           if (typeof window !== "undefined") {
             // eslint-disable-next-line no-console
             console.log("[SwipeableHero] play →", game.title);
@@ -270,8 +293,11 @@ function CardSurface({
     <div
       className="relative h-full w-full overflow-hidden rounded-[18px]"
       style={{
-        boxShadow:
-          "0 14px 32px -16px rgba(10, 46, 203, 0.4), 0 2px 6px -2px rgba(10, 46, 203, 0.18)",
+        // Softer than before — the previous two-layer brand-blue
+        // shadow felt too heavy under the artwork. Single lighter
+        // layer (0.4 → 0.22 alpha) lifts the card off the page
+        // without dominating it.
+        boxShadow: "0 10px 24px -14px rgba(10, 46, 203, 0.22)",
       }}
     >
       {/* Artwork. Blurred + dimmed when the info overlay is open so
