@@ -32,29 +32,43 @@ import { ResumePlayingBar } from "./ResumePlayingBar";
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const ownsBottomFlush = pathname === "/";
-  // Rewards uses a solid darker brand-blue (#181f43) as its
-  // surface instead of the default #f5f5f5 canvas. Both main
-  // and the mobile-frame wrapper need to pick that colour up,
-  // otherwise overscroll regions and the BrandBar's rounded-
-  // corner curve area would expose the wrong tone.
+  // Rewards uses a two-tone surface: brand-blue #0a2ecb at the
+  // top of the page (matching the BrandBar), transitioning to
+  // a darker #181f43 below the hero's ellipse. The rewards
+  // page paints both halves via its own elements, but the
+  // shell needs to provide matching surfaces for:
+  //   • mobile-frame  → brand-blue, so the BrandBar's rounded
+  //                     bottom corners reveal brand-blue
+  //                     (matching the BrandBar) through the
+  //                     curve wedge instead of #f5f5f5.
+  //   • main          → dark blue, so any overscroll past the
+  //                     bottom of the page content shows the
+  //                     same dark tone the page ends on.
   const isRewards = pathname.startsWith("/rewards");
-  const REWARDS_BG = "#181f43";
+  const REWARDS_TOP_BG = "#0a2ecb"; // brand-blue (matches BrandBar)
+  const REWARDS_BOTTOM_BG = "#181f43"; // darker blue below ellipse
 
   return (
     <>
       <div
         className="mobile-frame"
-        // /rewards uses a solid #181f43 surface so the BrandBar's
-        // 20px rounded bottom corners don't reveal the default
-        // #f5f5f5 canvas through the curve wedge. Inline style
-        // overrides the .mobile-frame stylesheet's #f5f5f5.
-        style={isRewards ? { background: REWARDS_BG } : undefined}
+        // mobile-frame gets the brand-blue tone so the BrandBar's
+        // rounded bottom corners reveal a matching surface
+        // through the curve wedge.
+        style={
+          isRewards ? { background: REWARDS_TOP_BG } : undefined
+        }
       >
         <BrandBar />
 
         <main
+          // main gets the darker tone so any overscroll below
+          // the page content shows the same colour the page
+          // ends on.
           className={isRewards ? "" : "bg-[#f5f5f5]"}
-          style={isRewards ? { background: REWARDS_BG } : undefined}
+          style={
+            isRewards ? { background: REWARDS_BOTTOM_BG } : undefined
+          }
         >
           {children}
           {!ownsBottomFlush && (

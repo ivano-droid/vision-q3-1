@@ -49,13 +49,16 @@ export default function RewardsPage() {
     <div
       className="relative min-h-[100dvh] pt-[20px] pb-[32px]"
       style={{
-        // Solid darker brand-blue — was a gradient
-        // (#0a2ecb → #181f43) but a single tone reads cleaner.
-        // Matches the BottomNav scrim colour so the bar/page
-        // transition has no value shift.
-        background: "#181f43",
+        // Top half of the page is brand-blue #0a2ecb. The
+        // darker #181f43 layer below is painted by a separate
+        // absolute div (see <RewardsBackdrop />) whose top
+        // edge sits at the ellipse's vertical centre, so the
+        // ellipse SVG covers the hard seam and provides the
+        // visual curve between the two tones.
+        background: "#0a2ecb",
       }}
     >
+      <RewardsBackdrop />
       {/* Tab switcher — Figma 238:5736. White pill, 4px padding,
           two flex-1 inner buttons.  */}
       <div className="px-[16px]">
@@ -75,6 +78,44 @@ export default function RewardsPage() {
 
       {tab === "rewards" ? <MyRewardsContent /> : <OffersContent />}
     </div>
+  );
+}
+
+/** Dark-blue layer that covers everything from the ellipse's
+ *  vertical centre down to the end of the page. The ellipse
+ *  SVG (positioned inside the hero) sits ON TOP of this layer's
+ *  hard top edge, and is wider than the mobile-frame at its own
+ *  vertical centre — so the seam between #0a2ecb (above) and
+ *  #181f43 (below) is hidden behind the ellipse's curve, and the
+ *  effect reads as "the ellipse fades the page from brand-blue
+ *  into darker blue".
+ *
+ *  Page wrapper coords (origin = wrapper's top, below BrandBar):
+ *    pt-20                                            =  20
+ *    tab switcher (px-16 wrapper + 44px pill)         =  52
+ *    MyRewardsContent mt-24                           =  24
+ *    Hero top                                         =  96
+ *    Ellipse top within hero (top:33)                 =  33
+ *    → ellipse top in page coords                     = 129
+ *    Ellipse height                                   = 130
+ *    → ellipse vertical centre                        = 194
+ *
+ *  So the dark layer starts at 194px from the wrapper's top.
+ *  At that y, the ellipse is at its widest (518px in render
+ *  space, > 375px mobile-frame), so the seam is hidden across
+ *  the full visible width.
+ */
+function RewardsBackdrop() {
+  return (
+    <div
+      aria-hidden
+      className="absolute left-0 right-0 bottom-0 pointer-events-none"
+      style={{
+        top: 194,
+        background: "#181f43",
+        zIndex: 0,
+      }}
+    />
   );
 }
 
