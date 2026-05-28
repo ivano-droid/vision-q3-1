@@ -389,36 +389,19 @@ function AvailableToCollect() {
   ];
 
   return (
-    <section>
+    // SECTION has padding-left: 16 (same as the In Progress
+    // section which the user has confirmed lines up correctly).
+    // Title and scroll BOTH sit inside this padding, so they
+    // share the same 16px page gutter. No nested padding, no
+    // negative margins, no inline-flex tricks — just the
+    // section's own padding doing the work.
+    <section style={{ paddingLeft: 16 }}>
       <h2
         className="text-white font-extrabold text-[16px]"
-        style={{ paddingLeft: 16, paddingRight: 16, lineHeight: 1.6 }}
+        style={{ paddingRight: 16, lineHeight: 1.6 }}
       >
         Available to collect
       </h2>
-      {/* Carousel — REBUILT (~10th attempt). Every previous
-          variant (padding on the overflow container, padding
-          on a max-content inner, per-card marginLeft, padding
-          + class mix) ended up with the first card rendering
-          flush against the page edge in the deployed build.
-          Stripping back to the simplest possible construction:
-
-            outer = block div, overflowX: auto (inline style)
-            inner = INLINE-FLEX (so it naturally sizes to its
-                    content's intrinsic width — no need for
-                    `width: max-content`, which seems to be
-                    where browsers were dropping the padding)
-            inner has paddingLeft/paddingRight: 16 + gap: 16
-            each card wrapped in a flexShrink: 0 div
-
-          inline-flex behaves like inline-block at the outer
-          level — the parent (scroll) sees a single inline-flex
-          child with a definite intrinsic width INCLUDING its
-          padding. The padding never gets eaten by any flex
-          algorithm. First card visibly inset 16px from the
-          scroll's left edge, which equals 16px from the page
-          edge (matching the section title and the In Progress
-          card below). */}
       <div
         className="no-scrollbar"
         style={{
@@ -430,7 +413,6 @@ function AvailableToCollect() {
         <div
           style={{
             display: "inline-flex",
-            paddingLeft: 16,
             paddingRight: 16,
             paddingBottom: 2,
             gap: 16,
