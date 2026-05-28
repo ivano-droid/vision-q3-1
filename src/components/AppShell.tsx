@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { BrandBar } from "./BrandBar";
 import { BottomNav } from "./BottomNav";
@@ -19,8 +20,19 @@ import { LoadingSplash } from "./LoadingSplash";
  * Keeps the per-route page components focused on content only — they
  * don't import the brand bar, the bottom nav, or anything else, so
  * adding a new route is just dropping a `page.tsx` into `/app/<route>/`.
+ *
+ * Bottom safe-area: every route gets a 96px footer spacer so the
+ * last rail's tiles don't get trapped under the floating BottomNav,
+ * EXCEPT the home route which owns its own bottom flush — the Q Club
+ * full-width section sits right above the BottomNav with no gap.
+ * HomeView puts the 96px clearance between the last rail and the Q
+ * Club so the rails still breathe but the closing flourish stays
+ * flush to the page bottom.
  */
 export function AppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const ownsBottomFlush = pathname === "/";
+
   return (
     <>
       <div className="mobile-frame">
@@ -28,14 +40,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="bg-[#f5f5f5]">
           {children}
-          {/* Bottom safe area — clears the floating bottom nav so the
-              last bit of page content isn't trapped behind the pill. */}
-          <div
-            style={{
-              height: "max(96px, calc(env(safe-area-inset-bottom) + 96px))",
-            }}
-            aria-hidden
-          />
+          {!ownsBottomFlush && (
+            <div
+              style={{
+                height: "max(96px, calc(env(safe-area-inset-bottom) + 96px))",
+              }}
+              aria-hidden
+            />
+          )}
         </main>
 
         <BottomNav />

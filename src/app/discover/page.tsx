@@ -67,6 +67,12 @@ const REELS: Reel[] = [
     studio: "Microgaming",
     video: "/assets/videos/video3.mp4",
   },
+  {
+    id: "v4",
+    game: "Maze Escape",
+    studio: "Hacksaw Gaming",
+    video: "/assets/videos/video4.mp4",
+  },
 ];
 
 // How many reels to render in the very first batch. Three loops of
