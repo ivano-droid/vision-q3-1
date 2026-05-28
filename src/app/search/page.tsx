@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CategoryMegaCardsRail,
   type MegaCardCategory,
@@ -35,102 +35,69 @@ import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
  * Bottom nav is unchanged per the brief.
  */
 
-// Each tile's sticker is built from one or more PNG layers, drawn
-// bottom-up (first item = back of the stack). The "flattened" SVG
-// exports from Figma turned out to be just the dark navy outline
-// layers, so we layer the colour body + details ourselves.
-//
-// Layers are positioned in PERCENTAGES of the sticker bounding box
-// so the same spec works at any rendered size — width:auto on each
-// layer preserves its native aspect ratio (so the crown gem doesn't
-// stretch into a fat ellipse, etc).
-type StickerLayer = {
-  src: string;
-  /** Horizontal anchor as % of the sticker bounding box width. */
-  leftPct: number;
-  /** Vertical anchor as % of the sticker bounding box height. */
-  topPct: number;
-  /** Layer width as % of the sticker bounding box width. */
-  widthPct: number;
-  /** Optional explicit height; if omitted, height: auto (image
-   *  keeps its native aspect ratio). */
-  heightPct?: number;
-};
+// Start Browsing tile spec. Each sticker is now a single self-contained
+// SVG (Figma 216:46506) — the body fill, outline, and detail layers are
+// all baked into the file, so the BrowseTile component just sets it as
+// one positioned image on the right side of each tile.
 type TileSpec = {
   label: string;
   /** Optional href. Tiles without one render as inert buttons — used
    *  while Live/Bingo/Arena pages are unbuilt so the tiles still show
    *  visually but don't navigate to a 404. */
   href?: string;
-  stickerW: number;
-  stickerH: number;
-  stickerRight: number;
-  stickerTop: number;
-  stickerRotate: number;
-  layers: StickerLayer[];
-  bingoText?: boolean;
+  /** SVG sticker dropped on the right of the tile. */
+  icon: string;
+  /** Sticker bounding-box width in px. */
+  iconW: number;
+  /** Sticker bounding-box height in px. */
+  iconH: number;
+  /** Offset from the right edge of the tile (px). Negative pushes
+   *  the sticker outside the tile boundary so the playful "stuck on"
+   *  feel survives. */
+  iconRight: number;
+  /** Offset from the top of the tile (px). */
+  iconTop: number;
+  /** Rotation in degrees. */
+  iconRotate: number;
 };
 
 const BROWSE: TileSpec[] = [
   {
     label: "Casino",
     href: "/casino",
-    stickerW: 60,
-    stickerH: 60,
-    stickerRight: -4,
-    stickerTop: -4,
-    stickerRotate: 14,
-    // Single layer — the 7 SVG already has the pink fill + white
-    // outline + dark details baked in.
-    layers: [
-      { src: "/assets/search/sticker-casino.png", leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
-    ],
+    icon: "/assets/search/casino.svg",
+    iconW: 65,
+    iconH: 45,
+    iconRight: -6,
+    iconTop: 4,
+    iconRotate: 14,
   },
   {
     label: "Live Casino",
-    // No href — /live page is removed for now, tile is inert.
-    stickerW: 70,
-    stickerH: 58,
-    stickerRight: -2,
-    stickerTop: -2,
-    stickerRotate: -9,
-    // Bottom → top: shadow → yellow crown body → white highlights →
-    // dark navy gem ellipse pinned at the top centre.
-    layers: [
-      { src: "/assets/search/crown-shadow.png", leftPct: 8,  topPct: 76, widthPct: 78 },
-      { src: "/assets/search/crown-body.png",   leftPct: 0,  topPct: 8,  widthPct: 100 },
-      { src: "/assets/search/crown-hi.png",     leftPct: 0,  topPct: 8,  widthPct: 100 },
-      { src: "/assets/search/crown-gem.png",    leftPct: 20, topPct: 6,  widthPct: 60 },
-    ],
+    icon: "/assets/search/live.svg",
+    iconW: 65,
+    iconH: 45,
+    iconRight: -4,
+    iconTop: 3,
+    iconRotate: -9,
   },
   {
     label: "Bingo",
-    // No href — /bingo page is removed for now, tile is inert.
-    stickerW: 54,
-    stickerH: 54,
-    stickerRight: 4,
-    stickerTop: 2,
-    stickerRotate: -17,
-    bingoText: true,
-    layers: [
-      { src: "/assets/search/bingo-ball.png",  leftPct: 0,  topPct: 0,  widthPct: 100, heightPct: 100 },
-      { src: "/assets/search/bingo-inner.png", leftPct: 18, topPct: 18, widthPct: 64,  heightPct: 64 },
-      { src: "/assets/search/bingo-hi.png",    leftPct: 25, topPct: 32, widthPct: 38 },
-    ],
+    icon: "/assets/search/bingo.svg",
+    iconW: 56,
+    iconH: 56,
+    iconRight: 2,
+    iconTop: 0,
+    iconRotate: -17,
   },
   {
     label: "Arena",
-    // No href — /arena page is removed for now, tile is inert.
-    stickerW: 40,
-    stickerH: 68,
-    stickerRight: 6,
-    stickerTop: -6,
-    stickerRotate: 32,
-    // Body: pink fist. Detail: navy fingernails/cuff lines on top.
-    layers: [
-      { src: "/assets/search/fist-body.png",   leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
-      { src: "/assets/search/fist-detail.png", leftPct: 0, topPct: 0, widthPct: 100, heightPct: 100 },
-    ],
+    icon: "/assets/search/arena.svg",
+    iconW: 50,
+    iconH: 58,
+    iconRight: 4,
+    iconTop: -2,
+    iconRotate: 32,
   },
 ];
 
@@ -331,13 +298,53 @@ export default function SearchPage() {
   // before the next page loads.
   const isActive = focused || query.length > 0;
 
+  // Lock body scroll while the focused search modal is open so the
+  // page underneath doesn't scroll behind the white overlay.
+  useEffect(() => {
+    if (!isActive) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isActive]);
+
+  // Auto-focus the modal's input when it appears so the keyboard
+  // pops up immediately on the device.
+  useEffect(() => {
+    if (isActive) inputRef.current?.focus();
+  }, [isActive]);
+
+  // Close the search modal: clear query, drop focus, blur the real
+  // input so the keyboard goes away.
+  const closeModal = () => {
+    setQuery("");
+    setFocused(false);
+    inputRef.current?.blur();
+  };
+
+  // Esc closes the modal.
+  useEffect(() => {
+    if (!isActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModal();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // closeModal is stable enough; intentionally minimal deps so we
+    // don't re-register on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
+
   return (
     <>
-      {/* Search input pill — sticky under the brand bar on the blue
-          band, so the blue header reads as one continuous panel.
-          Rounded bottom corners (20px) so the bottom of the combined
-          blue panel matches the BrandBar's rounded-panel treatment
-          on every other route. */}
+      {/* Sticky search-input shell. When the modal is open this gets
+          hidden under the fullscreen overlay so a single in-view
+          search field is visible at a time — but the shell stays
+          mounted so the input ref + state are preserved. The button
+          underneath is a tap target that just opens the modal; the
+          real input lives below and gets focused once the modal is
+          mounted. */}
       <div
         className="sticky top-[calc(env(safe-area-inset-top)+68px)] z-20 bg-mrq-blue px-[16px] pb-[14px] pt-[2px]"
         style={{
@@ -345,77 +352,98 @@ export default function SearchPage() {
           borderBottomRightRadius: "20px",
         }}
       >
-        <div
-          className="flex items-center gap-[10px] rounded-full bg-white h-[43px] px-[18px]"
+        <button
+          type="button"
+          onClick={() => setFocused(true)}
+          aria-label="Open search"
+          className="flex w-full items-center gap-[10px] rounded-full bg-white h-[43px] px-[18px] text-left"
           style={{ border: "1px solid rgba(3, 34, 172, 0.3)" }}
         >
           <SearchIcon className="size-[18px] shrink-0 text-[#0322ac]" />
-          <input
-            ref={inputRef}
-            type="search"
-            inputMode="search"
-            autoComplete="off"
-            placeholder="Search all games"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            // Left-aligned (matches normal input behaviour). The
-            // previous centered placeholder felt floaty against a
-            // left-aligned cursor once typing started.
-            className="flex-1 bg-transparent text-[15px] font-bold text-[#0322ac] placeholder:text-[#0322ac] outline-none text-left"
-          />
-          {query.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                inputRef.current?.focus();
-              }}
-              aria-label="Clear search"
-              className="size-[22px] rounded-full grid place-items-center bg-mrq-blue/10 text-mrq-blue shrink-0"
-            >
-              <CloseIcon className="size-[12px]" />
-            </button>
-          )}
-        </div>
+          <span className="flex-1 text-[15px] font-bold text-[#0322ac]">
+            {query || "Search all games"}
+          </span>
+        </button>
       </div>
 
-      {/* Default state ↔ active "modal" state — crossfade so the
-          transition feels deliberate (matches the modal-style swap
-          rather than a hard cut). mode="wait" keeps them from
-          briefly stacking. */}
-      <AnimatePresence mode="wait" initial={false}>
-        {isActive ? (
+      {/* Default-state content under the input. Always mounted; the
+          fullscreen overlay just covers it when the modal opens. */}
+      <div className="flex flex-col pt-[14px]">
+        <StartBrowsing items={BROWSE} />
+        <CategoryMegaCardsRail categories={MEGA_CATEGORIES} />
+        <ThemesGrid title="Browse all categories" items={BROWSE_CATEGORIES} />
+      </div>
+
+      {/* Fullscreen white search modal — fixed inset-0 z-[60] so it
+          sits ABOVE the BrandBar (z-30) and the sticky input shell
+          (z-20). The whole page goes solid white, the search field
+          gets pinned to the top with an X close button, and the
+          Recently Searched list takes over the body. */}
+      <AnimatePresence>
+        {isActive && (
           <motion.div
-            key="active"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
+            key="search-modal"
+            // Constrained to the mobile-frame's column via
+            // --frame-right-offset so it doesn't span the whole
+            // desktop monitor.
+            className="fixed inset-y-0 z-[60] bg-white flex flex-col"
+            style={{
+              left: "var(--frame-right-offset)",
+              right: "var(--frame-right-offset)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            role="dialog"
+            aria-label="Search games"
           >
-            <RecentlySearched
-              items={RECENTLY_SEARCHED}
-              onRemove={(name) => {
-                // Stub — in a real build this would drop the item
-                // from the user's search history.
-                // eslint-disable-next-line no-console
-                console.log("[Search] remove from history →", name);
+            <div
+              className="px-[16px] pb-[12px]"
+              style={{
+                paddingTop: "calc(env(safe-area-inset-top) + 14px)",
               }}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="default"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col pt-[14px]"
-          >
-            <StartBrowsing items={BROWSE} />
-            <CategoryMegaCardsRail categories={MEGA_CATEGORIES} />
-            <ThemesGrid title="Browse all categories" items={BROWSE_CATEGORIES} />
+            >
+              <div
+                className="flex items-center gap-[10px] rounded-full bg-white h-[48px] px-[18px]"
+                style={{ border: "1px solid rgba(3, 34, 172, 0.3)" }}
+              >
+                <SearchIcon className="size-[18px] shrink-0 text-[#0322ac]" />
+                <input
+                  ref={inputRef}
+                  type="search"
+                  inputMode="search"
+                  autoComplete="off"
+                  placeholder="Search all games"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setFocused(true)}
+                  onBlur={() => setFocused(false)}
+                  className="flex-1 bg-transparent text-[15px] font-bold text-[#0322ac] placeholder:text-[#0322ac] outline-none text-left"
+                />
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  aria-label="Close search"
+                  className="grid size-[28px] place-items-center rounded-full shrink-0 active:scale-[0.9] transition-transform"
+                  style={{ backgroundColor: "rgba(10, 46, 203, 0.10)" }}
+                >
+                  <CloseIcon className="size-[14px] text-[var(--mrq-blue)]" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <RecentlySearched
+                items={RECENTLY_SEARCHED}
+                onRemove={(name) => {
+                  // Stub — in a real build this would drop the item
+                  // from the user's search history.
+                  // eslint-disable-next-line no-console
+                  console.log("[Search] remove from history →", name);
+                }}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -498,69 +526,38 @@ function StartBrowsing({ items }: { items: typeof BROWSE }) {
 }
 
 function BrowseTile({ item }: { item: TileSpec }) {
+  // Slightly taller (62px vs the previous 58px) so the bigger stickers
+  // from Figma 216:46506 have room to breathe without clipping at the
+  // top/bottom edges.
   const className =
-    "relative h-[58px] overflow-hidden rounded-[10px] active:scale-[0.98] transition-transform";
+    "relative h-[62px] overflow-hidden rounded-[10px] active:scale-[0.98] transition-transform";
   const style = { backgroundColor: "#0322ac" } as const;
 
   // Tile interior is identical for linked vs inert tiles — only the
-  // wrapping element changes. Pulled out so a later visual tweak only
-  // needs to be made once.
+  // wrapping element changes.
   const inner = (
     <>
       <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[13px] font-extrabold text-white z-10">
         {item.label}
       </span>
-      {/* Sticker bounding box. Layers inside use percentage
-          positioning so the layout scales cleanly at any size; the
-          tile's overflow-hidden clips anything bleeding past the
-          rounded-rect (mirrors the Figma mask group). */}
-      <span
+      {/* Single flattened SVG sticker, rotated + offset per the
+          per-tile spec. The Figma mask group is already baked in so
+          there's no compositing left to do here. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.icon}
+        alt=""
         aria-hidden
-        className="absolute pointer-events-none"
+        draggable={false}
+        className="absolute pointer-events-none select-none"
         style={{
-          right: `${item.stickerRight}px`,
-          top: `${item.stickerTop}px`,
-          width: `${item.stickerW}px`,
-          height: `${item.stickerH}px`,
-          transform: `rotate(${item.stickerRotate}deg)`,
+          right: `${item.iconRight}px`,
+          top: `${item.iconTop}px`,
+          width: `${item.iconW}px`,
+          height: `${item.iconH}px`,
+          transform: `rotate(${item.iconRotate}deg)`,
         }}
-      >
-        {item.layers.map((layer, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={`${layer.src}-${i}`}
-            src={layer.src}
-            alt=""
-            draggable={false}
-            className="absolute select-none"
-            style={{
-              left: `${layer.leftPct}%`,
-              top: `${layer.topPct}%`,
-              width: `${layer.widthPct}%`,
-              // No height → height:auto so the layer keeps its native
-              // aspect ratio. Explicit height only when the layer is
-              // square-ish and we want it constrained.
-              height: layer.heightPct ? `${layer.heightPct}%` : "auto",
-            }}
-          />
-        ))}
-        {item.bingoText && (
-          <span
-            className="absolute font-extrabold leading-none"
-            style={{
-              top: "37%",
-              left: "32%",
-              color: "#0B2595",
-              fontSize: "16px",
-              transform: "rotate(-14deg)",
-              fontFamily: "var(--font-headline)",
-              letterSpacing: "0.5px",
-            }}
-          >
-            22
-          </span>
-        )}
-      </span>
+      />
     </>
   );
 
