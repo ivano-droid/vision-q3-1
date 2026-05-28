@@ -4,37 +4,57 @@ import { useState } from "react";
 import Link from "next/link";
 
 /**
- * Rewards — Figma 238:5731 (My Rewards tab) + 238:5824 (Offers tab).
+ * Rewards — Figma 238:5731 (My Rewards) + 238:5824 (Offers).
  *
- * Two tabs in one page, switched via state (no route change). The
- * whole page sits on a brand-blue gradient surface — AppShell
- * conditionally swaps main's bg to var(--mrq-blue) for /rewards so
- * the canvas extends behind any overscroll too.
+ * Whole page sits on a vertical brand-blue gradient
+ * (#0a2ecb → #181f43). Two tabs switched via local state. Existing
+ * global components (BrandBar, BottomNav, SideNav, DepositSheet,
+ * ResumePlayingBar) are untouched.
  *
- * Reuses the global shell unchanged: BrandBar above, BottomNav
- * below, both as-is. Page content is the only thing new here.
+ * Spacing rhythm — strict Figma tokens:
+ *   --spacing/10x = 4   --spacing/20x = 8   --spacing/30x = 12
+ *   --spacing/40x = 16  --spacing/60x = 24
+ *   --radius/lg   = 12  --radius/xl  = 16  --radius/full = 999
+ *
+ * Colour tokens used:
+ *   Brand/500    = #0a2ecb   Brand/900       = #0c2287
+ *   Yellow/500   = #ffdf00   Surface/primary = #f2f3f3
+ *   Pink/500     = #d000ca   Text/secondary  = #4d505b
+ *   Card surface = #eff2ff (light blue inner card)
+ *
+ * Typography (Gilroy, all):
+ *   Body/MD-XStrong  16/1.6   ExtraBold  — section titles
+ *   Body/SM-XStrong  14/1.6   ExtraBold  — card titles + tab labels
+ *   Body/SM          14/1.6   Medium
+ *   Body/Xs          12/1.6   Medium     — wagered, valid-date
+ *   Body/Xxs-XStrong 10/1.6   ExtraBold  — pill labels
+ *   Body/Xxs         10/1.6   Medium     — subtitles, T&Cs
  */
 
 type Tab = "rewards" | "offers";
 
-// ─── Figma design tokens (from 238:5731 design context) ───────────
-// Brand/900: #0c2287 (used for active tab fg / blue text on cards)
-// Brand/500: #0a2ecb (main brand-blue)
-// Brand/yellow/500: #ffdf00 (Your Q Rewards tagline)
-// Pink/500: #d000ca (progress bar gradient middle stop)
-// Success/500: #00b64c (tick marks)
-const TEXT_BRAND_DARK = "var(--mrq-blue-dark)"; // #0c2287
-const SURFACE_PILL = "rgba(255,255,255,0.18)";
+// ── colour constants ──────────────────────────────────────────────
+const BRAND = "#0a2ecb"; // Brand/500
+const BRAND_DARK = "#0c2287"; // Brand/900
+const YELLOW = "#ffdf00"; // Yellow/500
+const PINK = "#d000ca"; // Pink/500
+const SURFACE_GREY = "#f2f3f3"; // Surface/primary
+const TEXT_SECONDARY = "#4d505b"; // Text/secondary
+const INNER_CARD = "#eff2ff"; // light blue card
 
 export default function RewardsPage() {
   const [tab, setTab] = useState<Tab>("rewards");
 
   return (
-    <div className="relative pt-[12px] pb-[24px]">
-      {/* TAB SWITCHER (Figma 238:5736)
-          White pill, 4px padding, two flex-1 inner buttons. Active
-          = brand-blue-900 bg, white text. Inactive = white bg,
-          brand-blue-900 text. */}
+    <div
+      className="relative min-h-[100dvh] pt-[12px] pb-[32px]"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a2ecb 0%, #181f43 100%)",
+      }}
+    >
+      {/* Tab switcher — Figma 238:5736. White pill, 4px padding,
+          two flex-1 inner buttons.  */}
       <div className="px-[16px]">
         <div className="bg-white flex items-center p-[4px] rounded-full">
           <TabButton
@@ -70,13 +90,13 @@ function TabButton({
       onClick={onClick}
       className="flex-1 min-w-0 flex items-center justify-center px-[12px] py-[8px] rounded-full transition-colors"
       style={{
-        backgroundColor: active ? TEXT_BRAND_DARK : "transparent",
-        color: active ? "#ffffff" : TEXT_BRAND_DARK,
+        backgroundColor: active ? BRAND_DARK : "transparent",
+        color: active ? "#ffffff" : BRAND_DARK,
       }}
     >
       <span
-        className="text-[14px] font-extrabold whitespace-nowrap"
-        style={{ letterSpacing: "0.1px", lineHeight: 1.6 }}
+        className="font-extrabold text-[14px]"
+        style={{ letterSpacing: 0.1, lineHeight: 1.6 }}
       >
         {label}
       </span>
@@ -85,7 +105,7 @@ function TabButton({
 }
 
 /* ============================================================
-   MY REWARDS TAB
+   MY REWARDS
    ============================================================ */
 
 function MyRewardsContent() {
@@ -98,31 +118,36 @@ function MyRewardsContent() {
   );
 }
 
-/** "Your Q Rewards / 200 Free Spins" headline block.
- *  Figma 238:5741. */
+/** "Your Q Rewards" headline block.
+ *  Figma 238:5741 — relative-positioned ellipse behind, then the
+ *  tagline + 200 + Free Spins stacked centred. */
 function YourQRewardsHero() {
   return (
-    <div className="relative flex flex-col items-center px-[16px]">
-      {/* Soft ellipse backdrop — Figma 238:5742, positioned behind
-          the number to add gentle visual interest. */}
+    <div className="relative flex flex-col items-center gap-[8px] px-[16px]">
+      {/* Ellipse backdrop — Figma 238:5742 (518×252 positioned at
+          left=-87.5 top=30 inside a 343-wide page). Drawn behind
+          the number, adds the soft darker halo. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/assets/rewards/ellipse.svg"
         alt=""
         aria-hidden
-        className="absolute left-1/2 -translate-x-1/2 top-[30px] w-[518px] max-w-none h-[252px] pointer-events-none opacity-90"
+        className="absolute -translate-x-1/2 max-w-none pointer-events-none"
+        style={{
+          left: "50%",
+          top: 30,
+          width: 518,
+          height: 252,
+        }}
       />
 
-      {/* "Your Q Rewards" tagline — yellow text with the Q SVG
-          dropped inline between "Your" and "Rewards". Figma 238:5743 */}
+      {/* Tagline: "Your [Q] Rewards" — yellow text wrapping the
+          Q logo inline. Q SVG is ~22px wide, sits between the
+          two words with the same baseline. */}
       <div className="relative flex items-center justify-center gap-[6px] h-[22px]">
         <span
-          className="font-medium text-[14px] text-center"
-          style={{
-            color: "#ffdf00",
-            letterSpacing: "0.1px",
-            lineHeight: 1.6,
-          }}
+          className="text-[14px] font-medium"
+          style={{ color: YELLOW, lineHeight: 1.6, letterSpacing: 0.1 }}
         >
           Your
         </span>
@@ -130,36 +155,31 @@ function YourQRewardsHero() {
         <img
           src="/assets/rewards/q-title.svg"
           alt="Q"
-          className="h-[18px] w-auto"
+          className="h-[20px] w-auto"
         />
         <span
-          className="font-medium text-[14px] text-center"
-          style={{
-            color: "#ffdf00",
-            letterSpacing: "0.1px",
-            lineHeight: 1.6,
-          }}
+          className="text-[14px] font-medium"
+          style={{ color: YELLOW, lineHeight: 1.6, letterSpacing: 0.1 }}
         >
           Rewards
         </span>
       </div>
 
-      {/* Big "200" — Figma 238:5748: font-size 59.874, tracking
-          -0.9979, leading 1.2. */}
+      {/* Big 200 — Figma 238:5748: 59.874px, tracking -0.998,
+          leading 1.2. */}
       <p
-        className="relative text-center font-extrabold text-white"
+        className="relative text-center text-white font-extrabold"
         style={{
-          fontSize: "60px",
-          letterSpacing: "-1px",
-          lineHeight: 1.1,
-          marginTop: "4px",
+          fontSize: 60,
+          letterSpacing: -1,
+          lineHeight: 1.2,
         }}
       >
         200
       </p>
 
-      {/* "Free Spins" with coin icon — Figma 238:5749. */}
-      <div className="relative flex items-center justify-center gap-[6px] mt-[2px]">
+      {/* "Free Spins" with coin icon to the left. Figma 238:5749. */}
+      <div className="relative flex items-center justify-center gap-[6px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/assets/rewards/spins-icon.png"
@@ -168,12 +188,8 @@ function YourQRewardsHero() {
           className="size-[18px] object-contain"
         />
         <span
-          className="text-white font-extrabold text-center"
-          style={{
-            fontSize: "15.5px",
-            letterSpacing: "-0.26px",
-            lineHeight: 1.6,
-          }}
+          className="text-white font-extrabold text-[14px]"
+          style={{ letterSpacing: 0.1, lineHeight: 1.6 }}
         >
           Free Spins
         </span>
@@ -182,9 +198,27 @@ function YourQRewardsHero() {
   );
 }
 
-/** "Available to collect" — horizontal scroll of reward cards.
- *  Figma 238:5752. */
+/** "Available to collect" — Figma 238:5752.
+ *  Horizontal scroll of reward cards. */
 function AvailableToCollect() {
+  const cards: AvailableCardData[] = [
+    {
+      gameSrc: "/assets/rewards/u-vs-q-1.png",
+      title: "U vs. Q",
+      subtitle: "Play for free every day",
+    },
+    {
+      gameSrc: "/assets/games/slot-04.png",
+      title: "Western Gold",
+      subtitle: "Free spin reward",
+    },
+    {
+      gameSrc: "/assets/games/slot-08.png",
+      title: "Tiki Tumble",
+      subtitle: "Free spin reward",
+    },
+  ];
+
   return (
     <section>
       <h2
@@ -197,65 +231,49 @@ function AvailableToCollect() {
         className="mt-[12px] flex gap-[16px] overflow-x-auto no-scrollbar px-[16px] pb-[2px]"
         style={{ scrollSnapType: "x mandatory" }}
       >
-        <AvailableCard
-          gameSrc="/assets/rewards/u-vs-q-1.png"
-          title="U vs. Q"
-          subtitle="Play for free every day"
-          ctaLabel="Free"
-          ctaState="available"
-        />
-        <AvailableCard
-          gameSrc="/assets/rewards/u-vs-q-2.png"
-          title="U vs. Q"
-          subtitle="Play for free every day"
-          ctaLabel="Free"
-          ctaState="available"
-        />
-        <AvailableCard
-          gameSrc="/assets/games/slot-04.png"
-          title="Western Gold"
-          subtitle="Free spin reward"
-          ctaLabel="Free"
-          ctaState="available"
-        />
+        {cards.map((c, i) => (
+          <AvailableCard key={i} {...c} />
+        ))}
       </div>
     </section>
   );
 }
 
-/** Single "available to collect" card. Figma 238:5755-5768.
- *  White outer card, light-blue inner (#eff2ff), 56×56 game tile
- *  with a small badge, title + subtitle, then T&Cs footer below
- *  the inner card with an "Available to play" / "Free" badge. */
+type AvailableCardData = {
+  gameSrc: string;
+  title: string;
+  subtitle: string;
+};
+
+/** Single "Available to collect" card. Figma 238:5755.
+ *
+ *  Structure:
+ *    [bg-white outer, rounded-16]
+ *      [bg-#eff2ff inner, rounded-12, p-12]
+ *        [game tile 56×56 with "Free" badge bottom-left]
+ *        [content column: title / subtitle / "Available to play"]
+ *      [white footer, p-12, T&Cs in gray]
+ */
 function AvailableCard({
   gameSrc,
   title,
   subtitle,
-  ctaLabel,
-  ctaState,
-}: {
-  gameSrc: string;
-  title: string;
-  subtitle: string;
-  ctaLabel: string;
-  ctaState: "available" | "claimed";
-}) {
+}: AvailableCardData) {
   return (
     <div
-      className="shrink-0 w-[300px] flex flex-col items-center"
+      className="shrink-0 w-[300px] bg-white rounded-[16px] overflow-hidden"
       style={{ scrollSnapAlign: "start" }}
     >
-      {/* Content container — top half, white bg, 8px padding,
-          rounded-top-16. Inside is a #eff2ff inner card with the
-          game thumbnail + meta text. */}
-      <div className="bg-white p-[8px] rounded-t-[16px] w-full">
-        <div className="bg-[#eff2ff] flex gap-[16px] items-start p-[12px] rounded-[12px]">
-          {/* Game tile — 56×56, rounded-[12px], white 2px border
-              + small badge bottom-left (Figma swap to "Free" gift
-              icon — using a coloured circle stand-in). */}
+      <div className="p-[8px]">
+        <div
+          className="flex gap-[16px] items-start p-[12px] rounded-[12px]"
+          style={{ backgroundColor: INNER_CARD }}
+        >
+          {/* Game tile 56×56 — white border, rounded-12, with a
+              "Free" gift badge at the bottom-left. */}
           <div
-            className="relative shrink-0 size-[56px] rounded-[12px] overflow-hidden border-2 border-white"
-            style={{ backgroundColor: "#cccdd0" }}
+            className="relative shrink-0 size-[56px] rounded-[12px] overflow-hidden"
+            style={{ border: "2px solid #ffffff", backgroundColor: "#cccdd0" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -263,72 +281,74 @@ function AvailableCard({
               alt=""
               className="absolute inset-0 size-full object-cover"
             />
-            {/* "Free" badge — bottom-left corner, brand-blue
-                background with a tiny gift icon. */}
+            {/* "Free" badge — sits below+left of the tile, half
+                hanging off. */}
             <div
-              className="absolute -bottom-[4px] -left-[4px] flex items-center gap-[2px] px-[6px] h-[18px] rounded-full"
+              className="absolute -bottom-[6px] -left-[6px] flex items-center gap-[3px] px-[6px] h-[18px] rounded-full"
               style={{
-                backgroundColor: TEXT_BRAND_DARK,
+                backgroundColor: BRAND_DARK,
                 color: "#ffffff",
+                border: "1.5px solid #ffffff",
               }}
             >
               <GiftIconSmall className="size-[10px]" />
               <span
                 className="text-[9px] font-extrabold"
-                style={{ letterSpacing: "0.2px", lineHeight: 1 }}
+                style={{ letterSpacing: 0.2, lineHeight: 1 }}
               >
-                {ctaLabel}
+                Free
               </span>
             </div>
           </div>
 
+          {/* Content column — title / subtitle / "Available to
+              play" pill. All text in Brand/900. */}
           <div
-            className="flex-1 flex flex-col gap-[4px]"
-            style={{ color: TEXT_BRAND_DARK }}
+            className="flex-1 min-w-0 flex flex-col gap-[4px]"
+            style={{ color: BRAND_DARK }}
           >
             <p
               className="text-[14px] font-extrabold"
-              style={{ letterSpacing: "0.1px", lineHeight: 1.4 }}
+              style={{ letterSpacing: 0.1, lineHeight: 1.4 }}
             >
               {title}
             </p>
             <p
               className="text-[10px] font-medium"
-              style={{ letterSpacing: "0.2px", lineHeight: 1.4 }}
+              style={{ letterSpacing: 0.2, lineHeight: 1.4 }}
             >
               {subtitle}
             </p>
-            {/* "Available to play" pill — Figma 238:5768
-                badge-default with type="brand" */}
             <div
-              className="inline-flex items-center self-start mt-[2px] px-[8px] h-[20px] rounded-full"
+              className="inline-flex items-center self-start px-[8px] h-[22px] rounded-full"
               style={{
-                backgroundColor: TEXT_BRAND_DARK,
+                backgroundColor: BRAND_DARK,
                 color: "#ffffff",
+                marginTop: 2,
               }}
             >
               <span
                 className="text-[10px] font-extrabold"
-                style={{ letterSpacing: "0.2px", lineHeight: 1 }}
+                style={{ letterSpacing: 0.2, lineHeight: 1 }}
               >
-                {ctaState === "available" ? "Available to play" : "Claimed"}
+                Available to play
               </span>
             </div>
           </div>
         </div>
       </div>
-      {/* Footer container — bottom half, white bg, T&Cs text.
-          Figma 238:5766. */}
-      <div className="bg-white pb-[8px] pt-[4px] px-[12px] rounded-b-[16px] w-full">
+      {/* T&Cs footer — sits in the outer white card, below the
+          light-blue inner card. */}
+      <div className="px-[12px] pb-[10px] pt-[2px]">
         <p
           className="text-[10px] font-medium opacity-70"
           style={{
             color: "#0e1120",
-            letterSpacing: "0.2px",
+            letterSpacing: 0.2,
             lineHeight: 1.5,
           }}
         >
-          Play daily. Max 20 spins. 24h credit. Expiry & game
+          Play daily. Max 20 spins. 24h credit. Expiry &amp; game
           restrictions apply.{" "}
           <span className="font-extrabold underline">Full T&amp;Cs</span>
         </p>
@@ -337,11 +357,19 @@ function AvailableCard({
   );
 }
 
-/** "In Progress" reward — featured card with progress bar + CTA.
- *  Figma 238:5783. */
+/** "In Progress" featured reward — Figma 238:5783.
+ *
+ *  Surface: var(--surface/primary, #f2f3f3) — NOT white.
+ *  Layout:
+ *    [pt-16 px-16 pb-8, rounded-16, gap-12]
+ *      [reward header: 60×60 image | content column]
+ *      [progress bar + "Wagered £14 of £20"]
+ *      [Complete CTA — disabled brand-blue at 50%]
+ *      [T&Cs footer]
+ *    [pink indicator dot, absolute top-0 right-0, with halo] */
 function InProgress() {
-  // Progress: 14 of 20 = 70%
-  const progress = 70;
+  const PROGRESS_PCT = 70; // 14 of 20
+
   return (
     <section className="px-[16px]">
       <h2
@@ -352,21 +380,24 @@ function InProgress() {
       </h2>
 
       <div
-        className="relative mt-[12px] rounded-[16px] px-[16px] pt-[16px] pb-[8px] flex flex-col gap-[12px]"
-        style={{ backgroundColor: "#f2f3f3" }}
+        className="relative mt-[12px] flex flex-col gap-[12px] rounded-[16px] px-[16px] pt-[16px] pb-[8px]"
+        style={{ backgroundColor: SURFACE_GREY }}
       >
-        {/* Pink indicator dot — top right. Figma 238:5803 */}
+        {/* Pink indicator dot — top-right corner with a soft halo
+            (Figma 238:5803). */}
         <span
           aria-hidden
-          className="absolute top-[8px] right-[8px] size-[10px] rounded-full"
+          className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 size-[10px] rounded-full"
           style={{
-            backgroundColor: "#d000ca",
-            boxShadow: "0 0 0 4px rgba(208, 0, 202, 0.18)",
+            backgroundColor: PINK,
+            boxShadow:
+              "0 0 0 6px rgba(208, 0, 202, 0.20), 0 0 0 12px rgba(208, 0, 202, 0.08)",
           }}
         />
 
-        {/* Reward header — image + title + valid date + status pill */}
-        <div className="flex gap-[16px] items-center">
+        {/* Reward header — image + title/date/pill stack. Figma
+            238:5786, gap is 17px (sic). */}
+        <div className="flex items-center" style={{ gap: 17 }}>
           <div
             className="shrink-0 size-[60px] rounded-[8px] overflow-hidden"
             style={{ border: "1.8px solid rgba(255,255,255,0.6)" }}
@@ -379,8 +410,8 @@ function InProgress() {
             />
           </div>
           <div
-            className="flex-1 flex flex-col gap-[4px]"
-            style={{ color: TEXT_BRAND_DARK }}
+            className="flex-1 min-w-0 flex flex-col gap-[4px]"
+            style={{ color: BRAND_DARK }}
           >
             <p
               className="text-[14px] font-bold"
@@ -390,19 +421,20 @@ function InProgress() {
             </p>
             <p
               className="text-[10px] font-medium"
-              style={{ letterSpacing: "0.2px", lineHeight: 1.5 }}
+              style={{ letterSpacing: 0.2, lineHeight: 1.5 }}
             >
               Valid until 30th May
             </p>
-            {/* "In Progress" pill */}
+            {/* In Progress pill — WHITE bg, brand-dark text +
+                clock icon. */}
             <div
-              className="inline-flex items-center self-start mt-[2px] gap-[4px] px-[8px] h-[20px] rounded-full bg-white"
-              style={{ color: TEXT_BRAND_DARK }}
+              className="inline-flex items-center self-start gap-[4px] px-[8px] h-[22px] rounded-full bg-white"
+              style={{ color: BRAND_DARK, marginTop: 2 }}
             >
-              <ClockIcon className="size-[10px]" />
+              <ClockIcon className="size-[11px]" />
               <span
                 className="text-[10px] font-extrabold"
-                style={{ letterSpacing: "0.2px", lineHeight: 1 }}
+                style={{ letterSpacing: 0.2, lineHeight: 1 }}
               >
                 In Progress
               </span>
@@ -410,17 +442,15 @@ function InProgress() {
           </div>
         </div>
 
-        {/* Progress bar — Figma 238:5793.
-            White track, pink-to-purple gradient fill. */}
+        {/* Progress container — 8px-tall bar + caption. */}
         <div className="flex flex-col gap-[4px]">
           <div
-            className="relative h-[8px] w-full rounded-full overflow-hidden"
-            style={{ backgroundColor: "#ffffff" }}
+            className="relative h-[8px] w-full rounded-full overflow-hidden bg-white"
           >
             <div
               className="absolute inset-y-0 left-0 rounded-full"
               style={{
-                width: `${progress}%`,
+                width: `${PROGRESS_PCT}%`,
                 background:
                   "linear-gradient(to right, #f05cd2 0%, #d000ca 54%, #8f47f1 100%)",
               }}
@@ -429,8 +459,8 @@ function InProgress() {
           <p
             className="text-[12px] font-medium"
             style={{
-              color: TEXT_BRAND_DARK,
-              letterSpacing: "0.2px",
+              color: BRAND_DARK,
+              letterSpacing: 0.2,
               lineHeight: 1.6,
             }}
           >
@@ -438,27 +468,29 @@ function InProgress() {
           </p>
         </div>
 
-        {/* "Complete to unlock £20" — Figma button hierarchy=primary
-            state=disabled. Brand-blue at 50% opacity. */}
+        {/* Complete CTA — Figma uses hierarchy=primary state=disabled,
+            which renders brand-blue at 50% opacity. */}
         <button
           type="button"
           disabled
-          className="h-[48px] rounded-[12px] w-full flex items-center justify-center font-extrabold text-[16px] text-white"
+          className="h-[48px] w-full rounded-[12px] flex items-center justify-center text-white font-extrabold text-[16px]"
           style={{
-            backgroundColor: "rgba(10, 46, 203, 0.5)",
-            letterSpacing: 0,
+            backgroundColor: BRAND,
+            opacity: 0.5,
             lineHeight: "24px",
+            letterSpacing: 0,
           }}
         >
           Complete to unlock £20
         </button>
 
+        {/* T&Cs footer — small gray, with underlined Full T&Cs. */}
         <p
           className="text-[10px] font-medium opacity-70"
           style={{
-            color: "#4d505b",
-            letterSpacing: "0.2px",
-            lineHeight: 1.5,
+            color: TEXT_SECONDARY,
+            letterSpacing: 0.2,
+            lineHeight: 1.6,
           }}
         >
           Get a £20 cash reward when you&apos;ve wagered £20. Opt
@@ -471,7 +503,7 @@ function InProgress() {
 }
 
 /* ============================================================
-   OFFERS TAB
+   OFFERS
    ============================================================ */
 
 function OffersContent() {
@@ -523,8 +555,8 @@ function FeaturedOfferCard({
 }) {
   return (
     <div
-      className="relative shrink-0 w-[320px] aspect-[320/120] rounded-[14px] overflow-hidden"
-      style={{ scrollSnapAlign: "start" }}
+      className="relative shrink-0 w-[320px] rounded-[14px] overflow-hidden"
+      style={{ aspectRatio: "320 / 122", scrollSnapAlign: "start" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -534,8 +566,8 @@ function FeaturedOfferCard({
       />
       <button
         type="button"
-        className="absolute bottom-[12px] right-[12px] bg-white text-[12px] font-extrabold px-[14px] py-[8px] rounded-full active:scale-[0.97] transition-transform"
-        style={{ color: TEXT_BRAND_DARK, letterSpacing: 0.1 }}
+        className="absolute bottom-[12px] right-[12px] bg-white px-[14px] py-[8px] rounded-full text-[13px] font-extrabold active:scale-[0.97] transition-transform"
+        style={{ color: BRAND_DARK, letterSpacing: 0.1 }}
       >
         {ctaLabel}
       </button>
@@ -579,7 +611,10 @@ function WeekOfferCard({
 }) {
   return (
     <div className="flex flex-col gap-[8px]">
-      <div className="aspect-[164/96] rounded-[12px] overflow-hidden">
+      <div
+        className="rounded-[12px] overflow-hidden"
+        style={{ aspectRatio: "162 / 96" }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -601,8 +636,8 @@ function WeekOfferCard({
       </p>
       <button
         type="button"
-        className="self-start bg-white text-[12px] font-extrabold px-[14px] py-[6px] rounded-full active:scale-[0.97] transition-transform"
-        style={{ color: TEXT_BRAND_DARK, letterSpacing: 0.1 }}
+        className="self-start bg-white px-[14px] py-[6px] rounded-full text-[13px] font-extrabold active:scale-[0.97] transition-transform"
+        style={{ color: BRAND_DARK, letterSpacing: 0.1 }}
       >
         View offer
       </button>
@@ -619,10 +654,11 @@ function AllOffers() {
       >
         All offers
       </h2>
-
       <div className="mt-[12px] bg-white rounded-[16px] overflow-hidden">
-        {/* "Get the best deals" banner */}
-        <div className="relative aspect-[343/156] overflow-hidden">
+        <div
+          className="relative overflow-hidden"
+          style={{ aspectRatio: "343 / 170" }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/rewards/offer-best-deals.png"
@@ -630,18 +666,17 @@ function AllOffers() {
             className="absolute inset-0 size-full object-cover"
           />
         </div>
-
-        <div className="px-[16px] pt-[14px] pb-[16px] flex flex-col gap-[8px]">
+        <div className="px-[16px] pt-[14px] pb-[16px] flex flex-col gap-[6px]">
           <p
             className="font-extrabold text-[16px]"
-            style={{ color: TEXT_BRAND_DARK, lineHeight: 1.4 }}
+            style={{ color: BRAND_DARK, lineHeight: 1.4 }}
           >
             Q&apos;s Friday Night Frenzy
           </p>
           <p
             className="text-[12px] font-medium"
             style={{
-              color: "#d000ca",
+              color: PINK,
               letterSpacing: 0.2,
               lineHeight: 1.45,
             }}
@@ -651,29 +686,28 @@ function AllOffers() {
           <p
             className="text-[12px] font-medium opacity-80"
             style={{
-              color: "#4d505b",
+              color: TEXT_SECONDARY,
               letterSpacing: 0.2,
               lineHeight: 1.6,
             }}
           >
             Caveats here. Full T&amp;Cs apply.
           </p>
-
-          <div className="mt-[8px] flex items-center gap-[10px]">
+          <div className="mt-[10px] flex items-center gap-[10px]">
             <button
               type="button"
-              className="flex-1 h-[40px] rounded-[10px] font-extrabold text-[14px]"
+              className="flex-1 h-[44px] rounded-[10px] font-extrabold text-[14px]"
               style={{
-                backgroundColor: "#f2f3f3",
-                color: TEXT_BRAND_DARK,
+                backgroundColor: SURFACE_GREY,
+                color: BRAND_DARK,
               }}
             >
               Read more
             </button>
             <Link
               href="#"
-              className="flex-1 h-[40px] rounded-[10px] flex items-center justify-center font-extrabold text-[14px] text-white"
-              style={{ backgroundColor: "var(--mrq-blue)" }}
+              className="flex-1 h-[44px] rounded-[10px] flex items-center justify-center font-extrabold text-[14px] text-white"
+              style={{ backgroundColor: BRAND }}
             >
               Claim offer
             </Link>
