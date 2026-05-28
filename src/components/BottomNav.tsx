@@ -125,7 +125,19 @@ function activeTabFor(pathname: string): TabKey {
 export function BottomNav() {
   const pathname = usePathname();
   const active = activeTabFor(pathname);
-  const showScrim = pathname !== "/" && !pathname.startsWith("/discover");
+  // Scrim now renders on every route — the previous skip-list
+  // for / and /discover is gone. The colour is route-dependent
+  // so it always matches the page surface at the bottom edge:
+  //   /rewards    → #181f43 (the bottom stop of the rewards
+  //                 page's brand-blue gradient)
+  //   everything  → #ffffff (the default for #f5f5f5 page bg
+  //                 routes — fades scrolled content into the
+  //                 nav region without smearing).
+  const scrimIsDark = pathname.startsWith("/rewards");
+  const scrimSolid = scrimIsDark ? "#181f43" : "#ffffff";
+  const scrimFade = scrimIsDark
+    ? "rgba(24, 31, 67, 0)"
+    : "rgba(255, 255, 255, 0)";
 
   const rowRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<TabKey, HTMLAnchorElement | null>>({
@@ -173,26 +185,26 @@ export function BottomNav() {
 
   return (
     <>
-      {/* SCRIM — white-to-transparent fade above the pill. */}
-      {showScrim && (
+      {/* SCRIM — page-coloured gradient fade above the pill.
+          Always rendered; colour swaps via scrimSolid/scrimFade
+          so /rewards uses the dark-blue match and every other
+          route uses the existing white fade. */}
+      <div
+        aria-hidden
+        className="fixed bottom-0 z-30 pointer-events-none"
+        style={{
+          left: "var(--frame-right-offset)",
+          right: "var(--frame-right-offset)",
+          height: "calc(var(--bottom-nav-h) + 80px)",
+        }}
+      >
         <div
-          aria-hidden
-          className="fixed bottom-0 z-30 pointer-events-none"
+          className="absolute inset-x-0 bottom-0 h-[90px]"
           style={{
-            left: "var(--frame-right-offset)",
-            right: "var(--frame-right-offset)",
-            height: "calc(var(--bottom-nav-h) + 80px)",
+            background: `linear-gradient(to top, ${scrimSolid} 30%, ${scrimFade} 100%)`,
           }}
-        >
-          <div
-            className="absolute inset-x-0 bottom-0 h-[90px]"
-            style={{
-              background:
-                "linear-gradient(to top, #ffffff 30%, rgba(255, 255, 255, 0) 100%)",
-            }}
-          />
-        </div>
-      )}
+        />
+      </div>
 
       <nav
         aria-label="Primary"
