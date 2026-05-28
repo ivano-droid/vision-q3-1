@@ -8,7 +8,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 /**
  * "Resume playing" sticky bar — Figma 168:29380.
@@ -39,12 +39,15 @@ const SWIPE_THRESHOLD = 90;
 const SWIPE_VELOCITY_THRESHOLD = 350;
 
 const GAME = {
-  src: "/assets/games/slot-13.png",
-  game: "Snake Arena",
+  src: "/assets/games/slot-01.png",
+  game: "Buffalo Bills",
+  // Tapping the bar drops the user back into the live game page.
+  href: "/play/buffalo-bills",
 };
 
 export function ResumePlayingBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   // Default to dismissed-on-first-render so we don't flash the bar on
   // SSR HTML (which would cause a hydration mismatch). The useEffect
@@ -180,16 +183,15 @@ export function ResumePlayingBar() {
 
             {/* Tap-to-resume row. Filling the rest of the row so the
                 user can tap the entire surface (not just the thumbnail)
-                to resume their session. */}
+                to resume their session. Routes to the game's play
+                page via the router so the navigation triggers the
+                shell's chrome-hiding logic (BrandBar + BottomNav +
+                this bar all disappear together once /play/* is
+                active). */}
             <button
               type="button"
               className="flex-1 min-w-0 flex flex-col items-start justify-center text-left active:scale-[0.99] transition-transform"
-              onClick={() => {
-                // Stub — in a real build this would deep-link back to
-                // the actual game session.
-                // eslint-disable-next-line no-console
-                console.log("[Resume] resume →", GAME.game);
-              }}
+              onClick={() => router.push(GAME.href)}
             >
               <span
                 className="font-extrabold text-[14px] leading-tight"

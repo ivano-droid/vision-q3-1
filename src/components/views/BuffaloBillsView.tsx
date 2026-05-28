@@ -91,28 +91,39 @@ export function BuffaloBillsView() {
       <Hero />
 
       {/* ── Game info section ─────────────────────────────────────
-         Springs up from below the viewport on mount, then sits in
-         normal flow so scrolling moves it up over the sticky hero. */}
+         Pop-up-then-settle entrance: the section starts off-screen
+         below the viewport, swings up past its natural position so
+         the user sees it clearly (the "hey, there's more here"
+         teaser), then settles back down to its resting place in
+         normal flow below the hero. After the entrance the section
+         is just normal-flow content — scrolling moves it up the
+         page in the usual way. */}
       <motion.div
         className="relative flex flex-col items-stretch px-[16px] py-[24px]"
         style={{
           backgroundColor: PAGE_BG,
           gap: 24,
-          // Sits above the sticky hero so it paints on top as the
-          // user scrolls the page upward over it.
-          zIndex: 10,
         }}
         initial={reduce ? { y: 0, opacity: 1 } : { y: "100%", opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        animate={
+          reduce
+            ? { y: 0, opacity: 1 }
+            : {
+                // Three-stop keyframe path: from below → peeked up
+                // above its natural position (so the user sees the
+                // card content) → back down to its resting place.
+                y: ["100%", "-28%", "0%"],
+                opacity: [0, 1, 1],
+              }
+        }
         transition={
           reduce
             ? { duration: 0.2 }
             : {
-                type: "spring",
-                stiffness: 110,
-                damping: 22,
-                mass: 1,
-                delay: 0.15,
+                duration: 1.8,
+                delay: 0.2,
+                times: [0, 0.55, 1],
+                ease: [0.22, 1, 0.36, 1],
               }
         }
       >
@@ -126,36 +137,49 @@ export function BuffaloBillsView() {
 /* ============================================================
    In-game header — back button + balance pill.
 
-   Sticky-positioned so the chrome stays anchored at the top of the
-   viewport across the whole page. The bar carries a translucent
-   dark-navy backdrop with a heavy blur so it reads cleanly against
-   any background — the warm slot art on initial load, the brown
-   Game Info card once the user has scrolled. Without that backdrop
-   the header was visually disappearing into the hero (which was
-   the "top overlay is missing" symptom).
+   Fixed-positioned (not sticky) so the hero artwork can fill the
+   full top of the page underneath the header chrome — matching
+   the Figma where the warm slot art bleeds up under the back +
+   balance buttons. `--frame-right-offset` clamps the bar to the
+   mobile-frame's column on desktop instead of spanning the full
+   monitor.
+
+   Background is a layered gradient that bleeds off into transparency
+   at the bottom, matching the Figma's warm-orange overlay
+   (`rgba(225,140,88,0.4)` → transparent at ~61% of its height) on
+   top of a dark-navy chrome base that fades out over the full
+   header height. The combined gradient gives the bar weight at the
+   top edge (so the buttons read against the slot art) while
+   bleeding cleanly into whatever content sits behind it lower
+   down — instead of a hard band cutting across the page.
    ============================================================ */
 function GameHeader() {
   const { openSideNav, openDeposit } = useShell();
 
   return (
     <header
-      className="sticky top-0 z-20 flex items-center justify-between"
+      className="fixed top-0 z-20 flex items-center justify-between"
       style={{
+        left: "var(--frame-right-offset)",
+        right: "var(--frame-right-offset)",
         paddingTop: "calc(env(safe-area-inset-top) + 12px)",
-        paddingBottom: 12,
+        // Extra bottom padding gives the gradient room to bleed
+        // off naturally — the band itself is taller than just the
+        // pill row's height.
+        paddingBottom: 32,
         paddingLeft: 16,
         paddingRight: 16,
-        // Translucent dark-navy band with backdrop-blur. Tracks the
-        // mobile-frame's #101626 surface but softens whatever sits
-        // behind through the blur, so the bar reads as iOS-style
-        // frosted chrome instead of a hard navy stripe.
-        backgroundColor: "rgba(16, 22, 38, 0.72)",
-        backdropFilter: "blur(14px) saturate(140%)",
-        WebkitBackdropFilter: "blur(14px) saturate(140%)",
-        // Hairline at the bottom edge separates the bar from the
-        // hero artwork below — keeps the band readable as chrome
-        // rather than bleeding into the slot art.
-        boxShadow: "inset 0 -1px 0 rgba(255, 255, 255, 0.06)",
+        background: [
+          // Top layer — warm orange tint from the Figma spec.
+          // Fades to transparent ~61% down so it sits as a halo
+          // over the slot art rather than tinting the whole bar.
+          "linear-gradient(to bottom, rgba(225, 140, 88, 0.4) 0%, rgba(225, 140, 88, 0) 60.94%)",
+          // Bottom layer — dark navy chrome. Fades to transparent
+          // over the full header height so the bottom edge bleeds
+          // cleanly into whatever's behind (hero artwork early on,
+          // Game Info card after scroll).
+          "linear-gradient(to bottom, rgba(16, 22, 38, 0.78) 0%, rgba(16, 22, 38, 0) 100%)",
+        ].join(", "),
       }}
     >
       {/* Back to lobby */}

@@ -112,7 +112,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         {!isGameSurface && <BottomNav />}
-        <ResumePlayingBar />
+        {/* ResumePlayingBar is unmounted entirely on /play/* so it
+            disappears the instant the user enters a game — no exit
+            slide-down that would leave it briefly visible on top of
+            the in-game chrome. Its own AnimatePresence handles the
+            soft exit on every other route. */}
+        {!isGameSurface && <ResumePlayingBar />}
         <SideNav />
         <DepositSheet />
       </div>
