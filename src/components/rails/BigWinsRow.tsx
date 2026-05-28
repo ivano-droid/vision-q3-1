@@ -2,9 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { useShell } from "@/lib/filter-context";
 import { getGameDetails } from "@/lib/games-catalogue";
-import { GameTileInfo } from "@/components/GameTileInfo";
 
 /**
  * "Your recent big wins" — horizontal scroll of game tiles with a
@@ -64,23 +62,24 @@ export function BigWinsRow({
 
 function WinTile({ win }: { win: Win }) {
   const router = useRouter();
-  const { openGameDetails } = useShell();
   // Catalogue lookup, with the win's explicit href winning over the
   // catalogue's if both are set.
   const baseDetails = getGameDetails(win.alt, win.src);
-  const details = {
-    ...baseDetails,
-    href: win.href ?? baseDetails.href,
-  };
+  const href = win.href ?? baseDetails.href;
 
   return (
     <div className="relative shrink-0 pb-[12px]">
+      {/* Per design feedback, Recent Wins tiles intentionally don't
+          carry the info chip — the prize pill straddling the bottom
+          is the one chrome affordance these tiles get, and stacking
+          the i chip on top crowded the corner. Tap = launch the
+          game (or stub) directly. */}
       <button
         type="button"
         aria-label={win.alt}
         onClick={() => {
-          if (details.href) {
-            router.push(details.href);
+          if (href) {
+            router.push(href);
             return;
           }
           if (typeof window !== "undefined") {
@@ -88,7 +87,7 @@ function WinTile({ win }: { win: Win }) {
             console.log("[RecentWins] open game →", win.alt);
           }
         }}
-        className="relative block size-[109px] overflow-hidden rounded-[12px] active:scale-[0.98] transition-transform"
+        className="block size-[109px] overflow-hidden rounded-[12px] active:scale-[0.98] transition-transform"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -97,10 +96,6 @@ function WinTile({ win }: { win: Win }) {
           draggable={false}
           className="h-full w-full object-cover pointer-events-none"
         />
-        {/* Info chip — tap to open the game-details sheet. The chip
-            stops propagation so the surrounding tile button doesn't
-            also fire its launch action. */}
-        <GameTileInfo onClick={() => openGameDetails(details)} />
       </button>
       {/* Prize pill — straddles the bottom edge so it pops off the
           game artwork into the page canvas below. Pointer-events

@@ -182,6 +182,27 @@ export function GameDetailsSheet() {
                 <DetailRow label="Provider" value={gameDetails.provider} last />
               </div>
 
+              {/* How to play — mirrors the same block on the Buffalo
+                  Bills game screen, just in white-surface tone. */}
+              <div className="px-[20px] pt-[24px]">
+                <h3
+                  className="text-[16px] font-extrabold leading-none"
+                  style={{ color: "var(--mrq-blue-dark)" }}
+                >
+                  How to play
+                </h3>
+                <p
+                  className="text-[14px] font-medium leading-[1.55] mt-[8px]"
+                  style={{ color: "rgba(10, 46, 203, 0.65)" }}
+                >
+                  Choose your bet, tap spin, and match symbols across
+                  the reels to win. Special symbols can trigger bonus
+                  features, free spins, or extra prizes. Check the
+                  full rules for paylines, payouts, and feature
+                  details.
+                </p>
+              </div>
+
               {/* Play CTA */}
               <div className="px-[16px] pt-[20px]">
                 <button
