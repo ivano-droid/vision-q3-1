@@ -89,15 +89,19 @@ const REELS: Reel[] = [
   },
 ];
 
-// How many reels to render in the very first batch. Three loops of
-// the source clips = nine articles, enough that the user feels the
-// list is "deep" without us mounting a huge initial DOM.
-const INITIAL_LOOPS = 3;
-// When the active reel is within this many of the rendered end, we
-// extend the feed by another loop of the source clips. Two-ahead
-// gives the IntersectionObserver enough lead time to swap in the
-// new articles before the user actually reaches them.
-const PREFETCH_AHEAD = 2;
+// How many reels to render in the very first batch. Each loop is
+// a full pass of the source clips, so this is a *count of loops*
+// not articles. Kept at 1 so the initial DOM has only ~5 <video>
+// elements — browsers cap concurrent media requests around 6-8,
+// and mounting 15 on first paint made some videos never finish
+// loading because they got starved out.
+const INITIAL_LOOPS = 1;
+// When the active reel is within this many of the rendered end,
+// extend the feed by another loop. One-ahead is enough because we
+// keep prior reels mounted (with their buffers warm), so the
+// IntersectionObserver always has the next article ready by the
+// time the user reaches it.
+const PREFETCH_AHEAD = 1;
 
 export default function DiscoverPage() {
   // Each "loop" is a full pass of REELS (3 source clips). Bumping
@@ -201,10 +205,24 @@ function ReelArticle({
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const isActive = index === activeIndex;
-  // Preload only the active reel + the next one in line. Anything
-  // further out stays at "none" so Safari doesn't even fetch metadata.
+  // Preload strategy — three tiers:
+  //   • active and the next reel:  "auto"     — fetch the whole file
+  //   • prior reel + 2 reels out:  "metadata" — fetch headers only
+  //                                              so the file handle
+  //                                              is warm if the user
+  //                                              scrolls back, and
+  //                                              the duration is
+  //                                              known up front
+  //   • everything else:           "metadata" — same; the browser
+  //                                              still pulls only
+  //                                              ~10s of header
+  //                                              bytes
+  // Earlier `"none"` for off-screen reels meant the browser threw
+  // away even the file handle, so coming back to a reel required a
+  // cold network fetch. With "metadata" the disk cache handles the
+  // re-entry instantly.
   const preload =
-    index === activeIndex || index === activeIndex + 1 ? "auto" : "none";
+    index === activeIndex || index === activeIndex + 1 ? "auto" : "metadata";
 
   // Sync up which reel is in view via IntersectionObserver. The
   // ≥60% threshold matches the moment the reel snaps into place.
@@ -225,7 +243,12 @@ function ReelArticle({
     return () => io.disconnect();
   }, [onEnter]);
 
-  // Play/pause + buffer-release on active toggle.
+  // Play/pause on active toggle — buffer stays mounted across
+  // scroll-away. The earlier version detached and reattached the
+  // src on every off-screen, which forced a cold network fetch
+  // when the user scrolled back. With the src left in place the
+  // browser keeps the decoded-frame buffer (small) and we trade
+  // a little memory for instant re-entry to any reel.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -239,9 +262,6 @@ function ReelArticle({
       } catch {
         /* not seekable yet */
       }
-      v.removeAttribute("src");
-      v.load();
-      v.src = reel.video;
     }
   }, [isActive, reel.video]);
 
