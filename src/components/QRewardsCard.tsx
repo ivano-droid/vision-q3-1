@@ -153,16 +153,16 @@ export function QRewardsCard() {
           ))}
         </div>
 
-        {/* See all Rewards CTA — routes to /rewards. Brand/900 fill
-            so it reads as a third nested step inside the card,
-            matching the secondary-button treatment in the Figma. */}
+        {/* See all Rewards CTA — routes to /rewards. White fill with
+            navy text reads as a clear primary action against the
+            brand-blue card surface. */}
         <Link
           href="/rewards"
           className="relative mt-[13px] flex items-center justify-center rounded-[12px] active:scale-[0.99] transition-transform"
           style={{
             height: 48,
-            backgroundColor: "#0a2392",
-            color: "#ffffff",
+            backgroundColor: "#ffffff",
+            color: "var(--mrq-blue-dark)",
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: -0.2,
