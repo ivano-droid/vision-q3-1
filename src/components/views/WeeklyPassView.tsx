@@ -247,13 +247,13 @@ export function WeeklyPassView() {
         <div
           className="pointer-events-none absolute"
           style={{
-            // -28px lifts the gem so ~28px of it (about a third)
+            // -18px lifts the gem so ~18px of it (about a third)
             // sits above the Plus card's top edge into the blue
             // band; the rest is on the white card.
-            top: -28,
-            right: 22,
-            width: 88,
-            height: 88,
+            top: -18,
+            right: 20,
+            width: 52,
+            height: 52,
             transform: "rotate(15deg)",
             zIndex: 5,
           }}
