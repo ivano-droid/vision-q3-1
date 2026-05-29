@@ -67,31 +67,27 @@ const TAG_LEFT_PCT = (6 / FW) * 100;            // 1.6%
 const TAG_W_PCT = (353.133 / FW) * 100;         // 94.17%
 const TAG_ASPECT = "353.133 / 84.136";
 
-// sessionStorage key — flipped on the first paint, prevents the splash
-// from replaying on every Next.js route navigation within the session.
-// Cleared automatically when the tab closes, so the user sees the splash
-// fresh on every new session.
-const SESSION_KEY = "mrq.splash-played";
+// Splash plays on every app open (every page reload / fresh tab).
+// Soft navigations within the session don't remount the AppShell,
+// so the splash naturally stays out of the way once it's played —
+// no sessionStorage gate needed.
+//
+// Legacy session-storage key from earlier "play once per session"
+// builds — kept here so we can proactively clear stale flags from
+// browsers that still hold one, otherwise users would see no
+// splash on a return visit.
+const LEGACY_SESSION_KEY = "mrq.splash-played";
 
 export function LoadingSplash() {
-  // `mounted` starts true on the very first render, then gets flipped
-  // to false after a useLayoutEffect check reads sessionStorage. We use
-  // useLayoutEffect + state (not a static initialiser) to avoid an
-  // SSR/CSR hydration mismatch — sessionStorage doesn't exist on the
-  // server, so we MUST start the same on both sides and only branch
-  // after mount.
   const [mounted, setMounted] = useState(true);
   const [exiting, setExiting] = useState(false);
   const { markBootDone } = useFilter();
 
   useEffect(() => {
-    // If we've already played the splash in this session, skip the
-    // animation entirely and let downstream components run their
-    // entrances immediately.
-    if (typeof window !== "undefined" && sessionStorage.getItem(SESSION_KEY)) {
-      setMounted(false);
-      markBootDone();
-      return;
+    // Wipe any stale flag from older builds so the splash plays
+    // again on the next reload as well.
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(LEGACY_SESSION_KEY);
     }
 
     // Fire `bootDone` and `exiting` simultaneously. The splash wrapper fades
@@ -103,11 +99,6 @@ export function LoadingSplash() {
     }, 2000);
     const unmountTimer = setTimeout(() => {
       setMounted(false);
-      // Mark splash as played for the rest of this session — subsequent
-      // navigations within the tab skip it entirely.
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(SESSION_KEY, "1");
-      }
     }, 2500);
     return () => {
       clearTimeout(exitTimer);

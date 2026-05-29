@@ -40,7 +40,12 @@ import { useShell } from "@/lib/filter-context";
  * with no route change required.
  */
 
-const SESSION_KEY = "mrq.logged-in";
+// Legacy sessionStorage key from earlier "show login once per
+// session" builds — actively cleared on mount so stale flags
+// don't suppress the gate on a return visit. The login gate now
+// shows on every app open (every page reload / fresh tab), gated
+// on the bootDone flag so it appears right after the splash.
+const LEGACY_SESSION_KEY = "mrq.logged-in";
 
 export function LoginGate() {
   // bootDone flips true once the LoadingSplash finishes its exit
@@ -61,21 +66,23 @@ export function LoginGate() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Mark mounted on first paint (gives us "we're client-side now").
+  // Mark mounted on first paint + proactively clear any stale
+  // session flag from older builds (the gate used to only show
+  // once per session and persist the dismissal).
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(LEGACY_SESSION_KEY);
+    }
   }, []);
 
-  // Decide whether to show the gate once the splash is done. If
-  // we've already logged in this session, stay dismissed. The
-  // splash sets bootDone after its ~2s exit animation, so we
-  // appear right behind it.
+  // Show the gate once the splash is done. The splash sets
+  // bootDone after its ~2s exit animation, so we appear right
+  // behind it. No persistence — every page reload re-triggers
+  // the full splash → login → My Q sequence.
   useEffect(() => {
     if (!mounted || !bootDone) return;
-    if (typeof window === "undefined") return;
-    if (!sessionStorage.getItem(SESSION_KEY)) {
-      setVisible(true);
-    }
+    setVisible(true);
   }, [mounted, bootDone]);
 
   // Lock body scroll while the gate is up so the page underneath
@@ -90,12 +97,10 @@ export function LoginGate() {
   }, [visible]);
 
   const dismiss = () => {
-    // Persist the flag immediately so refreshes don't re-show; then
-    // trigger the exit animation. AnimatePresence unmounts the gate
-    // after the fade completes.
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem(SESSION_KEY, "1");
-    }
+    // No persistence — the gate stays dismissed for the rest of
+    // this tab's React tree (the component doesn't remount on
+    // soft navigation), but a hard refresh / fresh tab gets the
+    // full splash → login flow again.
     setExiting(true);
     setTimeout(() => setVisible(false), 280);
   };
