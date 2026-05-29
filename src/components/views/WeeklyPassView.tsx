@@ -36,7 +36,7 @@ import { useState } from "react";
  */
 
 const PAGE_BG = "#f2f3f3";
-const HEADER_BG = "#0a2ecb"; // --mrq-blue
+const HEADER_BG = "#0322ab"; // Figma's deeper brand-blue (slightly darker than --mrq-blue)
 const TIER_TEXT = "#0c2287"; // --mrq-blue-dark / Brand/900
 const BODY_TEXT = "#0e1120"; // text/primary
 const TERTIARY_TEXT = "#676972"; // text/tertiary
@@ -123,46 +123,55 @@ export function WeeklyPassView() {
       }}
     >
       {/* ────────────────────────────────────────────────────────
-          Sheet chrome — brand-blue header band with a close (X)
-          button top-right and the tier tabs (Plus / Flex / Premium)
-          on a second row spanning the full width. Sticky to the
-          top so the chrome stays reachable during scroll.
+          Sheet chrome — brand-blue header band lifted directly from
+          Figma 266:47065. First row: "Weekly Pass" title on the
+          left, X close on the right (plain icon, no pill). Second
+          row: three tier tabs, each 109px wide (Figma 266:47148)
+          spanning the full inner width with 8px gaps. Sticky to
+          the top so the chrome stays reachable during scroll.
           ──────────────────────────────────────────────────────── */}
       <header
         className="sticky top-0 z-30 w-full"
         style={{
           backgroundColor: HEADER_BG,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
           paddingTop: "calc(env(safe-area-inset-top) + 10px)",
-          paddingBottom: 14,
+          paddingBottom: 16,
           paddingLeft: 16,
           paddingRight: 16,
         }}
       >
-        {/* Close row — single X pinned to the top-right corner. */}
-        <div className="flex items-center justify-end" style={{ height: 36 }}>
+        {/* Title row — "Weekly Pass" left, X close right. */}
+        <div className="flex items-center justify-between" style={{ height: 40 }}>
+          <h1
+            style={{
+              fontFamily: "'Gilroy', sans-serif",
+              fontWeight: 700,
+              fontSize: 24,
+              lineHeight: 1.6,
+              letterSpacing: 0.1,
+              color: "#ffffff",
+              margin: 0,
+            }}
+          >
+            Weekly Pass
+          </h1>
           <button
             type="button"
             aria-label="Close"
             onClick={dismiss}
-            className="grid size-[36px] place-items-center rounded-full active:scale-[0.94] transition-transform"
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.18)",
-              border: "1px solid rgba(255, 255, 255, 0.20)",
-              backdropFilter: "blur(20px) saturate(140%)",
-              WebkitBackdropFilter: "blur(20px) saturate(140%)",
-              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.24)",
-            }}
+            className="grid place-items-center -mr-[4px] p-[8px] rounded-full active:scale-[0.92] transition-transform"
+            style={{ color: "#ffffff" }}
           >
-            <XIcon className="size-[18px] text-white" />
+            <XIcon className="size-[20px] text-white" />
           </button>
         </div>
 
-        {/* Tier tabs — three flex-1 pills filling the full row
-            below the close button. Active pill flips to white-90%;
-            the rest stay at white-40%. */}
-        <div className="flex items-center" style={{ gap: 8, marginTop: 10 }}>
+        {/* Tier tabs — three fixed-width pills (109px × 34px,
+            Figma 266:47148) sitting in a row with 8px gaps. Active
+            pill flips to white-90%; the rest stay at white-40%. */}
+        <div className="flex items-center" style={{ gap: 8, marginTop: 12 }}>
           {TIERS.map((t) => {
             const active = t.id === tier;
             return (
@@ -172,7 +181,7 @@ export function WeeklyPassView() {
                 onClick={() => setTier(t.id)}
                 className="flex items-center justify-center rounded-[16px] transition-colors"
                 style={{
-                  flex: "1 1 0",
+                  width: 109,
                   height: 34,
                   backgroundColor: active
                     ? "rgba(255, 255, 255, 0.9)"
@@ -202,18 +211,16 @@ export function WeeklyPassView() {
       <div
         className="pointer-events-none absolute"
         style={{
-          // Sheet chrome is now two rows tall: safe-area + 10 +
-          // 36 (close) + 10 + 34 (tabs) + 14 = safe-area + 104. We
-          // drop the gem 18px under that so it lands cleanly on
-          // the top-right corner of the benefits card below.
-          top: "calc(env(safe-area-inset-top) + 122px)",
+          // Header is now: safe-area + 10 (top pad) + 40 (title
+          // row) + 12 (gap) + 34 (tabs) + 16 (bottom pad)
+          // = safe-area + 112. Drop the gem ~16px under that so
+          // it nests against the top-right corner of the benefits
+          // card.
+          top: "calc(env(safe-area-inset-top) + 128px)",
           right: 22,
           width: 44,
           height: 44,
           transform: "rotate(15deg)",
-          // Sits at the same stacking level as the surrounding
-          // content — the gem doesn't need to fight the header
-          // for layering since it lives entirely below it.
           zIndex: 5,
         }}
         aria-hidden
