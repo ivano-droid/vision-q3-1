@@ -1,28 +1,28 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useShell } from "@/lib/filter-context";
 
 /**
- * Simple branded splash — the returning-user counterpart to the
- * WelcomeGate.
+ * Branded splash for the returning user (Figma 273:66782).
  *
  *   ┌─────────────────────────────┐
  *   │                             │
- *   │           MrQ               │  ← brand wordmark
- *   │   Took you long enough._    │  ← randomised typed line
+ *   │          MrQ                │  ← logo scales up from 0.6 → 1
+ *   │   THE CASINO YOU            │  ← sub-line rises + fades in
+ *   │   LOVE TO HATE              │
+ *   │                             │
+ *   │                             │
+ *   │   All winnings              │  ← fades in from the LEFT
+ *   │        paid in cash         │  ← fades in from the RIGHT
  *   │                             │
  *   └─────────────────────────────┘
  *
- * Plays for ~2200 ms on every app open ONLY if the user has the
+ * Plays for ~2600 ms on every app open ONLY if the user has the
  * `hasLoggedIn` flag set in localStorage. First-time users get the
  * WelcomeGate instead; this component dismisses itself instantly
  * for them.
- *
- * The typed message below the logo cycles randomly through a short
- * pool of brand voice lines on every load. Easy to add / edit:
- * just push to the `LINES` array.
  *
  * Sits at z-[65] — above the WelcomeGate (z-[60]) so on first
  * paint the brand-blue splash surface covers both possible paths,
@@ -30,27 +30,16 @@ import { useShell } from "@/lib/filter-context";
  * localStorage check decides.
  */
 
-const HOLD_MS = 2200;
-// Pool of brand voice lines — randomly picked on each app open.
-// User maintains this list; new entries can be appended freely.
-const LINES = [
-  "Took you long enough.",
-  "I was starting to worry.",
-  "Here for the vibes, I hope.",
-];
+const HOLD_MS = 2600;
 
-const TYPE_INTERVAL_MS = 38;
+// Yellow accent on the word "CASINO" in the tagline — matches the
+// MrQ brand swatch used elsewhere (Worth £50 highlight, etc.).
+const CASINO_YELLOW = "#FFD400";
 
 export function SimpleSplashGate() {
   const { markBootDone } = useShell();
   const [visible, setVisible] = useState(true);
   const [active, setActive] = useState(false);
-
-  // Pick the line once per mount so it doesn't change mid-type.
-  const line = useMemo(
-    () => LINES[Math.floor(Math.random() * LINES.length)],
-    [],
-  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -64,8 +53,8 @@ export function SimpleSplashGate() {
       return;
     }
 
-    // Returning user — show the splash, run the typewriter, then
-    // mark boot done and fade out.
+    // Returning user — show the splash, run the entrance animations,
+    // then mark boot done and fade out.
     setActive(true);
     const timer = window.setTimeout(() => {
       markBootDone();
@@ -78,100 +67,140 @@ export function SimpleSplashGate() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed top-0 bottom-0 z-[65] overflow-hidden flex flex-col items-center justify-center"
+          className="fixed top-0 bottom-0 z-[65] overflow-hidden flex flex-col"
           style={{
             left: "var(--frame-right-offset)",
             right: "var(--frame-right-offset)",
             backgroundColor: "var(--mrq-blue)",
-            gap: 24,
           }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: [0.55, 0, 0.45, 1] }}
+          transition={{ duration: 0.32, ease: [0.55, 0, 0.45, 1] }}
           aria-hidden
         >
-          {/* MrQ wordmark — mask-image trick so the SVG's
-              preserveAspectRatio="none" baked in doesn't stretch it.
-              140×54 at the natural 83:32 ratio. White paint over
-              the brand-blue surface. */}
-          <span
-            role="img"
-            aria-label="MrQ"
+          {/* ───────────────────────────────────────────────
+              UPPER BLOCK — sits centred in the top portion
+              of the screen. Logo + tagline.
+              ─────────────────────────────────────────────── */}
+          <div
+            className="flex flex-col items-center justify-center"
             style={{
-              display: "block",
-              width: 140,
-              height: 54,
-              backgroundColor: "#ffffff",
-              WebkitMaskImage: "url(/assets/logo-mrq.svg)",
-              maskImage: "url(/assets/logo-mrq.svg)",
-              WebkitMaskSize: "contain",
-              maskSize: "contain",
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskPosition: "center",
-              maskPosition: "center",
+              // ~38% from top, leaves the lower half empty so the
+              // bottom block reads as a separate moment.
+              flex: "0 0 auto",
+              marginTop: "30vh",
+              gap: 20,
             }}
-          />
+          >
+            {/* MrQ wordmark — mask-image keeps the SVG from being
+                stretched (the source has preserveAspectRatio="none"
+                baked in). Scales from 0.6 → 1 on mount. */}
+            {active && (
+              <motion.div
+                role="img"
+                aria-label="MrQ"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  duration: 0.55,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                style={{
+                  display: "block",
+                  width: 168,
+                  height: 64,
+                  backgroundColor: "#ffffff",
+                  WebkitMaskImage: "url(/assets/logo-mrq.svg)",
+                  maskImage: "url(/assets/logo-mrq.svg)",
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
+                }}
+              />
+            )}
 
-          {/* Typewriter line — renders only when `active` is true
-              (i.e. for the returning-user path), starts blank,
-              types one character at a time. */}
-          {active && <TypedLine text={line} />}
+            {/* Tagline — "THE CASINO YOU / LOVE TO HATE", rises up
+                + fades in just after the logo settles. */}
+            {active && (
+              <motion.p
+                initial={{ y: 24, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: 0.2,
+                }}
+                className="text-center"
+                style={{
+                  color: "#ffffff",
+                  fontFamily: "var(--font-manrope), 'Gilroy', sans-serif",
+                  fontWeight: 800,
+                  fontSize: 22,
+                  letterSpacing: 0.3,
+                  lineHeight: 1.18,
+                  margin: 0,
+                  textTransform: "uppercase",
+                }}
+              >
+                THE <span style={{ color: CASINO_YELLOW }}>CASINO</span> YOU
+                <br />
+                LOVE TO HATE
+              </motion.p>
+            )}
+          </div>
+
+          {/* ───────────────────────────────────────────────
+              BOTTOM BLOCK — "All winnings / paid in cash".
+              Line 1 slides in from the left, line 2 slides
+              in from the right.
+              ─────────────────────────────────────────────── */}
+          {active && (
+            <div
+              className="text-white"
+              style={{
+                marginTop: "auto",
+                paddingLeft: 24,
+                paddingRight: 24,
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 56px)",
+                fontFamily: "var(--font-anton), 'Anton', 'Gilroy', sans-serif",
+                fontWeight: 700,
+                fontSize: 48,
+                letterSpacing: -0.4,
+                lineHeight: 1.05,
+              }}
+            >
+              <motion.div
+                initial={{ x: -56, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.55,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: 0.38,
+                }}
+                style={{ textAlign: "left" }}
+              >
+                All winnings
+              </motion.div>
+              <motion.div
+                initial={{ x: 56, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.55,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: 0.58,
+                }}
+                style={{ textAlign: "right" }}
+              >
+                paid in cash
+              </motion.div>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function TypedLine({ text }: { text: string }) {
-  // Track how many characters we've revealed so far.
-  const [shown, setShown] = useState(0);
-
-  useEffect(() => {
-    if (shown >= text.length) return;
-    const t = window.setTimeout(() => setShown((n) => n + 1), TYPE_INTERVAL_MS);
-    return () => window.clearTimeout(t);
-  }, [shown, text]);
-
-  return (
-    <p
-      className="text-center"
-      style={{
-        color: "#ffffff",
-        fontSize: 18,
-        fontWeight: 700,
-        letterSpacing: -0.1,
-        lineHeight: 1.4,
-        minHeight: 26, // reserve space so the layout doesn't jump on first char
-        paddingLeft: 16,
-        paddingRight: 16,
-      }}
-    >
-      {text.slice(0, shown)}
-      {/* Blinking cursor — visible while we're still typing, hidden
-          once the full line is revealed. */}
-      {shown < text.length && (
-        <span
-          aria-hidden
-          style={{
-            display: "inline-block",
-            width: "2px",
-            height: "0.95em",
-            marginLeft: "2px",
-            verticalAlign: "text-bottom",
-            backgroundColor: "#ffffff",
-            animation: "splashCursorBlink 0.9s steps(1) infinite",
-          }}
-        />
-      )}
-      <style jsx>{`
-        @keyframes splashCursorBlink {
-          50% {
-            opacity: 0;
-          }
-        }
-      `}</style>
-    </p>
   );
 }
