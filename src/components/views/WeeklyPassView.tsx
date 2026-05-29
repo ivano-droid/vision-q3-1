@@ -1,6 +1,11 @@
 "use client";
 
-import { animate, motion, useMotionValue } from "framer-motion";
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useMotionValue,
+} from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -437,7 +442,6 @@ export function WeeklyPassView() {
                   worth={WORTH[t.id]}
                   benefits={benefits}
                   defaultBullet={defaultBullet}
-                  gemSrc={GEMS[t.id]}
                   // Pass the global active tier as the animation
                   // key so the benefits list reruns its staggered
                   // rise-up animation every time the user changes
@@ -471,6 +475,57 @@ export function WeeklyPassView() {
       </div>
 
       {/* ────────────────────────────────────────────────────────
+          Floating corner gem — lives outside the swipe rail's
+          overflow:hidden so its peek above the benefits card
+          isn't clipped. Anchored at the same visual spot as the
+          card's top-right corner (top: ~safe-area + 100, right:
+          ~20). Asset cross-fades when the tier changes so the
+          yellow / pink / blue gem swap reads as a single morph.
+          ──────────────────────────────────────────────────────── */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={tier}
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            // safe-area + 192 (blue band height) - 72 (rail
+            // overlap) - 20 (gem peek above card) = safe-area
+            // + 100. Right padding 16 + 4 inset = 20.
+            top: "calc(env(safe-area-inset-top) + 100px)",
+            right: 20,
+            width: 124,
+            height: 124,
+            transform: "rotate(15deg)",
+            zIndex: 6,
+          }}
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] },
+          }}
+          exit={{
+            opacity: 0,
+            scale: 0.92,
+            transition: { duration: 0.16, ease: [0.4, 0, 1, 1] },
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={GEMS[tier]}
+            alt=""
+            draggable={false}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* ────────────────────────────────────────────────────────
           Sticky footer — price selector + Start free trial CTA.
           Clamped to the mobile-frame column via --frame-right-offset
           so on desktop it hugs the 375px column rather than the
@@ -489,7 +544,6 @@ function BenefitsCard({
   worth,
   benefits,
   defaultBullet,
-  gemSrc,
   animationKey,
 }: {
   title: string;
@@ -498,8 +552,6 @@ function BenefitsCard({
   benefits: ReadonlyArray<Benefit>;
   /** Bullet style used when a benefit doesn't specify its own. */
   defaultBullet: Bullet;
-  /** Path to the corner gem PNG (yellow / pink / blue). */
-  gemSrc: string;
   /** Changes whenever the active tier changes — used as a remount
    *  key on the benefits list so the staggered rise animation
    *  replays. */
@@ -516,38 +568,6 @@ function BenefitsCard({
         gap: 16,
       }}
     >
-      {/* Corner diamond — same placement on every tier panel so
-          the ornament feels anchored to the chrome, not the
-          content. Sized at 124px, lifted 20px above the card top
-          (so most of the gem sits on the white card with a small
-          peek into the blue band), and pulled inside the card
-          (right: 4) so the rail's overflow-hidden never clips it.
-          The asset switches by tier — yellow / pink / blue. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{
-          top: -20,
-          right: 4,
-          width: 124,
-          height: 124,
-          transform: "rotate(15deg)",
-          zIndex: 5,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={gemSrc}
-          alt=""
-          draggable={false}
-          style={{
-            display: "block",
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-          }}
-        />
-      </div>
 
       {/* Title row: tier name + optional Worth pill. Right padded so
           the tier name doesn't collide with the corner gem. */}
