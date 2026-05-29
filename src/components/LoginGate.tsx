@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useShell } from "@/lib/filter-context";
 
 /**
  * Login gate — Figma 253:31919.
@@ -42,10 +43,17 @@ import { useState, useEffect } from "react";
 const SESSION_KEY = "mrq.logged-in";
 
 export function LoginGate() {
+  // bootDone flips true once the LoadingSplash finishes its exit
+  // animation (or is skipped because it already played this
+  // session). Gating the login gate on bootDone gives us the
+  // splash → login → My Q sequence the design calls for — the
+  // gate stays mounted but invisible (visible=false) until the
+  // splash has fully cleared the screen.
+  const { bootDone } = useShell();
+
   // Default `visible=false` for SSR/CSR parity (we can't read
-  // sessionStorage on the server). useLayoutEffect-style check below
-  // flips it on after mount when we know we haven't been logged in
-  // yet this session.
+  // sessionStorage on the server). The effect below decides whether
+  // to flip it true once bootDone is in, based on the session flag.
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -53,15 +61,22 @@ export function LoginGate() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // First-paint check — if no session flag, show the gate; otherwise
-  // stay dismissed for this session.
+  // Mark mounted on first paint (gives us "we're client-side now").
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Decide whether to show the gate once the splash is done. If
+  // we've already logged in this session, stay dismissed. The
+  // splash sets bootDone after its ~2s exit animation, so we
+  // appear right behind it.
+  useEffect(() => {
+    if (!mounted || !bootDone) return;
     if (typeof window === "undefined") return;
     if (!sessionStorage.getItem(SESSION_KEY)) {
       setVisible(true);
     }
-  }, []);
+  }, [mounted, bootDone]);
 
   // Lock body scroll while the gate is up so the page underneath
   // doesn't move when the form is interacted with.
