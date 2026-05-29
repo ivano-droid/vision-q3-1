@@ -221,11 +221,13 @@ export function SimpleSplashGate() {
                   height: 48,
                   width: "auto",
                   alignSelf: "flex-end",
-                  // Negative top margin pulls "paid in cash" up
-                  // into the empty space below "All winnings"'s
-                  // descender — matches the reference where the
-                  // two lines almost touch.
-                  marginTop: -14,
+                  // Small positive offset under "All winnings"'s
+                  // baseline — gives the two lines a proper
+                  // bold-display line-height (~1.2): descender
+                  // and ascender separated by a hairline of
+                  // breathing space, not overlapping, not
+                  // pulled apart.
+                  marginTop: 8,
                 }}
               />
             </div>
