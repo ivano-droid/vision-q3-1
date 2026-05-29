@@ -152,7 +152,16 @@ export function BrandBar() {
               boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
             }}
           >
-            <DiamondIcon className="block size-[26px]" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/icons/diamond-pass.svg"
+              alt=""
+              // Figma 269:51876 — the actual gem is wider than tall
+              // (viewBox 34×28 ≈ 1.21 ratio). Fixed height + auto
+              // width preserves the aspect so the gem doesn't squash.
+              style={{ height: 24, width: "auto", display: "block" }}
+              draggable={false}
+            />
           </Link>
 
           {/* Wallet pill — two tappable halves inside one rounded
@@ -228,41 +237,3 @@ function BackIcon({ className }: { className?: string }) {
   );
 }
 
-/* ============================================================
-   Diamond icon — pink gem with white facet strokes. Lifted from
-   Figma 269:51876. Used in the BrandBar's Season Pass entry pill.
-   Inline SVG so no extra asset ships.
-   ============================================================ */
-function DiamondIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-      aria-hidden
-      focusable={false}
-    >
-      {/* Outer gem silhouette — pink fill, white outline. */}
-      <path
-        d="M4 9 L8 4 L16 4 L20 9 L12 21 Z"
-        fill="#F4ABCC"
-        stroke="#ffffff"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {/* Internal facet lines: girdle (horizontal at y=9), the two
-          table-side diagonals at the top, and the two pavilion
-          diagonals running from the girdle endpoints down to the
-          bottom point. */}
-      <path
-        d="M4 9 L20 9 M8 4 L9.5 9 M16 4 L14.5 9 M9.5 9 L12 21 M14.5 9 L12 21"
-        stroke="#ffffff"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
