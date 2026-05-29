@@ -207,13 +207,16 @@ export function WelcomeGate() {
                 style={{ gap: 20, paddingTop: 4 }}
               >
                 <div className="flex items-center" style={{ gap: 8 }}>
+                  {/* 18+ badge — natural viewBox is 35.4×20, so
+                      we render at 36×20 to keep the glyph from
+                      reading squashed. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/assets/welcome/eighteen-plus.svg"
                     alt="18+"
-                    width={20}
+                    width={36}
                     height={20}
-                    style={{ width: 20, height: 20 }}
+                    style={{ width: 36, height: 20 }}
                     draggable={false}
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
