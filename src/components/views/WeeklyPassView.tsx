@@ -173,14 +173,6 @@ const GEMS: Record<Tier, string> = {
   premium: "/assets/passes/premium-gem.png",
 };
 
-// Per-tier accent colour — sampled from each gem. Used as a 3px
-// stroke along the top of the benefits card so each tier feels
-// visually tied to its ornament.
-const ACCENT: Record<Tier, string> = {
-  plus: "#F9CC00", // gem yellow
-  flex: "#FF59D0", // gem pink/magenta
-  premium: "#00B3FF", // gem cyan/sky blue
-};
 
 // "What you miss" comparison list — three monthly services at
 // roughly the same price as a Plus pass.
@@ -442,7 +434,11 @@ export function WeeklyPassView() {
                   benefits={benefits}
                   defaultBullet={defaultBullet}
                   gemSrc={GEMS[t.id]}
-                  accent={ACCENT[t.id]}
+                  // Pass the global active tier as the animation
+                  // key so the benefits list reruns its staggered
+                  // rise-up animation every time the user changes
+                  // tabs — a visual nudge that something changed.
+                  animationKey={tier}
                 />
                 {/* "What you miss" comparison card — only the Plus
                     tier carries the price-comparison story; Flex
@@ -490,7 +486,7 @@ function BenefitsCard({
   benefits,
   defaultBullet,
   gemSrc,
-  accent,
+  animationKey,
 }: {
   title: string;
   /** Optional "Worth £50"-style pill next to the tier title. */
@@ -500,20 +496,16 @@ function BenefitsCard({
   defaultBullet: Bullet;
   /** Path to the corner gem PNG (yellow / pink / blue). */
   gemSrc: string;
-  /** Top-edge stroke colour that links the card to its gem. */
-  accent: string;
+  /** Changes whenever the active tier changes — used as a remount
+   *  key on the benefits list so the staggered rise animation
+   *  replays. */
+  animationKey: string;
 }) {
   return (
     <div
       className="relative bg-white"
       style={{
         borderRadius: 16,
-        // 3px top stroke in the tier's accent colour — yellow on
-        // Plus, pink on Flex, cyan on Premium — so the card reads
-        // as part of the same brand moment as the corner gem.
-        // borderTop is rendered inside the rounded corner, so the
-        // stroke curves around the top of the card.
-        borderTop: `3px solid ${accent}`,
         padding: 16,
         display: "flex",
         flexDirection: "column",
@@ -572,15 +564,42 @@ function BenefitsCard({
         {worth && <WorthPill>{worth}</WorthPill>}
       </div>
 
-      {/* Benefit list */}
-      <ul className="flex flex-col" style={{ gap: 16, margin: 0, padding: 0 }}>
+      {/* Benefit list — wrapped in a motion.ul that remounts on
+          tier change (key={animationKey}). Each row rises into
+          place with a small Y offset + fade and a staggered delay
+          so the user sees a subtle "something just changed" cue
+          when they swipe / tap between tabs. */}
+      <motion.ul
+        key={animationKey}
+        className="flex flex-col"
+        style={{ gap: 16, margin: 0, padding: 0 }}
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: {
+            transition: { staggerChildren: 0.04, delayChildren: 0.04 },
+          },
+        }}
+      >
         {benefits.map((b) => {
           const bullet: Bullet = b.bullet ?? defaultBullet;
           return (
-            <li
+            <motion.li
               key={b.title}
               className="flex items-start"
               style={{ gap: 8, listStyle: "none" }}
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.32,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
+                },
+              }}
             >
               <span
                 className="shrink-0 flex items-center justify-center"
@@ -644,10 +663,10 @@ function BenefitsCard({
                   </span>
                 )}
               </div>
-            </li>
+            </motion.li>
           );
         })}
-      </ul>
+      </motion.ul>
 
       {/* Fine print under the list */}
       <p
