@@ -392,19 +392,20 @@ function BenefitsCard({
     >
       {/* Corner diamond — anchored to the card's top-right edge.
           Uses the real Figma 266:47154 PNG (detailed yellow gem
-          with sparkles) instead of a hand-rolled outline. Sized
-          at 72px and lifted with top: -28 so ~40% of the gem
-          peeks above the card top into the blue band; the rest
-          sits on the white card, hugging the right edge. */}
+          with sparkles). Kept fully inside the card horizontally
+          (right: 6) so the surrounding swipe rail's overflow-
+          hidden never clips the gem off-screen. Lifted ~38px
+          above the card top so a healthy peek lands in the blue
+          band; the bulk of the gem sits on the white card. */}
       {showGem && (
         <div
           aria-hidden
           className="pointer-events-none absolute"
           style={{
-            top: -28,
-            right: -10,
-            width: 72,
-            height: 72,
+            top: -38,
+            right: 6,
+            width: 96,
+            height: 96,
             transform: "rotate(15deg)",
             zIndex: 5,
           }}
