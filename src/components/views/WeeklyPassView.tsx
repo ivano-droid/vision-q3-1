@@ -247,11 +247,14 @@ export function WeeklyPassView() {
         <div
           className="pointer-events-none absolute"
           style={{
-            // -18px lifts the gem so ~18px of it (about a third)
-            // sits above the Plus card's top edge into the blue
-            // band; the rest is on the white card.
-            top: -18,
-            right: 20,
+            // Anchor matches Figma 266:47154: gem hugs the
+            // card's right edge (right: 8 = just inside the
+            // page padding) and the gem center lands ~14px
+            // below the card top — so the top third peeks up
+            // into the blue band and the rest sits on the
+            // white card surface.
+            top: -12,
+            right: 8,
             width: 52,
             height: 52,
             transform: "rotate(15deg)",
