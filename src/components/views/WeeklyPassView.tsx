@@ -173,6 +173,15 @@ const GEMS: Record<Tier, string> = {
   premium: "/assets/passes/premium-gem.png",
 };
 
+// Per-tier accent colour — sampled from each gem. Used as a 3px
+// stroke along the top of the benefits card so each tier feels
+// visually tied to its ornament.
+const ACCENT: Record<Tier, string> = {
+  plus: "#F9CC00", // gem yellow
+  flex: "#FF59D0", // gem pink/magenta
+  premium: "#00B3FF", // gem cyan/sky blue
+};
+
 // "What you miss" comparison list — three monthly services at
 // roughly the same price as a Plus pass.
 const COMPARABLES: ReadonlyArray<{
@@ -433,6 +442,7 @@ export function WeeklyPassView() {
                   benefits={benefits}
                   defaultBullet={defaultBullet}
                   gemSrc={GEMS[t.id]}
+                  accent={ACCENT[t.id]}
                 />
                 {/* "What you miss" comparison card — only the Plus
                     tier carries the price-comparison story; Flex
@@ -480,6 +490,7 @@ function BenefitsCard({
   benefits,
   defaultBullet,
   gemSrc,
+  accent,
 }: {
   title: string;
   /** Optional "Worth £50"-style pill next to the tier title. */
@@ -489,12 +500,20 @@ function BenefitsCard({
   defaultBullet: Bullet;
   /** Path to the corner gem PNG (yellow / pink / blue). */
   gemSrc: string;
+  /** Top-edge stroke colour that links the card to its gem. */
+  accent: string;
 }) {
   return (
     <div
       className="relative bg-white"
       style={{
         borderRadius: 16,
+        // 3px top stroke in the tier's accent colour — yellow on
+        // Plus, pink on Flex, cyan on Premium — so the card reads
+        // as part of the same brand moment as the corner gem.
+        // borderTop is rendered inside the rounded corner, so the
+        // stroke curves around the top of the card.
+        borderTop: `3px solid ${accent}`,
         padding: 16,
         display: "flex",
         flexDirection: "column",
