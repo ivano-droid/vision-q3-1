@@ -42,10 +42,13 @@ import { useShell } from "@/lib/filter-context";
 
 // Legacy sessionStorage key from earlier "show login once per
 // session" builds — actively cleared on mount so stale flags
-// don't suppress the gate on a return visit. The login gate now
-// shows on every app open (every page reload / fresh tab), gated
-// on the bootDone flag so it appears right after the splash.
+// don't suppress the gate on a return visit.
 const LEGACY_SESSION_KEY = "mrq.logged-in";
+
+// localStorage key persisted on successful login. Returning users
+// (this flag set) skip the welcome + login flow entirely and get
+// the SimpleSplashGate instead.
+const PERSIST_KEY = "hasLoggedIn";
 
 export function LoginGate() {
   // bootDone flips true once the LoadingSplash finishes its exit
@@ -76,12 +79,14 @@ export function LoginGate() {
     }
   }, []);
 
-  // Show the gate once the splash is done. The splash sets
-  // bootDone after its ~2s exit animation, so we appear right
-  // behind it. No persistence — every page reload re-triggers
-  // the full splash → login → My Q sequence.
+  // Show the gate once the welcome/splash phase is done. The
+  // gate stays hidden if the user has already logged in this
+  // device (localStorage flag) — returning users skip straight
+  // to the app after the SimpleSplashGate.
   useEffect(() => {
     if (!mounted || !bootDone) return;
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem(PERSIST_KEY) === "1") return;
     setVisible(true);
   }, [mounted, bootDone]);
 
@@ -97,10 +102,13 @@ export function LoginGate() {
   }, [visible]);
 
   const dismiss = () => {
-    // No persistence — the gate stays dismissed for the rest of
-    // this tab's React tree (the component doesn't remount on
-    // soft navigation), but a hard refresh / fresh tab gets the
-    // full splash → login flow again.
+    // Persist hasLoggedIn=true so subsequent app opens skip the
+    // welcome + login and go straight from SimpleSplashGate into
+    // the app. The "Reset onboarding" button in SideNav clears
+    // this flag for testing.
+    if (typeof window !== "undefined") {
+      localStorage.setItem(PERSIST_KEY, "1");
+    }
     setExiting(true);
     setTimeout(() => setVisible(false), 280);
   };

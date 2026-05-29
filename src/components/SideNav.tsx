@@ -164,7 +164,43 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
         <LogoutIcon className="size-[18px]" />
         Log out
       </button>
+
+      {/* Dev affordance — wipes the hasLoggedIn flag and reloads so
+          the next paint shows the WelcomeGate + LoginGate again.
+          Kept here while the prototype is in flight; safe to ship
+          since it only mutates localStorage on the current device. */}
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window === "undefined") return;
+          localStorage.removeItem("hasLoggedIn");
+          window.location.reload();
+        }}
+        className="flex items-center gap-[8px] text-[12px] font-bold px-[8px] py-[8px]"
+        style={{ color: "rgba(10, 17, 32, 0.55)" }}
+      >
+        <RefreshIcon className="size-[14px]" />
+        Reset onboarding (dev)
+      </button>
     </div>
+  );
+}
+
+function RefreshIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M3 10a7 7 0 1 0 2-5L3 7" />
+      <path d="M3 3v4h4" />
+    </svg>
   );
 }
 

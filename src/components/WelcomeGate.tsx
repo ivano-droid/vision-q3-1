@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useShell } from "@/lib/filter-context";
 
 /**
@@ -39,6 +39,18 @@ export function WelcomeGate() {
   const { markBootDone } = useShell();
   const [visible, setVisible] = useState(true);
 
+  // Returning users (hasLoggedIn flag set in localStorage) skip the
+  // welcome entirely — SimpleSplashGate (z-[65]) covers the screen
+  // on first paint and owns the boot signal for that path. We just
+  // dismiss this gate silently so the login form behind doesn't
+  // accidentally appear underneath.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("hasLoggedIn") === "1") {
+      setVisible(false);
+    }
+  }, []);
+
   const dismiss = () => {
     // Tell the rest of the app that the boot phase is over so the
     // LoginGate (which gates on bootDone) can take over the screen.
@@ -46,11 +58,11 @@ export function WelcomeGate() {
     setVisible(false);
   };
 
-  // No mounted/SSR check — we render the gate from the very first
-  // paint (including SSR) so the user never sees a frame of the
-  // lobby underneath before the gate appears. There's no
-  // sessionStorage / window access at render time, so there's no
-  // hydration mismatch to worry about.
+  // No mounted/SSR gate — render from the very first paint
+  // (including SSR) so the user never sees a frame of the lobby
+  // underneath. Brand-blue surface means even if the useEffect
+  // above dismisses us instantly for a returning user, there's
+  // no visual artifact behind the simple splash on top of us.
 
   return (
     <AnimatePresence>

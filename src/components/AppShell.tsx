@@ -9,6 +9,7 @@ import { DepositSheet } from "./DepositSheet";
 import { GameDetailsSheet } from "./GameDetailsSheet";
 import { LoginGate } from "./LoginGate";
 import { ResumePlayingBar } from "./ResumePlayingBar";
+import { SimpleSplashGate } from "./SimpleSplashGate";
 import { WelcomeGate } from "./WelcomeGate";
 
 /**
@@ -124,17 +125,21 @@ export function AppShell({ children }: { children: ReactNode }) {
         <GameDetailsSheet />
       </div>
 
-      {/* Welcome gate — z-[60], the very first thing the user sees
-          on every app open (per design feedback, "for now, every
-          refresh"). Replaces the old LoadingSplash. Calls
-          markBootDone on dismiss so the LoginGate behind it can
-          take the stage. */}
+      {/* Boot-time gate stack. All three components render visible
+          from the first paint (brand-blue surfaces, no lobby flash)
+          and decide which one owns the screen via a localStorage
+          check on mount:
+            • First-time user (no hasLoggedIn flag):
+                SimpleSplashGate dismisses instantly, WelcomeGate
+                stays visible → Login → app.
+            • Returning user (hasLoggedIn=true):
+                WelcomeGate dismisses instantly, SimpleSplashGate
+                holds for ~1.5s then dismisses, LoginGate skips
+                itself → straight into the app.
+          Use the "Reset onboarding" button in SideNav (or clear
+          localStorage.hasLoggedIn) to flip back to first-time. */}
+      <SimpleSplashGate />
       <WelcomeGate />
-
-      {/* Login gate — z-[55], rendered behind the welcome gate so
-          when the welcome's CTA fires markBootDone, the login form
-          fades up into view. Once the user submits, the gate fades
-          out and leaves them on the My Q lobby. */}
       <LoginGate />
     </>
   );
