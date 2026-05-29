@@ -65,6 +65,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isGameSurface = pathname.startsWith("/play");
   const GAME_BG = "#101626";
 
+  // /passes/* is the Weekly Pass landing page (Plus / Flex / Premium
+  // tabs). It paints its own brand-blue header bar with back arrow +
+  // tier tabs, plus a sticky "Start free trial" footer, so the
+  // global BrandBar, BottomNav, and ResumePlayingBar all need to
+  // step out the way — same treatment as /play/*.
+  const isPassesSurface = pathname.startsWith("/passes");
+  // Surfaces that own their entire chrome (no global BrandBar /
+  // BottomNav / ResumePlayingBar).
+  const ownsChrome = isGameSurface || isPassesSurface;
+
   return (
     <>
       <div
@@ -81,18 +91,22 @@ export function AppShell({ children }: { children: ReactNode }) {
               : undefined
         }
       >
-        {!isGameSurface && <BrandBar />}
+        {!ownsChrome && <BrandBar />}
 
         <main
           // main gets the darker tone so any overscroll below
           // the page content shows the same colour the page
-          // ends on. /play/* uses the dark navy game surface.
+          // ends on. /play/* uses the dark navy game surface;
+          // /passes uses its own surface-primary grey, painted by
+          // the view itself.
           className={
             isGameSurface
               ? ""
               : isBrandSurface
                 ? ""
-                : "bg-[#f5f5f5]"
+                : isPassesSurface
+                  ? ""
+                  : "bg-[#f5f5f5]"
           }
           style={
             isGameSurface
@@ -103,7 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           }
         >
           {children}
-          {!isGameSurface && (
+          {!ownsChrome && (
             <div
               style={{
                 height: "max(96px, calc(env(safe-area-inset-bottom) + 96px))",
@@ -113,13 +127,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </main>
 
-        {!isGameSurface && <BottomNav />}
-        {/* ResumePlayingBar is unmounted entirely on /play/* so it
-            disappears the instant the user enters a game — no exit
-            slide-down that would leave it briefly visible on top of
-            the in-game chrome. Its own AnimatePresence handles the
-            soft exit on every other route. */}
-        {!isGameSurface && <ResumePlayingBar />}
+        {!ownsChrome && <BottomNav />}
+        {/* ResumePlayingBar is unmounted entirely on /play/* and
+            /passes/* so it disappears the instant the user enters a
+            game or the passes flow — no exit slide-down that would
+            leave it briefly visible on top of the in-game chrome.
+            Its own AnimatePresence handles the soft exit on every
+            other route. */}
+        {!ownsChrome && <ResumePlayingBar />}
         <SideNav />
         <DepositSheet />
         <GameDetailsSheet />

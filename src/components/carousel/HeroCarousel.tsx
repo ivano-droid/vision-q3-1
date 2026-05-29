@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /**
  * Hero promo carousel — landscape PNG cards just below the filter band.
@@ -25,8 +26,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *
  * Touch scrolling on mobile stays native (smooth by default).
  */
-const CARDS: Array<{ key: string; src: string; alt: string }> = [
-  { key: "car1", src: "/assets/hero/car1.png", alt: "Featured promo 1" },
+// `href` (optional) routes a tap on the card. The first card opens
+// the Weekly Pass / Plus tier landing page; the rest stay on the
+// stub console.log until they're wired to real destinations.
+const CARDS: Array<{ key: string; src: string; alt: string; href?: string }> = [
+  {
+    key: "car1",
+    src: "/assets/hero/car1.png",
+    alt: "Weekly Pass — Plus tier",
+    href: "/passes",
+  },
   { key: "car2", src: "/assets/hero/car2.png", alt: "Featured promo 2" },
   { key: "car3", src: "/assets/hero/car3.png", alt: "Featured promo 3" },
   { key: "car4", src: "/assets/hero/car4.png", alt: "Featured promo 4" },
@@ -51,6 +60,7 @@ const SNAP_DURATION_MS = 360;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export function HeroCarousel() {
+  const router = useRouter();
   const railRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -302,7 +312,16 @@ export function HeroCarousel() {
               <PromoCard
                 src={card.src}
                 alt={card.alt}
-                onClick={() => snapTo(i)}
+                // The active card opens its destination on tap (if
+                // wired); off-centre cards still just snap into focus
+                // so the user can read the artwork before committing.
+                onClick={() => {
+                  if (isActive && card.href) {
+                    router.push(card.href);
+                    return;
+                  }
+                  snapTo(i);
+                }}
               />
             </div>
           );
