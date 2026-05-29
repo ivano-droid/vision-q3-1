@@ -106,25 +106,29 @@ export function WeeklyPassView() {
       }}
     >
       {/* ────────────────────────────────────────────────────────
-          Header band — brand-blue with rounded bottom corners.
+          Header band — matches the global BrandBar dimensions
+          exactly (same safe-area padding, same 14px bottom, same
+          20px rounded-bottom corners, same 48px inner row) so the
+          chrome rhythm is consistent with /casino, /search, etc.
           Houses the back arrow + 3 tier tabs.
           ──────────────────────────────────────────────────────── */}
       <header
         className="relative w-full"
         style={{
           backgroundColor: HEADER_BG,
-          borderBottomLeftRadius: 24,
-          borderBottomRightRadius: 24,
-          paddingTop: "calc(env(safe-area-inset-top) + 12px)",
-          paddingBottom: 16,
+          borderBottomLeftRadius: 20,
+          borderBottomRightRadius: 20,
+          paddingTop: "calc(env(safe-area-inset-top) + 10px)",
+          paddingBottom: 14,
           paddingLeft: 16,
           paddingRight: 16,
         }}
       >
-        <div className="flex items-center justify-between">
-          {/* Back to lobby. router.back() if we have history; otherwise
-              router.push("/") so the user doesn't get stranded on a
-              cold-open of /passes. */}
+        <div className="h-[48px] flex items-center justify-between">
+          {/* Back to lobby — 40×40 glass pill, exact match of the
+              BrandBar's back arrow (Figma 177:35024). router.back()
+              if we have history; otherwise router.push("/") so the
+              user doesn't get stranded on a cold-open of /passes. */}
           <button
             type="button"
             aria-label="Back"
@@ -135,63 +139,71 @@ export function WeeklyPassView() {
                 router.push("/");
               }
             }}
-            className="grid place-items-center rounded-[16px] active:scale-[0.92] transition-transform"
+            className="grid size-[40px] place-items-center rounded-full active:scale-[0.96] transition-transform"
             style={{
-              width: 34,
-              height: 34,
-              backgroundColor: "rgba(255, 255, 255, 0.4)",
+              backgroundColor: "rgba(255, 255, 255, 0.18)",
+              border: "1px solid rgba(255, 255, 255, 0.20)",
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.24)",
             }}
           >
             <ArrowLeftIcon className="size-[20px] text-white" />
           </button>
 
-          {/* Tier pill row — each tab matches Figma 266:47148 (~90px
-              wide, 34px tall, rounded 16px). The active pill flips
-              its bg to white-90% and the rest stay at white-40%. */}
-          {TIERS.map((t) => {
-            const active = t.id === tier;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTier(t.id)}
-                className="flex items-center justify-center rounded-[16px] transition-colors"
-                style={{
-                  width: 90,
-                  height: 34,
-                  backgroundColor: active
-                    ? "rgba(255, 255, 255, 0.9)"
-                    : "rgba(255, 255, 255, 0.4)",
-                  color: TIER_TEXT,
-                  fontFamily: "'Gilroy', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  letterSpacing: 0.1,
-                }}
-                aria-pressed={active}
-              >
-                {t.label}
-              </button>
-            );
-          })}
+          {/* Tier pills grouped on the right so justify-between
+              pushes them as a unit away from the back button. Each
+              tab is sized to fit the row without crowding (3 × 80
+              + 2 × 6 = 252px, comfortably under the available
+              space). Active pill flips to white-90%; others stay at
+              white-40%. */}
+          <div className="flex items-center" style={{ gap: 6 }}>
+            {TIERS.map((t) => {
+              const active = t.id === tier;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTier(t.id)}
+                  className="flex items-center justify-center rounded-[16px] transition-colors"
+                  style={{
+                    width: 80,
+                    height: 34,
+                    backgroundColor: active
+                      ? "rgba(255, 255, 255, 0.9)"
+                      : "rgba(255, 255, 255, 0.4)",
+                    color: TIER_TEXT,
+                    fontFamily: "'Gilroy', sans-serif",
+                    fontWeight: 800,
+                    fontSize: 14,
+                    letterSpacing: 0.1,
+                  }}
+                  aria-pressed={active}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
       {/* ────────────────────────────────────────────────────────
           Decorative gem — yellow diamond rotated 15deg sitting over
-          the header / content seam, top-right. Pointer-events-none
-          so taps fall through to the benefits card behind it.
+          the header / content seam, top-right. Smaller now (96px,
+          previously 132px) and unshadowed so it reads as a flat
+          sticker rather than a floating ornament. Pointer-events-
+          none so taps fall through to the benefits card behind it.
           ──────────────────────────────────────────────────────── */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "calc(env(safe-area-inset-top) + 56px)",
-          right: -4,
-          width: 132,
-          height: 132,
+          top: "calc(env(safe-area-inset-top) + 36px)",
+          right: 4,
+          width: 96,
+          height: 96,
           transform: "rotate(15deg)",
           zIndex: 5,
-          filter: "drop-shadow(0 6px 12px rgba(10, 46, 203, 0.18))",
         }}
         aria-hidden
       >
