@@ -65,10 +65,13 @@ const RECENT_WINS = [
     prize: "£28.55",
     href: "/play/buffalo-bills",
   },
-  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£31.19" },
-  // Live-casino win — Lightning Roulette art from the same
-  // /assets/live/ set Explore uses for its Live Casino mega-card.
+  // Live-casino win sits in slot #3 — Lightning Roulette art from
+  // the same /assets/live/ set Explore uses for its Live Casino
+  // mega-card. Prizes after this tile dip below £30 (Snake Arena
+  // £31.19 is the exception that keeps the rail feeling natural
+  // rather than mathematically sorted).
   { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£26.40" },
+  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£31.19" },
   { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£24.80" },
   { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£18.50" },
 ];
