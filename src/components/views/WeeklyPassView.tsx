@@ -124,7 +124,10 @@ export function WeeklyPassView() {
           paddingRight: 16,
         }}
       >
-        <div className="h-[48px] flex items-center justify-between">
+        <div
+          className="h-[48px] flex items-center"
+          style={{ gap: 8 }}
+        >
           {/* Back to lobby — 40×40 glass pill, exact match of the
               BrandBar's back arrow (Figma 177:35024). router.back()
               if we have history; otherwise router.push("/") so the
@@ -139,7 +142,7 @@ export function WeeklyPassView() {
                 router.push("/");
               }
             }}
-            className="grid size-[40px] place-items-center rounded-full active:scale-[0.96] transition-transform"
+            className="grid size-[40px] shrink-0 place-items-center rounded-full active:scale-[0.96] transition-transform"
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.18)",
               border: "1px solid rgba(255, 255, 255, 0.20)",
@@ -151,40 +154,38 @@ export function WeeklyPassView() {
             <ArrowLeftIcon className="size-[20px] text-white" />
           </button>
 
-          {/* Tier pills grouped on the right so justify-between
-              pushes them as a unit away from the back button. Each
-              tab is sized to fit the row without crowding (3 × 80
-              + 2 × 6 = 252px, comfortably under the available
-              space). Active pill flips to white-90%; others stay at
+          {/* Tier pills as direct siblings of the back arrow, each
+              flex-grown so they share the remaining width equally —
+              the row reads as a single segmented control taking the
+              full width rather than three pills bunched on the
+              right. Active pill flips to white-90%; the rest stay at
               white-40%. */}
-          <div className="flex items-center" style={{ gap: 6 }}>
-            {TIERS.map((t) => {
-              const active = t.id === tier;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTier(t.id)}
-                  className="flex items-center justify-center rounded-[16px] transition-colors"
-                  style={{
-                    width: 80,
-                    height: 34,
-                    backgroundColor: active
-                      ? "rgba(255, 255, 255, 0.9)"
-                      : "rgba(255, 255, 255, 0.4)",
-                    color: TIER_TEXT,
-                    fontFamily: "'Gilroy', sans-serif",
-                    fontWeight: 800,
-                    fontSize: 14,
-                    letterSpacing: 0.1,
-                  }}
-                  aria-pressed={active}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+          {TIERS.map((t) => {
+            const active = t.id === tier;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTier(t.id)}
+                className="flex items-center justify-center rounded-[16px] transition-colors"
+                style={{
+                  flex: "1 1 0",
+                  height: 34,
+                  backgroundColor: active
+                    ? "rgba(255, 255, 255, 0.9)"
+                    : "rgba(255, 255, 255, 0.4)",
+                  color: TIER_TEXT,
+                  fontFamily: "'Gilroy', sans-serif",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  letterSpacing: 0.1,
+                }}
+                aria-pressed={active}
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       </header>
 
