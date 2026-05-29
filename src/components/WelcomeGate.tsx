@@ -99,10 +99,9 @@ export function WelcomeGate() {
 
             {/* Hero video card — fills the flex slot between the
                 logo and the CTAs, capped at 321px wide so it sits
-                inside the page gutter even on a 375px frame.
-                Drop /public/assets/welcome/welcome.mp4 in to have
-                the brand video play here; until then the
-                Brand/900 wash is the placeholder. */}
+                inside the page gutter even on a 375px frame. The
+                MP4 lives at /assets/videos/video-welcome.mp4 next
+                to the rest of the Top-Picks reel clips. */}
             <div
               className="flex-1 flex items-center justify-center w-full"
               style={{ minHeight: 0 }}
@@ -117,16 +116,16 @@ export function WelcomeGate() {
               >
                 {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                 <video
-                  src="/assets/welcome/welcome.mp4"
+                  src="/assets/videos/video-welcome.mp4"
                   autoPlay
                   muted
                   loop
                   playsInline
                   preload="auto"
                   className="absolute inset-0 h-full w-full object-cover"
-                  // If the video file isn't present yet, hide the
-                  // <video> element so we don't show a broken play
-                  // icon. The Brand/900 wash behind takes over.
+                  // If the file ever goes missing, hide the broken
+                  // play icon and let the Brand/900 wash behind
+                  // read as the fallback.
                   onError={(e) => {
                     (e.currentTarget as HTMLVideoElement).style.display =
                       "none";
