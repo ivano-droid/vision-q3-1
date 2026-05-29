@@ -193,26 +193,30 @@ export function WeeklyPassView() {
       </header>
 
       {/* ────────────────────────────────────────────────────────
-          Decorative gem — yellow diamond rotated 15deg sitting over
-          the header / content seam, top-right. Smaller now (96px,
-          previously 132px) and unshadowed so it reads as a flat
-          sticker rather than a floating ornament. Pointer-events-
-          none so taps fall through to the benefits card behind it.
+          Decorative gem — yellow diamond rotated 15deg, tucked into
+          the top-right corner of the content area just below the
+          header. Pulled fully out of the header band now (top sits
+          ~6px under the chrome's bottom edge) and shrunk to 60px so
+          it reads as a tidy corner sticker on the benefits card
+          rather than an oversized ornament bleeding off the page.
+          Pointer-events-none so taps fall through to the benefits
+          card behind it.
           ──────────────────────────────────────────────────────── */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "calc(env(safe-area-inset-top) + 36px)",
-          right: 4,
-          width: 96,
-          height: 96,
+          // Header bottom = safe-area + 72px. Drop the gem 6px
+          // below that so it nests against the corner of the
+          // benefits card without overlapping the sticky chrome.
+          top: "calc(env(safe-area-inset-top) + 78px)",
+          right: 12,
+          width: 60,
+          height: 60,
           transform: "rotate(15deg)",
-          // Above the sticky header (z-30) so the gem reads as a
-          // sticker peeking over the chrome at initial paint. The
-          // gem itself is absolute-on-page (not part of the header)
-          // so it scrolls away with the content as the user moves
-          // down the page.
-          zIndex: 31,
+          // Sits at the same stacking level as the surrounding
+          // content — the gem no longer needs to fight the header
+          // for layering now that it lives below the chrome.
+          zIndex: 5,
         }}
         aria-hidden
       >
