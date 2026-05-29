@@ -73,7 +73,13 @@ export function SimpleSplashGate() {
           style={{
             left: "var(--frame-right-offset)",
             right: "var(--frame-right-offset)",
-            backgroundColor: "var(--mrq-blue)",
+            // Subtle vertical gradient — slightly lighter brand-
+            // blue at the top tapering into the deeper brand-900
+            // at the bottom. Reads as a single brand-blue surface
+            // at a glance but gives the panel a bit of depth so
+            // it doesn't feel flat against the logo + headline.
+            background:
+              "linear-gradient(180deg, #1532d3 0%, #0a2ecb 48%, #0c2287 100%)",
           }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
@@ -145,10 +151,12 @@ export function SimpleSplashGate() {
                 }}
                 style={{
                   display: "block",
-                  // Tagline SVG viewBox is ≈4.45:1. Height-first
-                  // sizing keeps the visual scale consistent with
-                  // Figma; width derives from the aspect.
-                  height: 62,
+                  // Tagline SVG viewBox is ≈4.45:1. Smaller height
+                  // (36px) keeps it as a quiet sub-line under the
+                  // big MrQ wordmark — matches the design where
+                  // the tagline reads as supporting copy, not a
+                  // co-equal headline.
+                  height: 36,
                   width: "auto",
                 }}
               />
@@ -175,7 +183,12 @@ export function SimpleSplashGate() {
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 56px)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 18,
+                // Tight gap between the two lines so they read as
+                // one stacked block — matches the design where
+                // "All winnings / paid in cash" feels like a
+                // single phrase on two lines, not two separate
+                // captions.
+                gap: 4,
               }}
             >
               <motion.img
