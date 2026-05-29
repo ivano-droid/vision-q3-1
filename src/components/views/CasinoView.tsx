@@ -147,8 +147,9 @@ export function CasinoView() {
           <SwipeableHero games={HERO_DECK} />
         </div>
 
-        {/* Top 10 — cross-category curated. */}
-        <Top10Rail tiles={TOP_10} />
+        {/* Top 10 — cross-category curated. Title geolocated to
+            the user's area (stubbed for the prototype). */}
+        <Top10Rail title="Top 10 Casino Games in St Albans" tiles={TOP_10} />
 
         {/* Every sub-category rail is always shown; "See all" drops
             the user on /casino/[key]. */}
