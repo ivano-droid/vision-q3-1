@@ -391,25 +391,36 @@ function BenefitsCard({
       }}
     >
       {/* Corner diamond — anchored to the card's top-right edge.
-          Half the previous size (28px) and offset to match the
-          Figma 266:47154 placement: a small portion peeks above
-          the card top into the blue band; the rest sits on the
-          card with the right edge tucked just inside the card's
-          right corner. */}
+          Uses the real Figma 266:47154 PNG (detailed yellow gem
+          with sparkles) instead of a hand-rolled outline. Sized
+          at 72px and lifted with top: -28 so ~40% of the gem
+          peeks above the card top into the blue band; the rest
+          sits on the white card, hugging the right edge. */}
       {showGem && (
         <div
           aria-hidden
           className="pointer-events-none absolute"
           style={{
-            top: -8,
-            right: 4,
-            width: 28,
-            height: 28,
+            top: -28,
+            right: -10,
+            width: 72,
+            height: 72,
             transform: "rotate(15deg)",
             zIndex: 5,
           }}
         >
-          <DiamondGem />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/passes/plus-gem.png"
+            alt=""
+            draggable={false}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+            }}
+          />
         </div>
       )}
       {/* Title row: tier name + "Worth £50" pill */}
@@ -895,57 +906,6 @@ function XIcon({ className }: { className?: string }) {
       focusable={false}
     >
       <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
-}
-
-/* ============================================================
-   The decorative diamond gem — hand-drawn-feeling yellow gem
-   with two tiny sparkles. Stylised; matches the Figma sticker
-   without bundling the source PNG.
-   ============================================================ */
-function DiamondGem() {
-  return (
-    <svg
-      viewBox="0 0 132 132"
-      width="132"
-      height="132"
-      aria-hidden
-      focusable={false}
-    >
-      {/* Sparkles around the gem (drawn behind so the gem reads on top) */}
-      <g fill="#ffd400" stroke="#0c2287" strokeWidth="1.4" strokeLinejoin="round">
-        <path d="M118 8 L122 18 L132 22 L122 26 L118 36 L114 26 L104 22 L114 18 Z" />
-        <path d="M104 56 L107 63 L114 66 L107 69 L104 76 L101 69 L94 66 L101 63 Z" />
-      </g>
-
-      {/* Main gem body — five-sided diamond outline. Filled yellow,
-          outlined with dark navy strokes. Inner facet lines hint at
-          the geometric cut. */}
-      <g
-        stroke="#0c2287"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="#ffd400"
-      >
-        {/* Outer silhouette: flat-top "table" tilted, sloping into
-            a pointed bottom. */}
-        <path d="M14 48 L40 24 L92 24 L118 48 L66 122 Z" />
-
-        {/* Crown facet lines — from the table corners straight down
-            to the table edge below. */}
-        <path d="M40 24 L32 48" fill="none" />
-        <path d="M92 24 L100 48" fill="none" />
-        <path d="M14 48 L118 48" fill="none" />
-
-        {/* Pavilion facets — radiating from the table edge to the
-            bottom point. */}
-        <path d="M32 48 L66 122" fill="none" />
-        <path d="M50 48 L66 122" fill="none" />
-        <path d="M82 48 L66 122" fill="none" />
-        <path d="M100 48 L66 122" fill="none" />
-      </g>
     </svg>
   );
 }
