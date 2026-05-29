@@ -235,42 +235,16 @@ export function WeeklyPassView() {
           gap: 16,
         }}
       >
-        {/* ──────────────────────────────────────────────────────
-            Decorative gem — yellow diamond rotated 15deg, sitting
-            on the edge of the Plus card per Figma 266:47154. It
-            peeks above the card top into the blue band and lands
-            its body on the white card, anchored to the card's
-            top-right corner. Position is relative to this content
-            container so the gem stays glued to the card as the
-            page scrolls. Pointer-events-none so taps fall through.
-            ────────────────────────────────────────────────────── */}
-        <div
-          className="pointer-events-none absolute"
-          style={{
-            // Anchor matches Figma 266:47154: gem hugs the
-            // card's right edge (right: 8 = just inside the
-            // page padding) and the gem center lands ~14px
-            // below the card top — so the top third peeks up
-            // into the blue band and the rest sits on the
-            // white card surface.
-            top: -12,
-            right: 8,
-            width: 52,
-            height: 52,
-            transform: "rotate(15deg)",
-            zIndex: 5,
-          }}
-          aria-hidden
-        >
-          <DiamondGem />
-        </div>
-
-        {/* Benefits card */}
+        {/* Benefits card — the Plus tier renders with a corner gem
+            anchored to the card itself (see `showGem` prop) so the
+            ornament tracks the card's top-right edge precisely,
+            independent of any surrounding layout math. */}
         {tier === "plus" ? (
           <BenefitsCard
             title="Plus"
             worth="Worth £50"
             benefits={PLUS_BENEFITS}
+            showGem
           />
         ) : (
           <PlaceholderTierCard tier={tier} />
@@ -316,14 +290,17 @@ function BenefitsCard({
   title,
   worth,
   benefits,
+  showGem = false,
 }: {
   title: string;
   worth: string;
   benefits: ReadonlyArray<{ title: string; body: string }>;
+  /** Renders the corner diamond ornament (Plus tier only). */
+  showGem?: boolean;
 }) {
   return (
     <div
-      className="bg-white"
+      className="relative bg-white"
       style={{
         borderRadius: 16,
         padding: 16,
@@ -332,6 +309,27 @@ function BenefitsCard({
         gap: 16,
       }}
     >
+      {/* Corner diamond — anchored to the card's top-right edge so
+          it tracks the card directly. Lifted 18px above the card
+          top so the gem peeks into the blue band, and pulled
+          slightly past the right edge (right: -2) so it nuzzles
+          the corner instead of floating inward. */}
+      {showGem && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            top: -18,
+            right: -2,
+            width: 56,
+            height: 56,
+            transform: "rotate(15deg)",
+            zIndex: 5,
+          }}
+        >
+          <DiamondGem />
+        </div>
+      )}
       {/* Title row: tier name + "Worth £50" pill */}
       <div className="flex items-center" style={{ gap: 8 }}>
         <h1
