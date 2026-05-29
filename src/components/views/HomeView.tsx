@@ -31,22 +31,26 @@ const G = (i: number, alt: string) => ({
   alt,
 });
 
-// Distinct artwork pool — the thumb-NN + branded PNGs, not the
-// slot-NN set used by My Recent Wins. Keeps the two rails visually
-// separate even though Buffalo Bills appears in both (it's the
-// wired game, so we lean into the repeat as continuity).
+// Distinct artwork pool — the thumb-NN + branded PNGs + a handful
+// of live-casino tiles (from /assets/live/), not the slot-NN set
+// used by My Recent Wins. Keeps the two rails visually separate
+// even though Buffalo Bills appears in both (it's the wired game,
+// so we lean into the repeat as continuity).
 const PICK_UP_GRID = [
   // Buffalo Bills opens the rail — tapping it routes into the live
   // /play/buffalo-bills page (Figma 1485:95206).
   { src: "/assets/games/slot-01.png", name: "Buffalo Bills", href: "/play/buffalo-bills" },
   { src: "/assets/games/thumb-01.png", name: "Sweet Bonanza" },
-  { src: "/assets/games/thumb-02.png", name: "Sugar Rush" },
+  // Live-casino slot #1.
+  { src: "/assets/live/popular-01.png", name: "Lightning Roulette" },
   { src: "/assets/games/thumb-03.png", name: "Gates of Olympus" },
   { src: "/assets/games/thumb-04.png", name: "The Dog House" },
-  { src: "/assets/games/thumb-05.png", name: "Wolf Gold" },
+  // Live-casino slot #2.
+  { src: "/assets/live/popular-02.png", name: "Crazy Time" },
   { src: "/assets/games/thumb-06.png", name: "Starburst" },
   { src: "/assets/games/thumb-07.png", name: "Bonanza Megaways" },
-  { src: "/assets/games/fruit-warp.png", name: "Fruit Warp" },
+  // Live-casino slot #3.
+  { src: "/assets/live/table-01.png", name: "Mega Wheel" },
   { src: "/assets/games/wild-swarm.png", name: "Wild Swarm" },
 ];
 
@@ -62,6 +66,9 @@ const RECENT_WINS = [
     href: "/play/buffalo-bills",
   },
   { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£31.19" },
+  // Live-casino win — Lightning Roulette art from the same
+  // /assets/live/ set Explore uses for its Live Casino mega-card.
+  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£26.40" },
   { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£24.80" },
   { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£18.50" },
 ];
