@@ -19,6 +19,12 @@ import { useShell } from "@/lib/filter-context";
  *   │                             │
  *   └─────────────────────────────┘
  *
+ * The tagline and bottom block are rendered from flattened SVGs
+ * (Figma 273:66869 / 273:66872 / 273:66879) — the type was already
+ * outlined in the source design, so we ship the exact strokes
+ * rather than re-typesetting in webfonts. This sidesteps any
+ * font-loading flicker on first paint.
+ *
  * Plays for ~2600 ms on every app open ONLY if the user has the
  * `hasLoggedIn` flag set in localStorage. First-time users get the
  * WelcomeGate instead; this component dismisses itself instantly
@@ -31,10 +37,6 @@ import { useShell } from "@/lib/filter-context";
  */
 
 const HOLD_MS = 2600;
-
-// Yellow accent on the word "CASINO" in the tagline — matches the
-// MrQ brand swatch used elsewhere (Worth £50 highlight, etc.).
-const CASINO_YELLOW = "#FFD400";
 
 export function SimpleSplashGate() {
   const { markBootDone } = useShell();
@@ -123,16 +125,17 @@ export function SimpleSplashGate() {
               />
             )}
 
-            {/* Tagline — "THE CASINO YOU / LOVE TO HATE", rises up
-                + fades in just after the logo settles. Set in
-                Gilroy Bold (real font, loaded via @font-face from
-                /public/fonts). Both lines share the same heavy
-                font-size so the headline reads as one stacked
-                block, matching the design crop where the lines
-                fill an equal width by virtue of Gilroy's letter
-                shapes. */}
+            {/* Tagline — "THE CASINO YOU / LOVE TO HATE", lifted
+                from Figma 273:66869 as a flattened SVG so the
+                strokes (and the yellow "CASINO" accent) match
+                exactly without depending on webfont weights. The
+                wrapper rises + fades in just after the logo
+                settles. */}
             {active && (
-              <motion.div
+              <motion.img
+                src="/assets/splash/casino.svg"
+                alt=""
+                draggable={false}
                 initial={{ y: 24, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{
@@ -140,53 +143,45 @@ export function SimpleSplashGate() {
                   ease: [0.22, 1, 0.36, 1],
                   delay: 0.2,
                 }}
-                className="text-center"
                 style={{
-                  color: "#ffffff",
-                  fontFamily: "'Gilroy', var(--font-manrope), sans-serif",
-                  fontWeight: 700,
-                  fontSize: 32,
-                  letterSpacing: -0.6,
-                  lineHeight: 1.05,
-                  textTransform: "uppercase",
+                  display: "block",
+                  // Tagline SVG viewBox is ≈4.45:1. Height-first
+                  // sizing keeps the visual scale consistent with
+                  // Figma; width derives from the aspect.
+                  height: 62,
+                  width: "auto",
                 }}
-              >
-                <div>
-                  THE <span style={{ color: CASINO_YELLOW }}>CASINO</span> YOU
-                </div>
-                <div>LOVE TO HATE</div>
-              </motion.div>
+              />
             )}
           </div>
 
           {/* ───────────────────────────────────────────────
               BOTTOM BLOCK — "All winnings / paid in cash".
-              Set in Formula Condensed Bold (Anton is the free
-              stand-in loaded via next/font in layout.tsx — same
-              treatment used elsewhere for promo headlines like
-              "BIG WEEKENDER"). Line 1 slides in from the left,
-              line 2 slides in from the right with a small delay
-              so the two beats read sequentially.
+              Each line is a flattened SVG lifted from the Figma
+              source (273:66872 and 273:66879). Both SVGs share
+              the same viewBox height (49.2px), so rendering both
+              at the same height ratio keeps the strokes at the
+              identical visual scale the designer drew them at.
+              Line 1 slides in from the left; line 2 slides in
+              from the right with a small delay so the two beats
+              read sequentially.
               ─────────────────────────────────────────────── */}
           {active && (
             <div
-              className="text-white"
               style={{
                 marginTop: "auto",
                 paddingLeft: 24,
                 paddingRight: 24,
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 56px)",
-                fontFamily: "var(--font-anton), 'Anton', sans-serif",
-                fontWeight: 700,
-                fontSize: 48,
-                letterSpacing: -0.4,
-                // Bumped from 1.05 → 1.18 so the two lines breathe
-                // a little. With fontSize 48 that's an extra ~6px
-                // gap between the baselines.
-                lineHeight: 1.18,
+                display: "flex",
+                flexDirection: "column",
+                gap: 18,
               }}
             >
-              <motion.div
+              <motion.img
+                src="/assets/splash/allwinnings.svg"
+                alt=""
+                draggable={false}
                 initial={{ x: -56, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{
@@ -194,11 +189,17 @@ export function SimpleSplashGate() {
                   ease: [0.22, 1, 0.36, 1],
                   delay: 0.38,
                 }}
-                style={{ textAlign: "left" }}
-              >
-                All winnings
-              </motion.div>
-              <motion.div
+                style={{
+                  display: "block",
+                  height: 64,
+                  width: "auto",
+                  alignSelf: "flex-start",
+                }}
+              />
+              <motion.img
+                src="/assets/splash/paidincash.svg"
+                alt=""
+                draggable={false}
                 initial={{ x: 56, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{
@@ -206,10 +207,13 @@ export function SimpleSplashGate() {
                   ease: [0.22, 1, 0.36, 1],
                   delay: 0.58,
                 }}
-                style={{ textAlign: "right" }}
-              >
-                paid in cash
-              </motion.div>
+                style={{
+                  display: "block",
+                  height: 64,
+                  width: "auto",
+                  alignSelf: "flex-end",
+                }}
+              />
             </div>
           )}
         </motion.div>
