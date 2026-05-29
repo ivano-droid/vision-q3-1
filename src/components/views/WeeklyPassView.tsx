@@ -488,13 +488,13 @@ export function WeeklyPassView() {
           aria-hidden
           className="pointer-events-none absolute"
           style={{
-            // safe-area + 192 (blue band height) - 72 (rail
-            // overlap) - 20 (gem peek above card) = safe-area
-            // + 100. Right padding 16 + 4 inset = 20.
-            top: "calc(env(safe-area-inset-top) + 100px)",
+            // safe-area + 105 = previous resting position + 5px so
+            // the gem sits a touch lower on the seam. Size shaved
+            // 5% (124 → 118) for a slightly tidier ornament.
+            top: "calc(env(safe-area-inset-top) + 105px)",
             right: 20,
-            width: 124,
-            height: 124,
+            width: 118,
+            height: 118,
             transform: "rotate(15deg)",
             zIndex: 6,
           }}
