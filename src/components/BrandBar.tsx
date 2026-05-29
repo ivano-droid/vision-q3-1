@@ -130,29 +130,48 @@ export function BrandBar() {
           </Link>
         )}
 
-        {/* Right side: balance + divider + avatar pill (unchanged on every route).
-            Height bumped to match the filter-pill family and avatar grown to
-            keep the proportions balanced. Drop shadow removed — it was
-            making the pill look like it floated separately from the rest
-            of the glass system below. Keeps only the inset top highlight
-            for the "lit edge" Liquid Glass feel. */}
-        {/* Wallet pill — two tappable halves inside one rounded
-            container. The cash text on the left opens the deposit
-            sheet (mirrors the vision-01 pattern); the avatar on the
-            right opens the side nav. A neutral divider sits between
-            them inside the row. The container itself is a div, not a
-            button, so each half captures its own taps without one
-            stealing from the other. */}
-        <div
-          className="flex items-center gap-[12px] h-[48px] pl-[22px] pr-[5px] rounded-full"
-          style={{
-            backgroundColor: "rgba(157, 171, 234, 0.32)",
-            backdropFilter: "blur(20px) saturate(140%)",
-            WebkitBackdropFilter: "blur(20px) saturate(140%)",
-            border: "1px solid rgba(255, 255, 255, 0.18)",
-            boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
-          }}
-        >
+        {/* Right side: pass pill + wallet pill. */}
+        <div className="flex items-center gap-[8px]">
+          {/* Season Pass entry — pink diamond inside the same glass
+              pill family as the balance/avatar. Routes to /passes
+              (Weekly Pass landing, Figma 266:47065). Visible on every
+              route that renders the BrandBar; AppShell already hides
+              the BrandBar entirely on /passes/* and /play/* so the
+              pill doesn't appear where it shouldn't. */}
+          <Link
+            href="/passes"
+            aria-label="Open Season Pass"
+            className="grid h-[48px] place-items-center rounded-full active:scale-[0.95] transition-transform"
+            style={{
+              paddingLeft: 18,
+              paddingRight: 18,
+              backgroundColor: "rgba(157, 171, 234, 0.32)",
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+            }}
+          >
+            <DiamondIcon className="block size-[26px]" />
+          </Link>
+
+          {/* Wallet pill — two tappable halves inside one rounded
+              container. The cash text on the left opens the deposit
+              sheet (mirrors the vision-01 pattern); the avatar on the
+              right opens the side nav. A neutral divider sits between
+              them inside the row. The container itself is a div, not
+              a button, so each half captures its own taps without
+              one stealing from the other. */}
+          <div
+            className="flex items-center gap-[12px] h-[48px] pl-[22px] pr-[5px] rounded-full"
+            style={{
+              backgroundColor: "rgba(157, 171, 234, 0.32)",
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+            }}
+          >
           <button
             type="button"
             onClick={openDeposit}
@@ -184,6 +203,7 @@ export function BrandBar() {
               priority
             />
           </button>
+          </div>
         </div>
       </div>
     </header>
@@ -204,6 +224,45 @@ function BackIcon({ className }: { className?: string }) {
       focusable={false}
     >
       <path d="m14 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+/* ============================================================
+   Diamond icon — pink gem with white facet strokes. Lifted from
+   Figma 269:51876. Used in the BrandBar's Season Pass entry pill.
+   Inline SVG so no extra asset ships.
+   ============================================================ */
+function DiamondIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+      focusable={false}
+    >
+      {/* Outer gem silhouette — pink fill, white outline. */}
+      <path
+        d="M4 9 L8 4 L16 4 L20 9 L12 21 Z"
+        fill="#F4ABCC"
+        stroke="#ffffff"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Internal facet lines: girdle (horizontal at y=9), the two
+          table-side diagonals at the top, and the two pavilion
+          diagonals running from the girdle endpoints down to the
+          bottom point. */}
+      <path
+        d="M4 9 L20 9 M8 4 L9.5 9 M16 4 L14.5 9 M9.5 9 L12 21 M14.5 9 L12 21"
+        stroke="#ffffff"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
     </svg>
   );
 }
