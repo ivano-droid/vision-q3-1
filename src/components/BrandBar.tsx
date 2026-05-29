@@ -154,12 +154,13 @@ export function BrandBar() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/assets/icons/diamond-pass.svg"
+              src="/assets/nav-icons/diamond.svg"
               alt=""
-              // Figma 269:51876 — the actual gem is wider than tall
-              // (viewBox 34×28 ≈ 1.21 ratio). Fixed height + auto
-              // width preserves the aspect so the gem doesn't squash.
-              style={{ height: 24, width: "auto", display: "block" }}
+              // Source SVG is 23×19 (≈1.21 ratio) — explicit width
+              // + auto height preserves the aspect so the gem
+              // doesn't squash. Sized to ~24px tall to sit
+              // proportionally inside the 48px pill.
+              style={{ width: 26, height: "auto", display: "block" }}
               draggable={false}
             />
           </Link>
