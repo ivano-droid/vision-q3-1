@@ -124,9 +124,13 @@ export function SimpleSplashGate() {
             )}
 
             {/* Tagline — "THE CASINO YOU / LOVE TO HATE", rises up
-                + fades in just after the logo settles. */}
+                + fades in just after the logo settles. The second
+                line uses a larger font size than the first so it
+                visually fills the same width even though "LOVE TO
+                HATE" has fewer characters than "THE CASINO YOU"
+                — matches the Figma cadence. */}
             {active && (
-              <motion.p
+              <motion.div
                 initial={{ y: 24, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{
@@ -139,17 +143,16 @@ export function SimpleSplashGate() {
                   color: "#ffffff",
                   fontFamily: "var(--font-manrope), 'Gilroy', sans-serif",
                   fontWeight: 800,
-                  fontSize: 22,
-                  letterSpacing: 0.3,
-                  lineHeight: 1.18,
-                  margin: 0,
+                  letterSpacing: 0.4,
+                  lineHeight: 1.12,
                   textTransform: "uppercase",
                 }}
               >
-                THE <span style={{ color: CASINO_YELLOW }}>CASINO</span> YOU
-                <br />
-                LOVE TO HATE
-              </motion.p>
+                <div style={{ fontSize: 20 }}>
+                  THE <span style={{ color: CASINO_YELLOW }}>CASINO</span> YOU
+                </div>
+                <div style={{ fontSize: 30, marginTop: 2 }}>LOVE TO HATE</div>
+              </motion.div>
             )}
           </div>
 
