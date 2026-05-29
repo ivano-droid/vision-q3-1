@@ -256,11 +256,17 @@ export function HeroCarousel() {
     >
       <div
         ref={railRef}
-        className="no-scrollbar flex overflow-x-auto overflow-y-visible pt-[14px] pb-[12px]"
+        // Use Tailwind utilities for padding so the gutter matches
+        // every other rail on the page exactly (GameRail,
+        // RecentlyPlayedGrid, BigWinsRow all use `pl-[16px] pr-[16px]`
+        // or `px-[16px]`). The previous inline `paddingLeft: 16`
+        // computed the same px value but was rendered through React
+        // style; aligning to the Tailwind utility removes any
+        // residual specificity / casting weirdness so the first
+        // card's left edge lands pixel-perfect on the page gutter.
+        className="no-scrollbar flex overflow-x-auto overflow-y-visible pl-[16px] pr-[16px] pt-[14px] pb-[12px]"
         style={{
           gap: CARD_GAP,
-          paddingLeft: PAGE_GUTTER,
-          paddingRight: PAGE_GUTTER,
           WebkitOverflowScrolling: "touch",
           // Plain "x" (proximity) instead of "x mandatory" so the
           // user can free-scroll between cards; the custom tween
@@ -268,6 +274,7 @@ export function HeroCarousel() {
           // release. Mandatory + our tween fought each other and
           // produced the jumpy feel.
           scrollSnapType: "x proximity",
+          scrollPaddingLeft: "16px",
         }}
       >
         {CARDS.map((card, i) => {
