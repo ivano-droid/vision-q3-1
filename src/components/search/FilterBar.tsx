@@ -142,7 +142,7 @@ export function FilterBar({
       {/* One line — horizontally scrollable, never wraps. */}
       <div className="flex items-center gap-[8px] overflow-x-auto px-[16px] pb-[10px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <FacetChip
-          label={multiLabel(filters.categories, "Category")}
+          label={multiLabel(filters.categories, "All Categories")}
           active={filters.categories.length > 0}
           isOpen={open === "category"}
           onClick={() => toggle("category")}
