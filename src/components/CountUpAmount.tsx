@@ -119,23 +119,36 @@ export function CountUpAmount({
       raf = requestAnimationFrame(tick);
     };
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && !doneRef.current) {
-            doneRef.current = true;
-            if (sessionKey) markSeen(sessionKey);
-            run();
-            io.disconnect();
+    // Wait one frame + a small post-gate delay before attaching the
+    // IO. When gate flips on bootDone, the splash overlay is still
+    // mid-fade-out — kicking off the count-up the same tick would
+    // animate the first few hundred ms behind the disappearing
+    // splash. ~280ms gives the splash exit room to clear (its
+    // transition is ~220ms) so the count-up is fully visible.
+    const startTimer = window.setTimeout(() => {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting && !doneRef.current) {
+              doneRef.current = true;
+              if (sessionKey) markSeen(sessionKey);
+              run();
+              io.disconnect();
+            }
           }
-        }
-      },
-      { threshold: 0.4 },
-    );
-    io.observe(el);
+        },
+        { threshold: 0.4 },
+      );
+      io.observe(el);
+      // Replace the outer cleanup's `io` reference.
+      teardownIO = () => io.disconnect();
+    }, 280);
+
+    let teardownIO: (() => void) | null = null;
 
     return () => {
-      io.disconnect();
+      window.clearTimeout(startTimer);
+      teardownIO?.();
       if (raf) cancelAnimationFrame(raf);
     };
   }, [parsed, durationMs, sessionKey, gate]);

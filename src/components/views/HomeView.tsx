@@ -54,23 +54,23 @@ const PICK_UP_GRID = [
   { src: "/assets/games/wild-swarm.png", name: "Wild Swarm" },
 ];
 
-// Prize amounts land in the £100–£250 range — bigger than a single
-// spin's win but not eye-rolling, more like the kind of cumulative
-// session payouts a real user would screenshot. The count-up
-// animation in each pill scrolls from £0 up to the value, giving
-// the row its bit of social-proof delight.
+// Prize amounts in the £400–£1,800 range — meaningful session
+// wins, the kind a player would screenshot. The count-up
+// animation scrolls each pill from £0 up to its value, so larger
+// numbers also give the count-up more visible distance to travel.
+// Buffalo Bills tops the rail because it's the flagship game.
 const RECENT_WINS = [
-  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£187.40" },
+  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£687.40" },
   {
     src: "/assets/games/slot-01.png",
     alt: "Buffalo Bills",
-    prize: "£245.80",
+    prize: "£1,820.50",
     href: "/play/buffalo-bills",
   },
-  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£162.50" },
-  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£218.75" },
-  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£134.20" },
-  { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£106.90" },
+  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£962.50" },
+  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£1,418.75" },
+  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£534.20" },
+  { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£406.90" },
 ];
 
 // Same-vibe recommendations — landscape cards. Re-uses slot artwork

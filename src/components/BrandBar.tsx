@@ -201,7 +201,11 @@ export function BrandBar() {
                 which was confusing in practice — the chip is so
                 small that one count-up doesn't earn a "stop showing
                 it" budget yet. */}
-            <CountUpAmount value="£113.59" gate={bootDone} />
+            <CountUpAmount
+              value="£4,287.50"
+              gate={bootDone}
+              durationMs={1500}
+            />
           </button>
           <span
             className="h-[20px] w-px"

@@ -114,6 +114,10 @@ function WinTile({ win }: { win: Win }) {
         <CountUpAmount
           value={win.prize}
           gate={bootDone}
+          // Slower than the 900ms default — at £400–£1,800 numbers
+          // the eye needs more travel time to register the digits
+          // ticking rather than just snapping in.
+          durationMs={1400}
           className="text-[13px] font-extrabold text-[var(--mrq-blue)]"
         />
       </div>
