@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useShell } from "@/lib/filter-context";
 
@@ -37,6 +37,15 @@ export function GameDetailsSheet() {
   const { gameDetails, closeGameDetails } = useShell();
   const router = useRouter();
   const open = gameDetails !== null;
+
+  // How-to-play starts collapsed to keep the upper content compact
+  // so the preview at the bottom of the scroll area can sneak in
+  // above the pinned CTA. Reset to collapsed whenever the sheet
+  // opens for a new game.
+  const [howToPlayExpanded, setHowToPlayExpanded] = useState(false);
+  useEffect(() => {
+    if (!open) setHowToPlayExpanded(false);
+  }, [open, gameDetails?.name]);
 
   // Body scroll lock while open.
   useEffect(() => {
@@ -176,14 +185,84 @@ export function GameDetailsSheet() {
                 </div>
               </div>
 
-              {/* Gameplay preview — optional per game. When the
-                  catalogue carries a `preview` image, show it as a
-                  landscape card right under the title so the user
-                  sees what the game looks like before reading the
-                  data. Subtle "Preview" chip in the corner sets the
-                  context (static image, not a tappable trailer). */}
+              {/* Stats pill — pale brand-blue surface (instead of
+                  brown rgba like the game screen) so the sheet
+                  reads white & clean. */}
+              <div className="px-[16px]">
+                <div
+                  className="flex items-center justify-center rounded-[16px] h-[64px] px-[14px]"
+                  style={{
+                    backgroundColor: "rgba(10, 46, 203, 0.06)",
+                    gap: 8,
+                  }}
+                >
+                  <StatCell label="Volatility" value={gameDetails.volatility} />
+                  <Divider />
+                  <StatCell label="RTP" value={gameDetails.rtp} />
+                  <Divider />
+                  <StatCell label="Max win" value={gameDetails.maxWin} />
+                </div>
+              </div>
+
+              {/* Detail rows */}
+              <div className="flex flex-col px-[20px] pt-[18px] gap-[2px]">
+                <DetailRow label="Min/max bet" value={gameDetails.betRange} />
+                <DetailRow label="Game type" value={gameDetails.gameType} />
+                <DetailRow label="Provider" value={gameDetails.provider} last />
+              </div>
+
+              {/* How to play — collapsed to a 2-line clamp by
+                  default so the section stays compact and the
+                  preview below it peeks into the visible area
+                  above the pinned CTA. "See more" expands to the
+                  full copy; "See less" collapses again. */}
+              <div className="px-[20px] pt-[20px] pb-[4px]">
+                <h3
+                  className="text-[16px] font-extrabold leading-none"
+                  style={{ color: "var(--mrq-blue-dark)" }}
+                >
+                  How to play
+                </h3>
+                <p
+                  className="text-[14px] font-medium leading-[1.55] mt-[8px]"
+                  style={{
+                    color: "rgba(10, 46, 203, 0.65)",
+                    ...(howToPlayExpanded
+                      ? undefined
+                      : {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical" as const,
+                          overflow: "hidden",
+                        }),
+                  }}
+                >
+                  Choose your bet, tap spin, and match symbols across
+                  the reels to win. Special symbols can trigger bonus
+                  features, free spins, or extra prizes. Check the
+                  full rules for paylines, payouts, and feature
+                  details.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setHowToPlayExpanded((v) => !v)}
+                  className="mt-[6px] text-[13px] font-extrabold active:scale-[0.98] transition-transform"
+                  style={{ color: "var(--mrq-blue)" }}
+                >
+                  {howToPlayExpanded ? "See less" : "See more"}
+                </button>
+              </div>
+
+              {/* Gameplay preview — moved to the BOTTOM of the
+                  scroll area (was right under the title). Sits
+                  just above the pinned-CTA's fade gradient so its
+                  top edge peeks into the visible region — the
+                  preview becomes the visual "scroll for more" cue
+                  AND the game-look anchor in one element.
+                  Tap-friendly chip bottom-left labels it as a
+                  static screenshot, not a trailer. */}
               {gameDetails.preview && (
-                <div className="px-[16px] pb-[6px]">
+                <div className="px-[16px] pt-[18px]">
                   <div
                     className="relative w-full overflow-hidden rounded-[14px]"
                     style={{
@@ -213,53 +292,6 @@ export function GameDetailsSheet() {
                   </div>
                 </div>
               )}
-
-              {/* Stats pill — pale brand-blue surface (instead of
-                  brown rgba like the game screen) so the sheet
-                  reads white & clean. */}
-              <div className="px-[16px]">
-                <div
-                  className="flex items-center justify-center rounded-[16px] h-[64px] px-[14px]"
-                  style={{
-                    backgroundColor: "rgba(10, 46, 203, 0.06)",
-                    gap: 8,
-                  }}
-                >
-                  <StatCell label="Volatility" value={gameDetails.volatility} />
-                  <Divider />
-                  <StatCell label="RTP" value={gameDetails.rtp} />
-                  <Divider />
-                  <StatCell label="Max win" value={gameDetails.maxWin} />
-                </div>
-              </div>
-
-              {/* Detail rows */}
-              <div className="flex flex-col px-[20px] pt-[18px] gap-[2px]">
-                <DetailRow label="Min/max bet" value={gameDetails.betRange} />
-                <DetailRow label="Game type" value={gameDetails.gameType} />
-                <DetailRow label="Provider" value={gameDetails.provider} last />
-              </div>
-
-              {/* How to play — mirrors the same block on the Buffalo
-                  Bills game screen, just in white-surface tone. */}
-              <div className="px-[20px] pt-[24px]">
-                <h3
-                  className="text-[16px] font-extrabold leading-none"
-                  style={{ color: "var(--mrq-blue-dark)" }}
-                >
-                  How to play
-                </h3>
-                <p
-                  className="text-[14px] font-medium leading-[1.55] mt-[8px]"
-                  style={{ color: "rgba(10, 46, 203, 0.65)" }}
-                >
-                  Choose your bet, tap spin, and match symbols across
-                  the reels to win. Special symbols can trigger bonus
-                  features, free spins, or extra prizes. Check the
-                  full rules for paylines, payouts, and feature
-                  details.
-                </p>
-              </div>
 
             </div>
 
