@@ -14,6 +14,7 @@ import {
   type SortKey,
 } from "@/lib/game-filters";
 import { GAME_CATEGORIES } from "@/lib/searchable-games";
+import { haptics } from "@/lib/haptics";
 
 /**
  * Inline filter bar for the search takeover.
@@ -57,7 +58,10 @@ export function FilterBar({
   canSort: boolean;
 }) {
   const [open, setOpen] = useState<FacetKey | null>(null);
-  const toggle = (k: FacetKey) => setOpen((cur) => (cur === k ? null : k));
+  const toggle = (k: FacetKey) => {
+    haptics.selection();
+    setOpen((cur) => (cur === k ? null : k));
+  };
   const close = () => setOpen(null);
 
   const activeCount = countActiveFilters(filters);
@@ -196,6 +200,7 @@ export function FilterBar({
           <button
             type="button"
             onClick={() => {
+              haptics.selection();
               onChange(EMPTY_FILTERS);
               close();
             }}
@@ -243,6 +248,7 @@ export function FilterBar({
                   role="option"
                   aria-selected={r.selected}
                   onClick={() => {
+                    haptics.selection();
                     r.onSelect();
                     if (closeOnSelect) close();
                   }}

@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
+import { CountUpAmount } from "@/components/CountUpAmount";
 
 /**
  * "Latest big wins" — horizontal scroll of social-style win cards.
@@ -84,7 +85,7 @@ function WinEventCard({ win }: { win: WinEvent }) {
           {win.username}
         </span>
         <span className="text-[13px] font-bold leading-tight text-[var(--mrq-blue-dark)] opacity-80">
-          just hit {win.amount} on {win.game}
+          just hit <CountUpAmount value={win.amount} /> on {win.game}
         </span>
       </span>
     </button>

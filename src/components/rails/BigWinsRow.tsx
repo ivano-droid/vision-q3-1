@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { getGameDetails } from "@/lib/games-catalogue";
+import { CountUpAmount } from "@/components/CountUpAmount";
 
 /**
  * "Your recent big wins" — horizontal scroll of game tiles with a
@@ -104,9 +105,10 @@ function WinTile({ win }: { win: Win }) {
         className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-white px-[10px] py-[3px] whitespace-nowrap pointer-events-none"
         style={{ boxShadow: "0 4px 10px -4px rgba(10, 46, 203, 0.18)" }}
       >
-        <span className="text-[13px] font-extrabold text-[var(--mrq-blue)]">
-          {win.prize}
-        </span>
+        <CountUpAmount
+          value={win.prize}
+          className="text-[13px] font-extrabold text-[var(--mrq-blue)]"
+        />
       </div>
     </div>
   );

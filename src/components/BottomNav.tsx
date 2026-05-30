@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { haptics } from "@/lib/haptics";
 
 /**
  * Persistent bottom navigation — Figma 226:52056.
@@ -327,7 +328,12 @@ function TabItem({
       ref={anchorRef}
       href={tab.href}
       aria-current={active ? "page" : undefined}
-      onPointerDown={() => setPressed(true)}
+      onPointerDown={() => {
+        setPressed(true);
+        // Only buzz when actually switching tabs, not re-tapping the
+        // current one — keeps the feedback meaningful, not noisy.
+        if (!active) haptics.selection();
+      }}
       className="relative flex h-full flex-1 min-w-0 flex-col items-center justify-center"
       style={{
         gap: ICON_LABEL_GAP,

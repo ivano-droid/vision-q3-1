@@ -24,6 +24,7 @@ import {
   type SortKey,
 } from "@/lib/game-filters";
 import { FilterBar } from "@/components/search/FilterBar";
+import { haptics } from "@/lib/haptics";
 
 /**
  * Search page — full route.
@@ -420,6 +421,7 @@ export default function SearchPage() {
   // Close the search modal: clear query, drop focus, blur the real
   // input so the keyboard goes away.
   const closeModal = () => {
+    haptics.selection();
     setQuery("");
     setFocused(false);
     setFilters(EMPTY_FILTERS);
@@ -458,7 +460,10 @@ export default function SearchPage() {
       >
         <button
           type="button"
-          onClick={() => setFocused(true)}
+          onClick={() => {
+            haptics.tap();
+            setFocused(true);
+          }}
           aria-label="Open search"
           className="flex w-full items-center gap-[10px] rounded-full bg-white h-[43px] px-[18px] text-left"
           style={{ border: "1px solid rgba(3, 34, 172, 0.3)" }}
