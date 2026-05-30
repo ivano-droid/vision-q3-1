@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { SuggestionCard } from "@/components/discover/SuggestionCard";
 import {
   ArenaPromoSlide,
@@ -264,40 +263,6 @@ export default function DiscoverPage() {
         })}
       </div>
 
-      {/* Brand-blue cover that masks the BottomNav's default black-
-          on-/discover scrim while any of the three blue interstitial
-          slides (SuggestionCard, ArenaPromoSlide, FreeSpinsPromoSlide)
-          is in view.
-
-          Lives at the page level — OUTSIDE the snap-scroll container
-          — for a critical iOS reason: Safari has a long-standing
-          quirk where `position: fixed` elements rendered inside a
-          `-webkit-overflow-scrolling: touch` ancestor get re-anchored
-          to the scroll container instead of the viewport. Earlier
-          versions of this cover lived inside each <article>, which
-          worked fine on desktop preview but ended up positioned off-
-          screen on iPhone — so the BottomNav's black gradient
-          stayed visible behind the blue promos. Rendering the cover
-          here (alongside FixedReelChrome, which already works
-          correctly on iOS) sidesteps the bug entirely.
-
-          z-35 sits ABOVE the BottomNav's own black scrim (z-30) and
-          BELOW the floating pill nav (z-40), so the cover masks the
-          gradient without obscuring the nav buttons. */}
-      <motion.div
-        aria-hidden
-        className="fixed bottom-0 pointer-events-none"
-        style={{
-          left: "var(--frame-right-offset)",
-          right: "var(--frame-right-offset)",
-          height: 100,
-          background: "var(--mrq-blue, #0a2ecb)",
-          zIndex: 35,
-        }}
-        animate={{ opacity: overlayActive ? 1 : 0 }}
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      />
-
       {/* Fixed UI — title (bottom-left) + action stack (bottom-right).
           Sit OUTSIDE the per-reel <article> so they stay anchored on
           screen while the reels scroll past behind them. Width
@@ -489,20 +454,10 @@ function ReelArticle({
         style={{ background: "transparent" }}
       />
 
-      {/* Soft bottom gradient so the white title + action stack reads
-          on top of the video regardless of frame brightness. Skipped
-          on ad reels — there's no overlaid UI to legibility-protect,
-          and the creative should fill edge-to-edge with no darkening. */}
-      {!reel.ad && (
-        <div
-          className="absolute inset-x-0 bottom-0 h-[55%] pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0) 100%)",
-          }}
-          aria-hidden
-        />
-      )}
+      {/* No bottom gradient — the design now wants the reels to fill
+          edge-to-edge with no darkening. The fixed title + action
+          stack rely on their own text-shadow / chip backgrounds for
+          legibility instead of a page-wide fade. */}
     </article>
   );
 }

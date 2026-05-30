@@ -136,19 +136,15 @@ function activeTabFor(pathname: string): TabKey {
 export function BottomNav() {
   const pathname = usePathname();
   const active = activeTabFor(pathname);
-  // Scrim renders on every route. The colour matches the page
-  // surface at the bottom edge so the fade doesn't smear into a
-  // different tone behind the nav:
-  //   /discover            → #000 (black, matches the reels feed)
+  // Scrim renders on every route EXCEPT /discover (see skipScrim
+  // below). The colour matches the page surface at the bottom edge
+  // so the fade doesn't smear into a different tone behind the nav:
   //   /rewards, /arena     → #0C2287 (Brand/900 dark blue, matches
   //                          the bottom stop of both pages' gradients)
   //   everything else      → #ffffff (default for #f5f5f5 routes)
   let scrimSolid = "#ffffff";
   let scrimFade = "rgba(255, 255, 255, 0)";
-  if (pathname.startsWith("/discover")) {
-    scrimSolid = "#000000";
-    scrimFade = "rgba(0, 0, 0, 0)";
-  } else if (
+  if (
     pathname.startsWith("/rewards") ||
     pathname.startsWith("/arena")
   ) {
@@ -200,28 +196,38 @@ export function BottomNav() {
     return () => window.removeEventListener("resize", measure);
   }, [active]);
 
+  // /discover (Top Picks) opts out of the scrim entirely. The reels
+  // are full-bleed video and the design now wants edge-to-edge frame
+  // with NO dark fade behind the nav — the floating pill carries its
+  // own translucent-white surface + backdrop-blur, which keeps the
+  // tab icons legible against arbitrary video frames without a
+  // page-coloured gradient backing it.
+  const skipScrim = pathname.startsWith("/discover");
+
   return (
     <>
       {/* SCRIM — page-coloured gradient fade above the pill.
-          Always rendered; colour swaps via scrimSolid/scrimFade
-          so /rewards uses the dark-blue match and every other
-          route uses the existing white fade. */}
-      <div
-        aria-hidden
-        className="fixed bottom-0 z-30 pointer-events-none"
-        style={{
-          left: "var(--frame-right-offset)",
-          right: "var(--frame-right-offset)",
-          height: "calc(var(--bottom-nav-h) + 80px)",
-        }}
-      >
+          Rendered on every route EXCEPT /discover; colour swaps via
+          scrimSolid/scrimFade so /rewards uses the dark-blue match
+          and every other route uses the existing white fade. */}
+      {!skipScrim && (
         <div
-          className="absolute inset-x-0 bottom-0 h-[90px]"
+          aria-hidden
+          className="fixed bottom-0 z-30 pointer-events-none"
           style={{
-            background: `linear-gradient(to top, ${scrimSolid} 30%, ${scrimFade} 100%)`,
+            left: "var(--frame-right-offset)",
+            right: "var(--frame-right-offset)",
+            height: "calc(var(--bottom-nav-h) + 80px)",
           }}
-        />
-      </div>
+        >
+          <div
+            className="absolute inset-x-0 bottom-0 h-[90px]"
+            style={{
+              background: `linear-gradient(to top, ${scrimSolid} 30%, ${scrimFade} 100%)`,
+            }}
+          />
+        </div>
+      )}
 
       <nav
         aria-label="Primary"
