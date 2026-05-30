@@ -332,7 +332,7 @@ export function GameDetailsSheet() {
                 see the "How to play" copy bleeding under the CTA
                 area rather than ending at a flat edge. */}
             <div
-              className="shrink-0 relative bg-white"
+              className="shrink-0 relative"
               style={{
                 paddingLeft: 16,
                 paddingRight: 16,
