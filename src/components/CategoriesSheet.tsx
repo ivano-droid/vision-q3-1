@@ -97,7 +97,7 @@ export function CategoriesSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
           />
 
           {/* Sheet — fixed at bottom of viewport, constrained to the
