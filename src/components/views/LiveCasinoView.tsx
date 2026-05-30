@@ -3,49 +3,38 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SwipeableHero, type HeroGame } from "../SwipeableHero";
-import { GameRail } from "@/components/rails/GameRail";
-import { Top10Rail } from "@/components/rails/Top10Rail";
+import { LiveGameRail } from "@/components/rails/LiveGameRail";
 import { CategoriesSheet } from "../CategoriesSheet";
 import { ChevronDownIcon } from "../CategoryChevron";
 import {
   LIVE_CATEGORIES,
-  LIVE_CATEGORY_RAIL_TILES,
-  LIVE_TOP_10,
+  LIVE_GAMES_BY_CATEGORY,
+  LIVE_POPULAR,
 } from "@/lib/live-categories";
 
 /**
  * Live Casino homepage — the curated landing page for the Live Casino
- * vertical. Mirrors CasinoView's structure so the two verticals read
- * as siblings: header + Categories+ pill, swipeable hero, Top 10
- * curated rail, then per-category rails.
+ * vertical. Mirrors CasinoView's STRUCTURE (header + Categories+ pill,
+ * swipeable hero, then rails) but the rail card layout is bespoke:
+ * Live cards carry a live player count badge, optional spin-history
+ * overlay (Roulette tables), title + provider + min-bet + dealer
+ * chip. See LiveGameRail / LiveGameCard.
  *
  *   ┌──────────────────────────────────────┐
- *   │  ←                          £113.59 ▢│  ← BrandBar (back arrow only)
+ *   │  ←                          £113.48 ▢│
  *   ├──────────────────────────────────────┤
- *   │  Live Casino            Categories+  │  ← In-page header
+ *   │  Live Casino            Categories+  │
  *   ├──────────────────────────────────────┤
- *   │  ┌────────────────────────────────┐  │
- *   │  │  [hero artwork]                │  │  ← Swipeable hero
- *   │  └────────────────────────────────┘  │
+ *   │  [ swipeable hero card ]             │
  *   ├──────────────────────────────────────┤
- *   │  Top 10 Live Games                   │
- *   │  ⓵▢ ⓶▢ ⓷▢ ⓸▢ ⓹▢ …                  │  ← Top 10 rail
+ *   │  Popular Games            See all    │
+ *   │  ┌────┐ ┌────┐ ┌────┐ …              │  ← LiveGameRail (rich card)
  *   │  Roulette                 See all    │
- *   │  ▢▢▢▢▢▢…                            │  ← Per-category rails
+ *   │  ┌────┐ ┌────┐ ┌────┐ …              │
  *   │  Blackjack                See all    │
- *   │  ▢▢▢▢▢▢…                            │
+ *   │  ┌────┐ ┌────┐ ┌────┐ …              │
  *   │  …                                   │
  *   └──────────────────────────────────────┘
- *
- * Differences from Casino:
- *   • Hero deck uses real live-table titles (Lightning Roulette, Crazy
- *     Time, Mega Wheel, Blackjack VIP). The hero card itself doesn't
- *     route anywhere yet — no /play/<live-game> routes exist — but the
- *     details sheet still opens via the info chip.
- *   • Top 10 title geo-located to "St Albans" same as Casino so the
- *     copy reads consistently across the two verticals.
- *   • Sub-categories are Roulette / Blackjack / Baccarat / Game Shows /
- *     Poker / Mega Wheel — the Live-specific facet set.
  */
 
 const HERO_DECK: HeroGame[] = [
@@ -104,10 +93,7 @@ export function LiveCasinoView() {
   // Sheet selection — both branches navigate, no local filter state.
   const handleSelect = (key: string | null) => {
     setSheetOpen(false);
-    // Live doesn't have an "All games" page yet — fall back to the
-    // first sub-category if a null pick happens. Saves the user
-    // landing on a 404.
-    router.push(key === null ? "/live/roulette" : `/live/${key}`);
+    if (key) router.push(`/live/${key}`);
   };
 
   return (
@@ -136,25 +122,23 @@ export function LiveCasinoView() {
       </div>
 
       <div className="flex flex-col">
-        {/* Tinder-style swipeable hero — real live-table titles in the
-            deck so the prototype shows what kind of content lives in
-            this vertical, not just generic art. */}
-        <div className="pb-[24px]">
+        {/* Swipeable hero deck — real live-table titles. */}
+        <div className="pb-[14px]">
           <SwipeableHero games={HERO_DECK} />
         </div>
 
-        {/* Top 10 — curated cross-category live games. */}
-        <Top10Rail title="Top 10 Live Games in St Albans" tiles={LIVE_TOP_10} />
+        {/* Popular Games — curated cross-category top-of-page rail.
+            The first card is a Roulette table so the spin-history
+            overlay (the "look, real live game state" detail) is
+            visible at first glance. */}
+        <LiveGameRail title="Popular Games" games={LIVE_POPULAR} />
 
-        {/* Per-category rails — always all shown. "See all" routes to
-            the dedicated /live/[key] page. */}
+        {/* Per-category rails. Each "See all" routes to /live/[key]. */}
         {LIVE_CATEGORIES.map((cat) => (
-          <GameRail
+          <LiveGameRail
             key={cat.key}
-            title={cat.label}
-            tiles={LIVE_CATEGORY_RAIL_TILES[cat.key] ?? []}
-            tileWidth={109}
-            tileHeight={109}
+            title={cat.label === "Game Shows" ? "Live Gameshows" : cat.label}
+            games={LIVE_GAMES_BY_CATEGORY[cat.key] ?? []}
             onSeeAll={() => router.push(`/live/${cat.key}`)}
           />
         ))}
@@ -162,15 +146,11 @@ export function LiveCasinoView() {
 
       <CategoriesSheet
         open={sheetOpen}
-        // No row active when opening from the live-casino homepage —
-        // homepage isn't itself any single sub-category.
         selected={undefined}
         categories={LIVE_CATEGORIES}
         onSelect={handleSelect}
         onClose={() => setSheetOpen(false)}
         title="Live Casino Categories"
-        // No "All games" landing exists for Live yet — hide the row
-        // so the sheet only lists real navigable destinations.
         hideAllGames
       />
     </>
