@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Count-up money amount.
@@ -57,6 +57,8 @@ export function CountUpAmount({
   className,
   sessionKey,
   gate = true,
+  rootMargin,
+  threshold = 0.4,
 }: {
   value: string;
   durationMs?: number;
@@ -75,8 +77,24 @@ export function CountUpAmount({
    *  starts on its next IO entry. Defaults to true so consumers who
    *  don't care can ignore it. */
   gate?: boolean;
+  /** CSS-style rootMargin string passed to the IntersectionObserver.
+   *  Use to shrink the effective viewport so the count-up only fires
+   *  when the element is clearly visible — e.g. "0px 0px -100px 0px"
+   *  excludes the bottom 100px where the BottomNav sits, so a tile
+   *  scrolling into the lower edge of the viewport doesn't fire its
+   *  count-up while the user can't see the digits clearly. */
+  rootMargin?: string;
+  /** Fraction of the element that must be visible inside the IO root
+   *  before the count-up fires. Defaults to 0.4. */
+  threshold?: number;
 }) {
-  const parsed = parseAmount(value);
+  // parseAmount returns a fresh object every call; memoise on the
+  // raw `value` string so the useEffect below isn't re-firing the
+  // animation from near-zero on every parent re-render. Without
+  // this the count-up looks "stuck" bouncing around the first 1% of
+  // its target because the rAF gets cancelled and restarted on each
+  // re-render of BrandBar / HomeView / etc.
+  const parsed = useMemo(() => parseAmount(value), [value]);
   const ref = useRef<HTMLSpanElement | null>(null);
   const [display, setDisplay] = useState<string>(() =>
     parsed ? formatNumber(0, parsed) : value,
@@ -119,12 +137,14 @@ export function CountUpAmount({
       raf = requestAnimationFrame(tick);
     };
 
-    // Wait one frame + a small post-gate delay before attaching the
-    // IO. When gate flips on bootDone, the splash overlay is still
-    // mid-fade-out — kicking off the count-up the same tick would
-    // animate the first few hundred ms behind the disappearing
-    // splash. ~280ms gives the splash exit room to clear (its
-    // transition is ~220ms) so the count-up is fully visible.
+    let teardownIO: (() => void) | null = null;
+
+    // Wait a small post-gate delay before attaching the IO. When
+    // gate flips on bootDone, the splash overlay is still mid-
+    // fade-out (~220ms transition) — kicking off the count-up the
+    // same tick would animate the first few hundred ms behind the
+    // disappearing splash. ~320ms gives the splash exit room to
+    // clear before the count-up's first frame.
     const startTimer = window.setTimeout(() => {
       const io = new IntersectionObserver(
         (entries) => {
@@ -137,21 +157,26 @@ export function CountUpAmount({
             }
           }
         },
-        { threshold: 0.4 },
+        { threshold, rootMargin },
       );
       io.observe(el);
-      // Replace the outer cleanup's `io` reference.
       teardownIO = () => io.disconnect();
-    }, 280);
-
-    let teardownIO: (() => void) | null = null;
+    }, 320);
 
     return () => {
       window.clearTimeout(startTimer);
       teardownIO?.();
       if (raf) cancelAnimationFrame(raf);
+      // Reset the "already animated" guard. Without this, React
+      // Strict Mode in dev (which runs every effect twice on mount,
+      // calling cleanup between the two) leaves doneRef.current=true
+      // from the first cancelled run — and the second run silently
+      // skips the IO trigger, so the count-up stays frozen at
+      // whatever frame the cancelled rAF reached. In production
+      // cleanup only fires on unmount, where this is a no-op.
+      doneRef.current = false;
     };
-  }, [parsed, durationMs, sessionKey, gate]);
+  }, [parsed, durationMs, sessionKey, gate, rootMargin, threshold]);
 
   // Unparseable input → just render it verbatim.
   if (!parsed) return <span className={className}>{value}</span>;

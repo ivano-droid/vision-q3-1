@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { getGameDetails } from "@/lib/games-catalogue";
+import { CountUpAmount } from "@/components/CountUpAmount";
+import { useShell } from "@/lib/filter-context";
 
 /**
  * "Your recent big wins" — horizontal scroll of game tiles with a
@@ -62,6 +64,11 @@ export function BigWinsRow({
 
 function WinTile({ win }: { win: Win }) {
   const router = useRouter();
+  // Hold each prize count-up until the splash dismisses — without
+  // it the IntersectionObserver fires while the row sits behind
+  // the z-65 SimpleSplashGate and the animations all run invisibly
+  // before the user sees the first frame.
+  const { bootDone } = useShell();
   // Catalogue lookup, with the win's explicit href winning over the
   // catalogue's if both are set.
   const baseDetails = getGameDetails(win.alt, win.src);
@@ -104,13 +111,30 @@ function WinTile({ win }: { win: Win }) {
         className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-white px-[10px] py-[3px] whitespace-nowrap pointer-events-none"
         style={{ boxShadow: "0 4px 10px -4px rgba(10, 46, 203, 0.18)" }}
       >
-        {/* Static — prize values are fixed historical wins. The
-            count-up read as the prize being recalculated on every
-            scroll, which broke the "this is a screenshot of what
-            happened" feel of a Recent Wins rail. */}
-        <span className="text-[13px] font-extrabold text-[var(--mrq-blue)]">
-          {win.prize}
-        </span>
+        {/* Prize count-up. Two viewport-visibility guards so the
+            user actually sees the digits ticking:
+              • gate={bootDone}      — waits for the splash to clear.
+              • rootMargin=-120px    — shrinks the IO viewport by
+                ~120px from the bottom so the count-up only fires
+                once the prize pill has scrolled UP and is clearly
+                above the BottomNav, not while it's still sneaking
+                in at the very bottom edge of the screen.
+              • threshold 0.6        — needs to be 60% inside the
+                effective viewport before triggering. Combined with
+                the rootMargin, that means most of the pill is
+                clearly visible above the nav before the count-up
+                kicks off.
+            Slower 1400ms duration too — at £400–£1,800 numbers
+            the eye needs more travel time to register digits
+            ticking rather than snapping in. */}
+        <CountUpAmount
+          value={win.prize}
+          gate={bootDone}
+          durationMs={1400}
+          rootMargin="0px 0px -120px 0px"
+          threshold={0.6}
+          className="text-[13px] font-extrabold text-[var(--mrq-blue)]"
+        />
       </div>
     </div>
   );

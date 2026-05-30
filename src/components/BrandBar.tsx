@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useShell } from "@/lib/filter-context";
+import { CountUpAmount } from "@/components/CountUpAmount";
 
 // Tappable wallet pill = a flex row that's NOT a button, with the
 // cash text on the left acting as its own button (opens deposit
@@ -61,7 +62,7 @@ function backHrefFor(pathname: string): string {
 }
 
 export function BrandBar() {
-  const { openSideNav, openDeposit } = useShell();
+  const { openSideNav, openDeposit, bootDone } = useShell();
   const pathname = usePathname();
   const backArrow = showsBackArrow(pathname);
   const backHref = backHrefFor(pathname);
@@ -188,12 +189,18 @@ export function BrandBar() {
             aria-label="Make a deposit"
             className="text-white text-[16px] leading-none font-extrabold pt-[1px] active:scale-[0.95] transition-transform"
           >
-            {/* Static — the wallet balance is a fixed value that
-                shouldn't appear to "change" on every app open. The
-                count-up animation read as the balance recalculating
-                each load, which broke the user's mental model that
-                the cash on hand is a stable number. Plain text. */}
-            £4,287.50
+            {/* Wallet count-up — gated on bootDone so it waits for
+                the SimpleSplashGate (z-65) to clear before the IO
+                attaches. CountUpAmount holds 320ms after the gate
+                flips so the splash exit (~220ms) is fully out of
+                the way and the count-up's first frame is the
+                visible "£0". 1500ms duration gives the 4-digit
+                balance room to actually tick over. */}
+            <CountUpAmount
+              value="£4,287.50"
+              gate={bootDone}
+              durationMs={1500}
+            />
           </button>
           <span
             className="h-[20px] w-px"
