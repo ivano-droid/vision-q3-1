@@ -254,39 +254,42 @@ export function SuggestionCard({
         />
       </motion.div>
 
+      {/* Layout: title + big card + dots, all centred as one
+          compact block in the vertical middle of the slide. The
+          flex-1 spacers on top + bottom soak up the extra height,
+          so on any screen size the content stays visually centred
+          and the dots are always on-screen + within easy thumb
+          reach. */}
       <div
         className="flex flex-col h-full"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 64px)",
-          // Bottom padding accounts for the BottomNav so the tile
-          // grid's last row clears the nav row + its safe-area pad.
+          paddingTop: "calc(env(safe-area-inset-top) + 56px)",
           paddingBottom:
-            "calc(var(--bottom-nav-h, 80px) + env(safe-area-inset-bottom) + 24px)",
+            "calc(var(--bottom-nav-h, 80px) + env(safe-area-inset-bottom) + 16px)",
         }}
       >
-        {/* Header — page-specific category label, centered. The
-            slide doesn't need a "More games" overhead title; the
-            tile grid is itself the headline. Keeping just the
-            category label keeps the slide breathing room and lets
-            the tiles sit higher in the viewport. */}
-        <div className="px-[16px] pb-[14px] text-center">
-          <p
-            className="text-white text-[15px] font-extrabold"
-            style={{ letterSpacing: 0.1 }}
-          >
-            {currentPage.label}
-          </p>
-        </div>
+        {/* Top spacer — pushes the content block down to the
+            vertical centre. */}
+        <div className="flex-1" aria-hidden />
 
-        {/* Horizontal swipe viewport — 4 pages in a row, only one
-            visible at a time. touchAction:pan-y so vertical scroll
-            up the parent snap container isn't captured. */}
+        {/* Title — big, centred, single line. Drives the slide's
+            visual hierarchy. */}
+        <h2
+          className="text-white text-[26px] font-extrabold text-center px-[24px] pb-[18px] leading-tight"
+          style={{ letterSpacing: -0.4 }}
+        >
+          {currentPage.label}
+        </h2>
+
+        {/* Horizontal swipe viewport — sized to its content (no
+            flex-1) so the dots sit right below the card instead
+            of being pushed to the bottom of the slide. */}
         <div
           ref={viewportRef}
-          className="relative overflow-hidden flex-1 min-h-0"
+          className="relative overflow-hidden w-full"
         >
           <motion.div
-            className="flex h-full"
+            className="flex"
             style={{
               x,
               width: pageWidth * PAGES.length,
@@ -330,41 +333,62 @@ export function SuggestionCard({
             {PAGES.map((page) => (
               <div
                 key={page.id}
-                className="shrink-0 px-[24px]"
-                style={{
-                  width: pageWidth || "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="shrink-0 flex items-center justify-center px-[24px]"
+                style={{ width: pageWidth || "100%" }}
               >
-                {/* Grid is centred + width-clamped so the 2×2 reads
-                    as a tight square block in the middle of the
-                    slide rather than stretching edge-to-edge. */}
+                {/* THE big card — single dark-blue frame around
+                    all four artworks. Reads as one cohesive object
+                    rather than four separate cards. Subtle drop
+                    shadow + an inset hairline highlight at the top
+                    edge give it a lifted, premium feel against
+                    the brand-blue surface. */}
                 <div
-                  className="grid grid-cols-2"
-                  style={{ gap: 10, width: "min(100%, 280px)" }}
+                  className="rounded-[22px] w-full"
+                  style={{
+                    backgroundColor: TILE_BG,
+                    padding: 12,
+                    maxWidth: 320,
+                    boxShadow:
+                      "0 24px 48px -20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+                  }}
                 >
-                  {page.tiles.map((tile, i) => (
-                    <SuggestionTile
-                      key={`${page.id}-${i}`}
-                      tile={tile}
-                      onPlay={() => {
-                        if (tile.href) {
-                          router.push(tile.href);
-                        }
-                      }}
-                    />
-                  ))}
+                  <div
+                    className="grid grid-cols-2"
+                    style={{ gap: 8 }}
+                  >
+                    {page.tiles.map((tile, i) => (
+                      <button
+                        key={`${page.id}-${i}`}
+                        type="button"
+                        aria-label={`Play ${tile.name}`}
+                        onClick={() => {
+                          if (tile.href) {
+                            router.push(tile.href);
+                          }
+                        }}
+                        className="relative aspect-square overflow-hidden rounded-[14px] active:scale-[0.97] transition-transform"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={tile.src}
+                          alt={tile.name}
+                          draggable={false}
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* Page dots — tap to jump, current page is brighter and
-            slightly larger. */}
-        <div className="flex items-center justify-center gap-[8px] pt-[20px]">
+        {/* Page dots — sit right below the card so they feel
+            attached to it (and obviously swipable). Bigger + more
+            confident than before so the user can see them at a
+            glance and tap them comfortably. */}
+        <div className="flex items-center justify-center gap-[10px] pt-[22px]">
           {PAGES.map((page, i) => {
             const active = i === pageIndex;
             return (
@@ -373,82 +397,29 @@ export function SuggestionCard({
                 type="button"
                 aria-label={`Show ${page.label}`}
                 onClick={() => setPageIndex(i)}
-                className="rounded-full transition-all"
-                style={{
-                  width: active ? 8 : 6,
-                  height: active ? 8 : 6,
-                  backgroundColor: active
-                    ? "rgba(255,255,255,0.95)"
-                    : "rgba(255,255,255,0.32)",
-                }}
-              />
+                className="grid place-items-center"
+                style={{ width: 24, height: 24 }}
+              >
+                <span
+                  className="block rounded-full transition-all"
+                  style={{
+                    width: active ? 22 : 8,
+                    height: 8,
+                    backgroundColor: active
+                      ? "rgba(255,255,255,0.95)"
+                      : "rgba(255,255,255,0.32)",
+                  }}
+                />
+              </button>
             );
           })}
         </div>
+
+        {/* Bottom spacer — mirrors the top one to keep the block
+            visually centred. */}
+        <div className="flex-1" aria-hidden />
       </div>
     </article>
   );
 }
 
-/* ============================================================
-   Single game tile inside the 2×2 grid. Dark-blue card surface
-   with a 6px inset around the artwork — same chrome treatment
-   as the rewards-page "This week's offers" cards (so the surface
-   reads as a card frame around the image, not as a flush
-   background).
-
-   Name has been stripped — the artwork carries the brand and the
-   slide's category label already says what kind of games these
-   are. Only the Play CTA sits below the image so the tile reads
-   as art + action.
-   ============================================================ */
-function SuggestionTile({
-  tile,
-  onPlay,
-}: {
-  tile: Tile;
-  onPlay: () => void;
-}) {
-  return (
-    <div
-      className="flex flex-col rounded-[14px]"
-      style={{
-        backgroundColor: TILE_BG,
-        boxShadow: "0 10px 24px -12px rgba(0, 0, 0, 0.35)",
-      }}
-    >
-      {/* 6px dark-blue padding box around the image — the card
-          frame the user sees around the artwork on the rewards
-          cards. Tighter than the rewards inset because the tiles
-          themselves are small. */}
-      <div className="p-[6px]">
-        <div className="relative aspect-square overflow-hidden rounded-[10px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={tile.src}
-            alt={tile.name}
-            draggable={false}
-            className="absolute inset-0 size-full object-cover"
-          />
-        </div>
-      </div>
-
-      {/* Play CTA only — name dropped. */}
-      <div className="px-[6px] pb-[6px]">
-        <button
-          type="button"
-          onClick={onPlay}
-          aria-label={`Play ${tile.name}`}
-          className="w-full h-[26px] rounded-[8px] text-[11px] font-extrabold active:scale-[0.98] transition-transform"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.95)",
-            color: "var(--mrq-blue-dark, #0c2287)",
-            letterSpacing: 0.2,
-          }}
-        >
-          Play
-        </button>
-      </div>
-    </div>
-  );
-}
