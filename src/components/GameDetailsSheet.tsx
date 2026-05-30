@@ -87,11 +87,16 @@ export function GameDetailsSheet() {
             transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
           />
 
-          {/* Sheet — clamped to the mobile-frame column. */}
+          {/* Sheet — clamped to the mobile-frame column. Now a
+              flex column so the Play CTA can pin to the bottom
+              while the rest of the content scrolls independently
+              above it. Without this, a long sheet pushes the CTA
+              off-screen and the primary action becomes unreachable
+              without first scrolling the rest of the content. */}
           <motion.div
             role="dialog"
             aria-label={`${gameDetails.name} info`}
-            className="fixed bottom-0 z-50 rounded-t-[20px] bg-white"
+            className="fixed bottom-0 z-50 rounded-t-[20px] bg-white flex flex-col"
             style={{
               left: "var(--frame-right-offset)",
               right: "var(--frame-right-offset)",
@@ -109,7 +114,7 @@ export function GameDetailsSheet() {
             }}
           >
             {/* Grab handle */}
-            <div className="grid place-items-center pt-[10px] pb-[6px]">
+            <div className="grid place-items-center pt-[10px] pb-[6px] shrink-0">
               <span
                 aria-hidden
                 className="block h-[4px] w-[44px] rounded-full"
@@ -118,33 +123,42 @@ export function GameDetailsSheet() {
             </div>
 
             <div
-              className="overflow-y-auto"
+              className="flex-1 min-h-0 overflow-y-auto"
               style={{
-                maxHeight: "calc(85vh - 32px)",
-                paddingBottom:
-                  "calc(env(safe-area-inset-bottom) + 16px)",
+                // Trailing scroll padding so the last detail row +
+                // copy don't sit flush against the pinned CTA.
+                paddingBottom: 12,
               }}
             >
-              {/* Artwork + title block */}
-              <div className="flex items-center gap-[14px] px-[20px] pt-[10px] pb-[16px]">
-                <span
-                  className="relative shrink-0 overflow-hidden rounded-[14px]"
-                  style={{
-                    width: 92,
-                    height: 92,
-                    boxShadow: "0 6px 16px -8px rgba(10, 46, 203, 0.25)",
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={gameDetails.src}
-                    alt=""
-                    draggable={false}
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                </span>
+              {/* Title block. When a `preview` is present, the
+                  small artwork thumbnail is hidden — the preview
+                  below already shows what the game looks like, and
+                  freeing up the horizontal space here lets long
+                  titles ("Buffalo Bills Hypercharged") render in
+                  full instead of being truncated. When no preview
+                  is available, the thumbnail stays so the sheet
+                  always has a visual anchor. */}
+              <div className="flex items-center gap-[14px] px-[20px] pt-[10px] pb-[14px]">
+                {!gameDetails.preview && (
+                  <span
+                    className="relative shrink-0 overflow-hidden rounded-[14px]"
+                    style={{
+                      width: 92,
+                      height: 92,
+                      boxShadow: "0 6px 16px -8px rgba(10, 46, 203, 0.25)",
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={gameDetails.src}
+                      alt=""
+                      draggable={false}
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  </span>
+                )}
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-[22px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] truncate">
+                  <h2 className="text-[22px] font-extrabold leading-tight text-[var(--mrq-blue-dark)]">
                     {gameDetails.name}
                   </h2>
                   <p
@@ -241,26 +255,50 @@ export function GameDetailsSheet() {
                 </p>
               </div>
 
-              {/* Play CTA */}
-              <div className="px-[16px] pt-[20px]">
-                <button
-                  type="button"
-                  onClick={handlePlay}
-                  className="w-full flex items-center justify-center rounded-[14px] active:scale-[0.98] transition-transform"
-                  style={{
-                    height: 52,
-                    backgroundColor: "var(--mrq-blue)",
-                    color: "#ffffff",
-                    fontSize: 16,
-                    fontWeight: 800,
-                    letterSpacing: -0.1,
-                    boxShadow:
-                      "0 8px 20px -10px rgba(10, 46, 203, 0.45)",
-                  }}
-                >
-                  Play game
-                </button>
-              </div>
+            </div>
+
+            {/* Pinned Play CTA — lives OUTSIDE the scrollable area
+                so the primary action stays visible no matter how
+                much content sits above it. Soft fading divider on
+                top (a 12px linear gradient) so the scroll area
+                feathers into the pinned region instead of hitting
+                it at a hard edge. */}
+            <div
+              className="shrink-0 relative bg-white"
+              style={{
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 12,
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+              }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-0 right-0"
+                style={{
+                  top: -12,
+                  height: 12,
+                  background:
+                    "linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))",
+                }}
+              />
+              <button
+                type="button"
+                onClick={handlePlay}
+                className="w-full flex items-center justify-center rounded-[14px] active:scale-[0.98] transition-transform"
+                style={{
+                  height: 52,
+                  backgroundColor: "var(--mrq-blue)",
+                  color: "#ffffff",
+                  fontSize: 16,
+                  fontWeight: 800,
+                  letterSpacing: -0.1,
+                  boxShadow:
+                    "0 8px 20px -10px rgba(10, 46, 203, 0.45)",
+                }}
+              >
+                Play game
+              </button>
             </div>
           </motion.div>
         </>
