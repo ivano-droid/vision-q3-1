@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useShell } from "@/lib/filter-context";
+import { CountUpAmount } from "@/components/CountUpAmount";
 
 // Tappable wallet pill = a flex row that's NOT a button, with the
 // cash text on the left acting as its own button (opens deposit
@@ -188,7 +189,7 @@ export function BrandBar() {
             aria-label="Make a deposit"
             className="text-white text-[16px] leading-none font-extrabold pt-[1px] active:scale-[0.95] transition-transform"
           >
-            £113.59
+            <CountUpAmount value="£113.59" sessionKey="mrq-wallet-balance" />
           </button>
           <span
             className="h-[20px] w-px"

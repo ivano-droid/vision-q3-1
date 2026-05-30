@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { haptics } from "@/lib/haptics";
 
 /**
@@ -317,6 +317,7 @@ function TabItem({
   anchorRef: (el: HTMLAnchorElement | null) => void;
 }) {
   const [pressed, setPressed] = useState(false);
+  const reduce = useReducedMotion();
   useEffect(() => {
     if (!pressed) return;
     const t = setTimeout(() => setPressed(false), 160);
@@ -355,11 +356,38 @@ function TabItem({
               style={{
                 backgroundImage: `url("${tab.iconActive}")`,
                 backgroundSize: "contain",
+                transformOrigin: "bottom center",
               }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              // Bouncy pop: the active icon springs up from small with a
+              // slight wiggle as it crossfades in. Low damping gives the
+              // playful overshoot; opacity fades faster than the spring so
+              // the swap reads clean. Felt on every tab switch.
+              initial={
+                reduce ? { opacity: 0 } : { opacity: 0, scale: 0.5, rotate: -12 }
+              }
+              animate={
+                reduce ? { opacity: 1 } : { opacity: 1, scale: 1, rotate: 0 }
+              }
+              exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+              transition={
+                reduce
+                  ? { duration: 0.18 }
+                  : {
+                      opacity: { duration: 0.14, ease: [0.22, 1, 0.36, 1] },
+                      scale: {
+                        type: "spring",
+                        stiffness: 520,
+                        damping: 12,
+                        mass: 0.6,
+                      },
+                      rotate: {
+                        type: "spring",
+                        stiffness: 480,
+                        damping: 11,
+                        mass: 0.6,
+                      },
+                    }
+              }
             />
           ) : (
             <motion.span

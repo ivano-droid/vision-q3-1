@@ -35,14 +35,36 @@ function parseAmount(value: string): Parsed | null {
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
+// sessionStorage helpers — guarded (private mode can throw).
+function seenThisSession(key: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+function markSeen(key: string) {
+  try {
+    sessionStorage.setItem(key, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 export function CountUpAmount({
   value,
   durationMs = 900,
   className,
+  sessionKey,
 }: {
   value: string;
   durationMs?: number;
   className?: string;
+  /** When set, the count-up plays only the FIRST time it's seen this
+   *  browser session — subsequent mounts show the final value instantly.
+   *  Use for things like the wallet balance that should animate once on
+   *  first app open, not on every navigation. */
+  sessionKey?: string;
 }) {
   const parsed = parseAmount(value);
   const ref = useRef<HTMLSpanElement | null>(null);
@@ -58,11 +80,13 @@ export function CountUpAmount({
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-    // No IO or reduced motion → show the final value, no animation.
+    // Already animated this session (sessionKey set), or no IO / reduced
+    // motion → show the final value, no animation.
     if (
       prefersReduced ||
       typeof IntersectionObserver === "undefined" ||
-      !ref.current
+      !ref.current ||
+      (sessionKey && seenThisSession(sessionKey))
     ) {
       setDisplay(formatNumber(parsed.target, parsed));
       doneRef.current = true;
@@ -88,6 +112,7 @@ export function CountUpAmount({
         for (const entry of entries) {
           if (entry.isIntersecting && !doneRef.current) {
             doneRef.current = true;
+            if (sessionKey) markSeen(sessionKey);
             run();
             io.disconnect();
           }
@@ -101,7 +126,7 @@ export function CountUpAmount({
       io.disconnect();
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [parsed, durationMs]);
+  }, [parsed, durationMs, sessionKey]);
 
   // Unparseable input → just render it verbatim.
   if (!parsed) return <span className={className}>{value}</span>;
