@@ -105,11 +105,21 @@ const PAGES: ReadonlyArray<Page> = [
 
 const TILE_BG = "#0C2287"; // Brand/900 — the "dark blue for game tiles" spec.
 
-export function SuggestionCard() {
+export function SuggestionCard({
+  onActiveChange,
+}: {
+  /** Fires whenever this slide enters / leaves the viewport at ≥60%
+   *  intersection. Used by the parent (DiscoverPage) to hide the
+   *  reel-feed's FixedReelChrome (mute / actions / title) while
+   *  the suggestion card is in view. */
+  onActiveChange?: (active: boolean) => void;
+}) {
   const router = useRouter();
+  const articleRef = useRef<HTMLElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [pageWidth, setPageWidth] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
+  const [isActive, setIsActive] = useState(false);
   const x = useMotionValue(0);
 
   // Measure the swipe viewport so the snap distance matches the
@@ -124,6 +134,27 @@ export function SuggestionCard() {
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, []);
+
+  // Track visibility — same ≥60% threshold the ReelArticle uses to
+  // promote a reel to "active". Bubbles up so the parent can hide
+  // the reel chrome (which is otherwise still painted over the
+  // suggestion card on top of reel 3's metadata).
+  useEffect(() => {
+    const el = articleRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const active = entry.intersectionRatio >= 0.6;
+          setIsActive(active);
+          onActiveChange?.(active);
+        }
+      },
+      { threshold: [0, 0.6, 1] },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [onActiveChange]);
 
   // Snap to the active page on every change. Drag-end below also
   // calls setPageIndex, which re-triggers this effect — same path
@@ -142,17 +173,47 @@ export function SuggestionCard() {
 
   return (
     <article
+      ref={articleRef}
       className="relative w-full snap-start snap-always overflow-hidden"
       style={{
         height: "100dvh",
         backgroundColor: "var(--mrq-blue, #0a2ecb)",
       }}
     >
+      {/* Blue scrim — fixed-positioned overlay that paints over the
+          BottomNav's default black-on-/discover scrim while this
+          slide is in view. Matches the BottomNav scrim's height +
+          shape so the bottom of the suggestion card visually
+          continues the mrq-blue surface right up to the nav row
+          instead of fading into the reels' black. */}
+      <motion.div
+        aria-hidden
+        className="fixed bottom-0 z-30 pointer-events-none"
+        style={{
+          left: "var(--frame-right-offset)",
+          right: "var(--frame-right-offset)",
+          height: "calc(var(--bottom-nav-h, 80px) + 80px)",
+        }}
+        animate={{ opacity: isActive ? 1 : 0 }}
+        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div
+          className="absolute inset-x-0 bottom-0 h-[90px]"
+          style={{
+            background:
+              "linear-gradient(to top, var(--mrq-blue, #0a2ecb) 30%, rgba(10, 46, 203, 0) 100%)",
+          }}
+        />
+      </motion.div>
+
       <div
         className="flex flex-col h-full"
         style={{
           paddingTop: "calc(env(safe-area-inset-top) + 64px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 32px)",
+          // Bottom padding accounts for the BottomNav so the tile
+          // grid's last row clears the nav row + its safe-area pad.
+          paddingBottom:
+            "calc(var(--bottom-nav-h, 80px) + env(safe-area-inset-bottom) + 24px)",
         }}
       >
         {/* Header */}

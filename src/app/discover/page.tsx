@@ -111,6 +111,11 @@ export default function DiscoverPage() {
   // page's intent — and once the page has a gesture, subsequent
   // reels play with audio without needing a second tap.
   const [muted, setMuted] = useState(false);
+  // Suggestion card visibility — when its IntersectionObserver
+  // promotes it to active (≥60% in view), we suppress the reel
+  // chrome (title + action stack) so the SuggestionCard's own UI
+  // can breathe.
+  const [suggestionActive, setSuggestionActive] = useState(false);
 
   // Materialise the rendered feed by cycling REELS. Each rendered
   // article gets a unique `key` (sourceId + position in the feed)
@@ -167,7 +172,9 @@ export default function DiscoverPage() {
                 / Live / Bingo / Arena game tiles. Rendered once
                 per feed (not per loop) so the user encounters it
                 a single time as they scroll past reel 4. */}
-            {i === 3 && <SuggestionCard />}
+            {i === 3 && (
+              <SuggestionCard onActiveChange={setSuggestionActive} />
+            )}
           </Fragment>
         ))}
       </div>
@@ -179,11 +186,17 @@ export default function DiscoverPage() {
           --frame-right-offset CSS var the rest of the app uses, so
           on desktop the UI sits over the 375px column instead of
           the whole monitor. */}
-      <FixedReelChrome
-        reel={active}
-        muted={muted}
-        onToggleMute={() => setMuted((m) => !m)}
-      />
+      {/* FixedReelChrome is hidden when the SuggestionCard is in
+          view — the suggestion slide has its own UI (header + tile
+          grid + page dots) and the reel chrome would otherwise sit
+          on top with reel 3's stale title and action stack. */}
+      {!suggestionActive && (
+        <FixedReelChrome
+          reel={active}
+          muted={muted}
+          onToggleMute={() => setMuted((m) => !m)}
+        />
+      )}
     </div>
   );
 }
