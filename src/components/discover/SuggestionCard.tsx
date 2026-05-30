@@ -257,14 +257,15 @@ export function SuggestionCard({
             "calc(var(--bottom-nav-h, 80px) + env(safe-area-inset-bottom) + 24px)",
         }}
       >
-        {/* Header */}
-        <div className="px-[16px] pb-[14px]">
-          <h2 className="text-white text-[22px] font-extrabold leading-tight">
-            More games
-          </h2>
+        {/* Header — page-specific category label, centered. The
+            slide doesn't need a "More games" overhead title; the
+            tile grid is itself the headline. Keeping just the
+            category label keeps the slide breathing room and lets
+            the tiles sit higher in the viewport. */}
+        <div className="px-[16px] pb-[14px] text-center">
           <p
-            className="text-[14px] font-medium mt-[2px]"
-            style={{ color: "rgba(255,255,255,0.72)" }}
+            className="text-white text-[15px] font-extrabold"
+            style={{ letterSpacing: 0.1 }}
           >
             {currentPage.label}
           </p>
