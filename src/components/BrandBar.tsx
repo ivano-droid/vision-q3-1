@@ -62,7 +62,7 @@ function backHrefFor(pathname: string): string {
 }
 
 export function BrandBar() {
-  const { openSideNav, openDeposit } = useShell();
+  const { openSideNav, openDeposit, bootDone } = useShell();
   const pathname = usePathname();
   const backArrow = showsBackArrow(pathname);
   const backHref = backHrefFor(pathname);
@@ -189,7 +189,18 @@ export function BrandBar() {
             aria-label="Make a deposit"
             className="text-white text-[16px] leading-none font-extrabold pt-[1px] active:scale-[0.95] transition-transform"
           >
-            <CountUpAmount value="£113.59" sessionKey="mrq-wallet-balance" />
+            {/* `gate={bootDone}` holds the count-up animation until
+                the SimpleSplashGate dismisses — otherwise the
+                IntersectionObserver fires the moment the BrandBar
+                renders into the DOM (behind the z-65 splash overlay)
+                and the count-up plays invisibly. With the gate, the
+                animation starts on the next IO tick AFTER bootDone
+                flips, so the user actually sees it count from £0. */}
+            <CountUpAmount
+              value="£113.59"
+              sessionKey="mrq-wallet-balance"
+              gate={bootDone}
+            />
           </button>
           <span
             className="h-[20px] w-px"

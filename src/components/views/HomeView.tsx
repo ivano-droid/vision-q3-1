@@ -54,26 +54,23 @@ const PICK_UP_GRID = [
   { src: "/assets/games/wild-swarm.png", name: "Wild Swarm" },
 ];
 
+// Prize amounts intentionally land in the £100–£250 range — bigger
+// than a single spin's win, more like the cumulative session payouts
+// real users see and screenshot. Reads as social-proof ("look at what
+// other players are winning"), not as small-stake noise. Buffalo Bills
+// still tops the rail because it's the flagship game.
 const RECENT_WINS = [
-  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£32.34" },
-  // Buffalo Bills surfaces as the second-biggest recent win (£28.55).
-  // Has an href so tapping the tile drops the user into the game
-  // page — same wiring as the Recently Played Games tile.
+  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£187.40" },
   {
     src: "/assets/games/slot-01.png",
     alt: "Buffalo Bills",
-    prize: "£28.55",
+    prize: "£245.80",
     href: "/play/buffalo-bills",
   },
-  // Live-casino win sits in slot #3 — Lightning Roulette art from
-  // the same /assets/live/ set Explore uses for its Live Casino
-  // mega-card. Prizes after this tile dip below £30 (Snake Arena
-  // £31.19 is the exception that keeps the rail feeling natural
-  // rather than mathematically sorted).
-  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£26.40" },
-  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£31.19" },
-  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£24.80" },
-  { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£18.50" },
+  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£162.50" },
+  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£218.75" },
+  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£134.20" },
+  { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£106.90" },
 ];
 
 // Same-vibe recommendations — landscape cards. Re-uses slot artwork

@@ -56,6 +56,7 @@ export function CountUpAmount({
   durationMs = 900,
   className,
   sessionKey,
+  gate = true,
 }: {
   value: string;
   durationMs?: number;
@@ -65,6 +66,15 @@ export function CountUpAmount({
    *  Use for things like the wallet balance that should animate once on
    *  first app open, not on every navigation. */
   sessionKey?: string;
+  /** Suppress the animation while false. Lets the parent block the
+   *  count-up from firing while something is covering the screen (e.g.
+   *  the SimpleSplashGate's z-65 overlay) — without this the
+   *  IntersectionObserver would fire as soon as the element rendered
+   *  into the DOM and the animation would play invisibly behind the
+   *  splash. Flip to true after the gate clears and the count-up
+   *  starts on its next IO entry. Defaults to true so consumers who
+   *  don't care can ignore it. */
+  gate?: boolean;
 }) {
   const parsed = parseAmount(value);
   const ref = useRef<HTMLSpanElement | null>(null);
@@ -75,6 +85,8 @@ export function CountUpAmount({
 
   useEffect(() => {
     if (!parsed) return;
+    // Held by the parent — re-run this effect once the gate flips.
+    if (!gate) return;
 
     const prefersReduced =
       typeof window !== "undefined" &&
@@ -126,7 +138,7 @@ export function CountUpAmount({
       io.disconnect();
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [parsed, durationMs, sessionKey]);
+  }, [parsed, durationMs, sessionKey, gate]);
 
   // Unparseable input → just render it verbatim.
   if (!parsed) return <span className={className}>{value}</span>;
