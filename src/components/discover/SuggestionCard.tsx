@@ -226,10 +226,17 @@ export function SuggestionCard({
           slide is in view. Matches the BottomNav scrim's height +
           shape so the bottom of the suggestion card visually
           continues the mrq-blue surface right up to the nav row
-          instead of fading into the reels' black. */}
+          instead of fading into the reels' black.
+
+          z-[35] sits ABOVE the BottomNav's own scrim (z-30) — the
+          BottomNav renders after this component in AppShell, so
+          without the bump our scrim was painted underneath the
+          black one and the user still saw the dark gradient. The
+          nav buttons themselves are z-40, so they stay on top of
+          our blue scrim. */}
       <motion.div
         aria-hidden
-        className="fixed bottom-0 z-30 pointer-events-none"
+        className="fixed bottom-0 z-[35] pointer-events-none"
         style={{
           left: "var(--frame-right-offset)",
           right: "var(--frame-right-offset)",
@@ -328,11 +335,15 @@ export function SuggestionCard({
                   width: pageWidth || "100%",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
+                {/* Grid is centred + width-clamped so the 2×2 reads
+                    as a tight square block in the middle of the
+                    slide rather than stretching edge-to-edge. */}
                 <div
-                  className="grid grid-cols-2 w-full"
-                  style={{ gap: 14 }}
+                  className="grid grid-cols-2"
+                  style={{ gap: 10, width: "min(100%, 280px)" }}
                 >
                   {page.tiles.map((tile, i) => (
                     <SuggestionTile
@@ -381,10 +392,15 @@ export function SuggestionCard({
 
 /* ============================================================
    Single game tile inside the 2×2 grid. Dark-blue card surface
-   with an 8px inset around the artwork — same chrome treatment
+   with a 6px inset around the artwork — same chrome treatment
    as the rewards-page "This week's offers" cards (so the surface
    reads as a card frame around the image, not as a flush
-   background). Name + Play CTA stacked below the artwork.
+   background).
+
+   Name has been stripped — the artwork carries the brand and the
+   slide's category label already says what kind of games these
+   are. Only the Play CTA sits below the image so the tile reads
+   as art + action.
    ============================================================ */
 function SuggestionTile({
   tile,
@@ -395,17 +411,18 @@ function SuggestionTile({
 }) {
   return (
     <div
-      className="flex flex-col rounded-[16px]"
+      className="flex flex-col rounded-[14px]"
       style={{
         backgroundColor: TILE_BG,
         boxShadow: "0 10px 24px -12px rgba(0, 0, 0, 0.35)",
       }}
     >
-      {/* 8px dark-blue padding box around the image — the card
+      {/* 6px dark-blue padding box around the image — the card
           frame the user sees around the artwork on the rewards
-          cards. */}
-      <div className="p-[8px]">
-        <div className="relative aspect-square overflow-hidden rounded-[12px]">
+          cards. Tighter than the rewards inset because the tiles
+          themselves are small. */}
+      <div className="p-[6px]">
+        <div className="relative aspect-square overflow-hidden rounded-[10px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={tile.src}
@@ -416,25 +433,17 @@ function SuggestionTile({
         </div>
       </div>
 
-      {/* Name + Play CTA */}
-      <div
-        className="px-[12px] pb-[12px] flex flex-col"
-        style={{ gap: 8 }}
-      >
-        <p
-          className="text-white text-[13px] font-extrabold leading-tight truncate"
-          style={{ letterSpacing: 0.05 }}
-        >
-          {tile.name}
-        </p>
+      {/* Play CTA only — name dropped. */}
+      <div className="px-[6px] pb-[6px]">
         <button
           type="button"
           onClick={onPlay}
-          className="w-full h-[28px] rounded-[8px] text-[12px] font-extrabold active:scale-[0.98] transition-transform"
+          aria-label={`Play ${tile.name}`}
+          className="w-full h-[26px] rounded-[8px] text-[11px] font-extrabold active:scale-[0.98] transition-transform"
           style={{
             backgroundColor: "rgba(255,255,255,0.95)",
             color: "var(--mrq-blue-dark, #0c2287)",
-            letterSpacing: 0.15,
+            letterSpacing: 0.2,
           }}
         >
           Play
