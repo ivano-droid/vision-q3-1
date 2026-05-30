@@ -33,7 +33,13 @@ function parseAmount(value: string): Parsed | null {
   return { prefix, suffix, target, decimals };
 }
 
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+// Quartic ease-out (1 − (1−t)^4) — bigger initial ramp than cubic
+// (so the digits feel like they're flying upward at first), then a
+// more pronounced settle at the end (so the last 10–15% of the
+// value crawls in, like a scoreboard locking onto its final
+// reading). Reads as a clearer "slowing down" curve than the
+// gentler cubic.
+const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
 // sessionStorage helpers — guarded (private mode can throw).
 function seenThisSession(key: string): boolean {
@@ -130,7 +136,7 @@ export function CountUpAmount({
       const start = performance.now();
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / durationMs);
-        const current = parsed.target * easeOutCubic(t);
+        const current = parsed.target * easeOutQuart(t);
         setDisplay(formatNumber(current, parsed));
         if (t < 1) raf = requestAnimationFrame(tick);
       };

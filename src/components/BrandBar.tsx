@@ -197,7 +197,7 @@ export function BrandBar() {
                 visible "£0". 1500ms duration gives the 4-digit
                 balance room to actually tick over. */}
             <CountUpAmount
-              value="£4,287.50"
+              value="£113.48"
               gate={bootDone}
               durationMs={1500}
             />
