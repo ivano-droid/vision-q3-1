@@ -6,6 +6,8 @@ import {
   ArenaPromoSlide,
   FreeSpinsPromoSlide,
 } from "@/components/discover/PromoSlides";
+import { useShell } from "@/lib/filter-context";
+import { getGameDetails } from "@/lib/games-catalogue";
 
 /**
  * For You / Discover — vertical-snap reels feed (TikTok / Reels style).
@@ -485,6 +487,15 @@ function FixedReelChrome({
   muted: boolean;
   onToggleMute: () => void;
 }) {
+  // Tapping the (i) action button opens the global GameDetailsSheet
+  // with the active reel's full game record. Looks up via the same
+  // games-catalogue helper every other tile uses, so the sheet
+  // shows real provider/RTP/volatility/min-bet/preview data rather
+  // than just the reel's slim metadata.
+  const { openGameDetails } = useShell();
+  const openInfo = () =>
+    openGameDetails(getGameDetails(reel.game, reel.thumb));
+
   // Brand spot — render nothing on top of the video. The creative is
   // the whole experience: no studio meta, no game title, no action
   // stack, no sound toggle. Tap-to-mute on the video itself still
@@ -563,7 +574,7 @@ function FixedReelChrome({
             <SpeakerOnIcon className="size-[22px] text-white" />
           )}
         </ActionButton>
-        <ActionButton aria="Game info">
+        <ActionButton aria="Game info" onClick={openInfo}>
           <InfoIcon className="size-[22px] text-white" />
         </ActionButton>
         <PlayButton aria={`Play ${reel.game}`}>
