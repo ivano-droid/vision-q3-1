@@ -199,7 +199,7 @@ export function BrandBar() {
             <CountUpAmount
               value="£113.48"
               gate={bootDone}
-              durationMs={2200}
+              durationMs={3500}
             />
           </button>
           <span

@@ -33,15 +33,29 @@ function parseAmount(value: string): Parsed | null {
   return { prefix, suffix, target, decimals };
 }
 
-// Exponential ease-out (1 − 2^(−10t)) — the most pronounced
-// end-settle of the standard easing curves. The digits FLY upward
-// in the first ~300ms (covering ~85% of the value), then the last
-// 15% crawls in over the remainder. Reads as a scoreboard locking
-// onto its final reading after the initial spin.
+// "Ticker" easing — a custom curve designed so the digits actually
+// keep ticking visibly through the middle (instead of flying to
+// ~95% in the first 300ms like pure exponential does), AND so the
+// last few units crawl in really slowly at the end.
 //
-// At t=0.1 → 50% of value; t=0.3 → 87.5%; t=0.5 → 96.9%; t=1 → 100%.
-const easeOutExpo = (t: number) =>
-  t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+// First 45% of time: linear-ish ramp to 50% of value — digits
+// tick at a steady, perceptible rate (this is the "going up and
+// up" phase).
+//
+// Last 55% of time: cubic ease-out from 50% to 100% — the climb
+// progressively slows so the final units lock in one-by-one
+// (the "slower and slower" phase).
+//
+// At t=0.225 → 25%; t=0.45 → 50% (transition); t=0.6 → 72%;
+// t=0.8 → 93%; t=0.95 → 99.5%; t=1.0 → 100%.
+const easeOutTicker = (t: number) => {
+  if (t < 0.45) {
+    // Linear ramp to 50% over the first 45% of the duration.
+    return (t / 0.45) * 0.5;
+  }
+  const u = (t - 0.45) / 0.55; // 0..1 across the deceleration phase
+  return 0.5 + 0.5 * (1 - Math.pow(1 - u, 3));
+};
 
 // sessionStorage helpers — guarded (private mode can throw).
 function seenThisSession(key: string): boolean {
@@ -138,7 +152,7 @@ export function CountUpAmount({
       const start = performance.now();
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / durationMs);
-        const current = parsed.target * easeOutExpo(t);
+        const current = parsed.target * easeOutTicker(t);
         setDisplay(formatNumber(current, parsed));
         if (t < 1) raf = requestAnimationFrame(tick);
       };
