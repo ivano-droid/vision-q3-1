@@ -12,10 +12,10 @@ import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
 import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
 import { BINGO_TILES } from "@/lib/bingo-rooms";
 import {
-  getAllGames,
-  getProviders,
-  type GameDetails,
-} from "@/lib/games-catalogue";
+  SEARCHABLE_GAMES,
+  getAllProviders,
+  type SearchableGame,
+} from "@/lib/searchable-games";
 import {
   applyFilters,
   countActiveFilters,
@@ -376,8 +376,8 @@ export default function SearchPage() {
   const [sort, setSort] = useState<SortKey>("relevance");
 
   // Static catalogue-derived data (stable across renders).
-  const allGames = useMemo<GameDetails[]>(() => getAllGames(), []);
-  const providers = useMemo(() => getProviders(), []);
+  const allGames = useMemo<SearchableGame[]>(() => SEARCHABLE_GAMES, []);
+  const providers = useMemo(() => getAllProviders(), []);
 
   const hasQueryOrFilters =
     query.trim().length > 0 || countActiveFilters(filters) > 0;
@@ -550,7 +550,15 @@ export default function SearchPage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => setFocused(true)}
-                  onBlur={() => setFocused(false)}
+                  // No onBlur — losing input focus must NOT close the
+                  // modal. On mobile, tapping any non-input element
+                  // (a filter chip, a result row, the X button, the
+                  // facet dropdown backdrop, etc.) blurs the input.
+                  // If we tied modal lifecycle to input focus the
+                  // modal would unmount on the first chip tap and the
+                  // dropdown would never get to render. The modal
+                  // closes only via explicit dismissal: X button, Esc
+                  // key, or selecting a result row.
                   className="flex-1 bg-transparent text-[15px] font-bold text-[#0322ac] placeholder:text-[#0322ac] outline-none text-left"
                 />
               </div>
@@ -580,6 +588,7 @@ export default function SearchPage() {
               sort={sort}
               onSortChange={setSort}
               providers={providers}
+              canSort={hasQueryOrFilters}
             />
 
             <div className="flex-1 overflow-y-auto">
@@ -657,7 +666,7 @@ function SearchResults({
   onSelect,
 }: {
   query: string;
-  results: GameDetails[];
+  results: SearchableGame[];
   onSelect?: () => void;
 }) {
   const trimmed = query.trim();
@@ -690,7 +699,7 @@ function SearchResults({
                   src={game.src}
                   name={game.name}
                   href={game.href}
-                  meta={`${game.rtp} RTP · ${game.volatility} · ${game.provider}`}
+                  meta={metaLine(game)}
                   onClick={onSelect}
                 />
               </div>
@@ -700,6 +709,17 @@ function SearchResults({
       )}
     </section>
   );
+}
+
+/* Build the secondary line under a result. Adapts per vertical — RTP
+   only shows where it exists (bingo has none), and the category is
+   always surfaced so cross-vertical results stay legible. */
+function metaLine(game: SearchableGame): string {
+  const parts: string[] = [game.category];
+  if (game.rtp) parts.push(`${game.rtp} RTP`);
+  if (game.volatility) parts.push(game.volatility);
+  parts.push(game.provider);
+  return parts.join(" · ");
 }
 
 /* Shared cell body — thumb + name. Renders as a Link when an href
