@@ -81,6 +81,7 @@ export function CountUpAmount({
   gate = true,
   rootMargin,
   threshold = 0.4,
+  immediate = false,
 }: {
   value: string;
   durationMs?: number;
@@ -109,6 +110,13 @@ export function CountUpAmount({
   /** Fraction of the element that must be visible inside the IO root
    *  before the count-up fires. Defaults to 0.4. */
   threshold?: number;
+  /** Skip the IntersectionObserver entirely and fire the count-up
+   *  as soon as `gate` opens (plus the post-gate delay). Use when a
+   *  whole row of tiles should animate together rather than one-by-
+   *  one as the user scrolls horizontally — off-screen tiles are
+   *  already at their final value by the time the user reaches them.
+   *  Default false (observer-gated, the original behaviour). */
+  immediate?: boolean;
 }) {
   // parseAmount returns a fresh object every call; memoise on the
   // raw `value` string so the useEffect below isn't re-firing the
@@ -161,13 +169,26 @@ export function CountUpAmount({
 
     let teardownIO: (() => void) | null = null;
 
-    // Wait a small post-gate delay before attaching the IO. When
-    // gate flips on bootDone, the splash overlay is still mid-
-    // fade-out (~220ms transition) — kicking off the count-up the
-    // same tick would animate the first few hundred ms behind the
-    // disappearing splash. ~320ms gives the splash exit room to
-    // clear before the count-up's first frame.
+    // Wait a small post-gate delay before kicking off. When gate
+    // flips on bootDone the splash overlay is still mid-fade-out
+    // (~220ms transition) — kicking off the count-up the same tick
+    // would animate the first frames behind the disappearing
+    // splash. ~320ms gives the splash exit room to clear before
+    // the count-up's first frame.
     const startTimer = window.setTimeout(() => {
+      if (immediate) {
+        // Skip the IntersectionObserver entirely and fire now. Used
+        // when a whole row should animate in sync rather than tile-
+        // by-tile as the user scrolls (off-screen tiles need to be
+        // at their final value by the time they're swiped into
+        // view).
+        if (!doneRef.current) {
+          doneRef.current = true;
+          if (sessionKey) markSeen(sessionKey);
+          run();
+        }
+        return;
+      }
       const io = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -198,7 +219,7 @@ export function CountUpAmount({
       // cleanup only fires on unmount, where this is a no-op.
       doneRef.current = false;
     };
-  }, [parsed, durationMs, sessionKey, gate, rootMargin, threshold]);
+  }, [parsed, durationMs, sessionKey, gate, rootMargin, threshold, immediate]);
 
   // Unparseable input → just render it verbatim.
   if (!parsed) return <span className={className}>{value}</span>;

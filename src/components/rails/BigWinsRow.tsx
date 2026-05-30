@@ -127,12 +127,19 @@ function WinTile({ win }: { win: Win }) {
             Slower 1400ms duration too — at £400–£1,800 numbers
             the eye needs more travel time to register digits
             ticking rather than snapping in. */}
+        {/* All six prize pills fire their count-up in sync the
+            moment bootDone flips (immediate=true bypasses the
+            per-tile IntersectionObserver). Off-screen tiles
+            finish their count-up while still off-screen, so by
+            the time the user scrolls horizontally to them
+            they're already showing the final value — no
+            "I scrolled, now this tile is also counting up"
+            jankiness. */}
         <CountUpAmount
           value={win.prize}
           gate={bootDone}
+          immediate
           durationMs={3500}
-          rootMargin="0px 0px -120px 0px"
-          threshold={0.6}
           className="text-[13px] font-extrabold text-[var(--mrq-blue)]"
         />
       </div>
