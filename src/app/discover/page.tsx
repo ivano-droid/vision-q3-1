@@ -2,6 +2,10 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { SuggestionCard } from "@/components/discover/SuggestionCard";
+import {
+  ArenaPromoSlide,
+  FreeSpinsPromoSlide,
+} from "@/components/discover/PromoSlides";
 
 /**
  * For You / Discover — vertical-snap reels feed (TikTok / Reels style).
@@ -142,6 +146,14 @@ export default function DiscoverPage() {
   // chrome (title + action stack) so the SuggestionCard's own UI
   // can breathe.
   const [suggestionActive, setSuggestionActive] = useState(false);
+  // Promo slides (Arena recruiter after video 8, Free Spins after
+  // video 10). Same active-state treatment as the suggestion card —
+  // when one is in view we hide the reel chrome and force-pause
+  // reels so audio doesn't leak under a static promo screen.
+  const [arenaPromoActive, setArenaPromoActive] = useState(false);
+  const [freeSpinsPromoActive, setFreeSpinsPromoActive] = useState(false);
+  const overlayActive =
+    suggestionActive || arenaPromoActive || freeSpinsPromoActive;
 
   // Materialise the rendered feed by cycling REELS. Each rendered
   // article gets a unique `key` (sourceId + position in the feed)
@@ -194,7 +206,7 @@ export default function DiscoverPage() {
               index={i}
               activeIndex={activeIndex}
               muted={muted}
-              forcePause={suggestionActive}
+              forcePause={overlayActive}
               mountVideo={mountVideo}
               onEnter={() => setActiveIndex(i)}
               onTapVideo={() => setMuted((m) => !m)}
@@ -212,6 +224,19 @@ export default function DiscoverPage() {
                 onActiveChange={setSuggestionActive}
               />
             )}
+            {/* Arena recruiter — slides in after the 8th reel
+                (zero-indexed: i === 7). One-off per feed: it only
+                appears here on the first loop, not on every wrap. */}
+            {i === 7 && (
+              <ArenaPromoSlide onActiveChange={setArenaPromoActive} />
+            )}
+            {/* Free Spins reward — slides in after the 10th reel
+                (zero-indexed: i === 9). Same one-off treatment. */}
+            {i === 9 && (
+              <FreeSpinsPromoSlide
+                onActiveChange={setFreeSpinsPromoActive}
+              />
+            )}
           </Fragment>
           );
         })}
@@ -224,11 +249,12 @@ export default function DiscoverPage() {
           --frame-right-offset CSS var the rest of the app uses, so
           on desktop the UI sits over the 375px column instead of
           the whole monitor. */}
-      {/* FixedReelChrome is hidden when the SuggestionCard is in
-          view — the suggestion slide has its own UI (header + tile
-          grid + page dots) and the reel chrome would otherwise sit
-          on top with reel 3's stale title and action stack. */}
-      {!suggestionActive && (
+      {/* FixedReelChrome is hidden whenever any non-reel slide is
+          in view (SuggestionCard, ArenaPromoSlide, FreeSpinsPromoSlide).
+          Those slides own their full screen and we don't want the
+          reel chrome bleeding through with stale metadata for the
+          last reel the user saw. */}
+      {!overlayActive && (
         <FixedReelChrome
           reel={active}
           muted={muted}
