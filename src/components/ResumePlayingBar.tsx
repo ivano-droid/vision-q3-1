@@ -127,13 +127,16 @@ export function ResumePlayingBar() {
           // nav as it climbs.
           initial={{ y: 140 }}
           animate={{ y: 0 }}
-          // Exit: fast 130ms y-slide down. With z-30 the bar gets
-          // clipped behind the nav the instant it moves down, so
-          // no opacity fade is needed — the bar just vanishes
-          // behind the nav.
+          // Exit: 220ms y-slide down. 130ms read as a hard cut —
+          // the bar vanished behind the nav before the eye could
+          // register the motion. 220ms keeps the dismissal brisk
+          // (well below 250ms iOS standard) but gives the
+          // descent enough time to be perceived as deliberate.
+          // Still no opacity fade — z-30 keeps the bar clipped
+          // behind the BottomNav as soon as it moves.
           exit={{
             y: 80,
-            transition: { duration: 0.13, ease: [0.4, 0, 1, 1] },
+            transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
           }}
           // Entry transition only — critically-damped-ish spring,
           // zero overshoot so the bar doesn't briefly oscillate
