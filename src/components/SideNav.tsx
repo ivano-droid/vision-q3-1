@@ -428,64 +428,22 @@ function PlayStreakCard() {
       />
 
       {/* Player stats — three rows sharing the same card surface
-          as the streak above. Row form (icon | label | value)
-          beats the previous column grid: values are unbounded
-          on the right so 'Buffalo Bills' never wraps, label /
-          value share the same baseline by construction, and the
-          icon column stays a tidy 40-px gutter on the left. */}
+          as the streak above. Label on the left, value pinned to
+          the right; no icons, so the row reads as a clean two-
+          column data line and the card stays calm against the
+          colourful streak fires above. */}
       <div className="flex flex-col gap-[10px]">
-        <StatRow
-          icon="/assets/gamesplayed.png"
-          label="Games Tried"
-          value="27"
-        />
-        <StatRow
-          icon="/assets/trophy.png"
-          label="Biggest Win"
-          value="£487"
-        />
-        <StatRow
-          icon="/assets/favgame.png"
-          label="Favourite Game"
-          value="Buffalo Bills"
-        />
+        <StatRow label="Games Tried" value="27" />
+        <StatRow label="Biggest Win" value="£487" />
+        <StatRow label="Favourite Game" value="Buffalo Bills" />
       </div>
     </section>
   );
 }
 
-function StatRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-}) {
+function StatRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-[12px]">
-      {/* Brand-illustration icon, fixed 36×36 bounding box.
-          object-contain preserves each illustration's intrinsic
-          aspect ratio (trophy tall, controller wide, heart
-          square) so they all read at the same visual scale. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={icon}
-        alt=""
-        draggable={false}
-        className="shrink-0"
-        style={{
-          display: "block",
-          width: 36,
-          height: 36,
-          objectFit: "contain",
-        }}
-      />
-      {/* Label takes the middle, value pins to the right via
-          flex-1 on the label and natural right-alignment on the
-          value. Labels read as soft supporting copy; values as
-          the data the row exists to surface. */}
       <span
         className="flex-1 text-[13px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
         style={{ opacity: 0.65 }}
