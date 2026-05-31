@@ -195,11 +195,22 @@ export function BrandBar() {
                 flips so the splash exit (~220ms) is fully out of
                 the way and the count-up's first frame is the
                 visible "£0". 1500ms duration gives the 4-digit
-                balance room to actually tick over. */}
+                balance room to actually tick over.
+
+                sessionKey pins this to first-load-of-session only.
+                Without it, AppShell unmounts the BrandBar entirely
+                on /passes and /play (those routes own their chrome),
+                so navigating into a weekly-pass page and back here
+                remounts a fresh CountUpAmount that re-animates from
+                £0 — felt buggy because the "balance" appeared to
+                reset every time. sessionStorage flag survives
+                mount/unmount within the tab and clears on a hard
+                reload. */}
             <CountUpAmount
               value="£113.48"
               gate={bootDone}
               durationMs={3500}
+              sessionKey="brandbar-wallet-balance"
             />
           </button>
           <span
