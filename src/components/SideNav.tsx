@@ -359,37 +359,16 @@ const STREAK_DAYS: StreakDay[] = [
 function PlayStreakCard() {
   return (
     <section
-      className="rounded-[14px] bg-white p-[16px] flex flex-col gap-[14px]"
+      className="rounded-[14px] bg-white px-[14px] py-[12px] flex flex-col gap-[10px]"
       style={{ border: "1px solid #e6e6e7" }}
     >
-      {/* Header — fire illustration + count + label. Uses the
-          full-colour /assets/fire.svg (yellow outer flame, pink
-          inner core, brand-navy stroke) as the hero element so
-          the card has real character instead of a flat
-          single-colour glyph. SVG's intrinsic aspect ratio is
-          ~0.78:1, so a 44px width gives ~57px tall — substantial
-          but not so large it pushes the day pips off the visible
-          drawer. */}
-      <div className="flex items-center gap-[14px]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/fire.svg"
-          alt=""
-          width={44}
-          height={57}
-          draggable={false}
-          className="shrink-0"
-          style={{ display: "block" }}
-        />
-        <div className="flex min-w-0 flex-col leading-tight">
-          <span className="text-[28px] font-extrabold text-[var(--mrq-blue-dark)]">
-            4
-          </span>
-          <span className="text-[13px] font-bold text-[var(--mrq-blue-dark)] opacity-70">
-            day Play Streak
-          </span>
-        </div>
-      </div>
+      {/* Header — single-line label. The hero fire illustration
+          used to sit here but felt too heavy for a side-drawer
+          card; the day pips below are the real visual story, so
+          the header demotes to a tight one-line title. */}
+      <p className="text-[15px] font-extrabold leading-tight text-[var(--mrq-blue-dark)]">
+        4 day Play Streak
+      </p>
 
       {/* Day pips — 7 columns, justified across the card width.
           Hit days render the fire.svg illustration; miss days are
