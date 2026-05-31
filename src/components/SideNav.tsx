@@ -186,6 +186,20 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
+      {/* Play Streak — Duolingo-style streak card. Header row
+          (flame + count + label) over a 7-pip Mon–Sun day row
+          showing which days in the current week have been hit.
+          Prototype is static: a 4-day streak ending on Thursday
+          (today). When the back-end's there we'd compute the
+          `STREAK_DAYS` array from the player's session log.
+
+          "Play Streak" rather than "Win Streak" — playing is what
+          we want to celebrate, and the name keeps MrQ on the
+          right side of its anti-Generic-Casino, RG-conscious tone
+          (a flashing "Win Streak" badge in a casino app would be
+          a flag for both regulators and players). */}
+      <PlayStreakCard />
+
       {/* Group 1 */}
       <MenuGroup>
         <MenuItem icon={<UserIcon />} label="Profile" onClick={onClose} />
@@ -311,6 +325,113 @@ function MenuItem({
   );
 }
 
+/* ----------- Play Streak card ----------- */
+
+// Brand-of-fire orange — warm enough to read as "streak / heat" but
+// not the saturated red that would clash with the brand-navy text
+// next to it. Used for both the header flame and the filled day
+// pips so the card has one accent colour instead of two.
+const STREAK_ACCENT = "#F97316";
+
+// Prototype state — Mon–Sun for the current week with a 4-day
+// streak ending Thursday (today). When the back-end's wired we'd
+// derive `hit` from the player's session log keyed by day-of-week
+// and `isToday` from the current weekday.
+type StreakDay = { label: string; hit: boolean; isToday: boolean };
+const STREAK_DAYS: StreakDay[] = [
+  { label: "M", hit: true, isToday: false },
+  { label: "T", hit: true, isToday: false },
+  { label: "W", hit: true, isToday: false },
+  { label: "T", hit: true, isToday: true },
+  { label: "F", hit: false, isToday: false },
+  { label: "S", hit: false, isToday: false },
+  { label: "S", hit: false, isToday: false },
+];
+
+function PlayStreakCard() {
+  return (
+    <section
+      className="rounded-[14px] bg-white p-[16px] flex flex-col gap-[14px]"
+      style={{ border: "1px solid #e6e6e7" }}
+    >
+      {/* Header — flame + count + label. Flame is large enough to
+          read as a hero element; the count uses the same brand-
+          navy weight as the rest of the drawer so the orange
+          accent stays singular. */}
+      <div className="flex items-center gap-[12px]">
+        <FlameIcon
+          className="size-[36px] shrink-0"
+          style={{ color: STREAK_ACCENT }}
+        />
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="text-[24px] font-extrabold text-[var(--mrq-blue-dark)]">
+            4
+          </span>
+          <span className="text-[13px] font-bold text-[var(--mrq-blue-dark)] opacity-70">
+            day Play Streak
+          </span>
+        </div>
+      </div>
+
+      {/* Day pips — 7 columns, justified across the card width.
+          Hit days carry a filled orange circle with a mini white
+          flame inside; miss days are hollow with a hairline border.
+          Today's pip carries an extra ring so the user can tell
+          "today's already been hit" vs "earlier in the week". */}
+      <div className="flex justify-between">
+        {STREAK_DAYS.map((day, i) => (
+          <DayPip
+            key={`${day.label}-${i}`}
+            label={day.label}
+            hit={day.hit}
+            isToday={day.isToday}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DayPip({
+  label,
+  hit,
+  isToday,
+}: {
+  label: string;
+  hit: boolean;
+  isToday: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-[6px]">
+      <span
+        className="text-[11px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
+        style={{ letterSpacing: 0.4, opacity: 0.55 }}
+      >
+        {label}
+      </span>
+      <span
+        className="grid place-items-center size-[28px] rounded-full"
+        style={{
+          backgroundColor: hit ? STREAK_ACCENT : "transparent",
+          border: hit
+            ? isToday
+              ? `2px solid ${STREAK_ACCENT}`
+              : "none"
+            : "1.5px solid #e6e6e7",
+          // Subtle white ring around today's pip so it's obvious
+          // even when the streak is unbroken (all days look
+          // filled otherwise — easy to miss which one is "now").
+          boxShadow: isToday
+            ? `0 0 0 2px #ffffff, 0 0 0 4px ${STREAK_ACCENT}`
+            : undefined,
+        }}
+      >
+        {hit && <FlameIcon className="size-[14px] text-white" />}
+      </span>
+    </div>
+  );
+}
+
 /* ----------- Inline icons ----------- */
 
 function MinusIcon({ className }: { className?: string }) {
@@ -333,6 +454,31 @@ function HeartIcon() {
 }
 function GiftIcon() {
   return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="size-full" aria-hidden><rect x="2.5" y="6" width="15" height="3.5" rx="0.5" /><path d="M4 9.5V17a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5" /><path d="M10 6v12" /><path d="M10 6c-1.25-1.6-4.6-1.6-4.6 0 0 .85.85 1.3 2.1 1.3 1.25 0 2.5-.45 2.5-1.3Z" /><path d="M10 6c1.25-1.6 4.6-1.6 4.6 0 0 .85-.85 1.3-2.1 1.3-1.25 0-2.5-.45-2.5-1.3Z" /></svg>;
+}
+function FlameIcon({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  // Filled flame — single-path streak/fire glyph. Two lobes: an
+  // outer flame that points up and a smaller inner cut so the
+  // shape reads as fire rather than a teardrop. Filled (not
+  // stroked) so it stays legible at the 14px mini size used
+  // inside the day pips as well as the 36px hero size in the
+  // card header.
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      style={style}
+      aria-hidden
+    >
+      <path d="M13.5 1.5c.3 2.3 1.5 4 3 5.5 2 2 3.5 4 3.5 7a8 8 0 0 1-16 0c0-2.4 1-4.3 2.4-5.8.4.7.9 1.3 1.6 1.6.4-2 1.7-4 5.5-8.3zM12 20a3.5 3.5 0 0 0 3.5-3.5c0-1.3-.7-2.3-1.5-3.3-.7.6-1.5 1-2.2 1 .4-1.4 0-2.7-1-4-.7 1-1.3 2-1.3 3.5 0 1 .4 2 .8 2.8.5 1 1.7 3.5 1.7 3.5z" />
+    </svg>
+  );
 }
 function DiamondIcon() {
   // Gem/diamond outline — trapezoidal top + V bottom + a horizontal
