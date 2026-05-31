@@ -320,7 +320,21 @@ function MenuItem({
       <span className="shrink-0 size-[20px] grid place-items-center" style={{ color: accent ?? "var(--mrq-blue-dark)" }}>
         {icon}
       </span>
-      <span className="text-[14px] font-extrabold">{label}</span>
+      {/* flex-1 pushes the chevron to the row's right edge while
+          keeping the label hard against the icon on the left. */}
+      <span className="flex-1 text-[14px] font-extrabold">{label}</span>
+      {/* Right-pointing chevron — standard "tap to drill in"
+          affordance on every menu row. Inherits the row's `color`
+          so accent rows (e.g. the magenta "Get 50 free spins!")
+          carry the chevron in the same hue as their icon + label,
+          while regular rows fall back to brand navy. opacity 0.35
+          so it reads as a hint, not a primary glyph. */}
+      <span
+        className="shrink-0 size-[16px] grid place-items-center"
+        style={{ opacity: 0.35 }}
+      >
+        <ChevronRightIcon />
+      </span>
     </button>
   );
 }
@@ -532,6 +546,26 @@ function HeartIcon() {
 }
 function GiftIcon() {
   return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="size-full" aria-hidden><rect x="2.5" y="6" width="15" height="3.5" rx="0.5" /><path d="M4 9.5V17a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5" /><path d="M10 6v12" /><path d="M10 6c-1.25-1.6-4.6-1.6-4.6 0 0 .85.85 1.3 2.1 1.3 1.25 0 2.5-.45 2.5-1.3Z" /><path d="M10 6c1.25-1.6 4.6-1.6 4.6 0 0 .85-.85 1.3-2.1 1.3-1.25 0-2.5-.45-2.5-1.3Z" /></svg>;
+}
+function ChevronRightIcon() {
+  // Stroke-based right chevron at the same 1.8 weight + rounded
+  // caps as the rest of the menu's iconography, so it sits next
+  // to UserIcon / WalletIcon / etc. without looking like a
+  // different design system.
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-full"
+      aria-hidden
+    >
+      <path d="m7.5 5 5 5-5 5" />
+    </svg>
+  );
 }
 function DiamondIcon() {
   // Gem/diamond outline — trapezoidal top + V bottom + a horizontal
