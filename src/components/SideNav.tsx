@@ -466,44 +466,49 @@ function StatColumn({
   label: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-[4px] min-w-0">
-      {/* Brand-illustration icon. object-contain keeps each
-          icon's intrinsic aspect ratio inside the same 40×40
-          bounding box so the trophy (taller than wide), the
-          controller (wider than tall), and the heart (roughly
-          square) all read at the same visual scale across the
-          row. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={icon}
-        alt=""
-        draggable={false}
-        style={{
-          display: "block",
-          width: 40,
-          height: 40,
-          objectFit: "contain",
-        }}
-      />
-      {/* Value slot — fixed 36-px min-height equals two lines at
-          the 14-px font's 1.25 leading. Single-line values like
-          "27" and "£487" centre vertically in the slot; the two-
-          line "Buffalo Bills" wrap fills the slot exactly. Net:
-          all three columns land their label tier on the same
-          baseline regardless of word count. */}
+    <div className="flex flex-col items-center min-w-0">
+      {/* Brand-illustration icon. 52×52 bounding box (up from
+          40) so the illustrations have room to breathe — at the
+          smaller size the trophy looked shrunken next to the
+          square-ish heart and the wide controller. items-end
+          on the wrapper sits each illustration on a common
+          baseline regardless of its intrinsic ratio. */}
       <div
-        className="flex w-full items-center justify-center"
-        style={{ minHeight: 36 }}
+        className="flex items-end justify-center"
+        style={{ height: 52, marginBottom: 6 }}
       >
-        <span
-          className="text-center text-[14px] font-extrabold leading-[1.25] text-[var(--mrq-blue-dark)] break-words"
-        >
-          {value}
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={icon}
+          alt=""
+          draggable={false}
+          style={{
+            display: "block",
+            maxWidth: 52,
+            maxHeight: 52,
+            objectFit: "contain",
+          }}
+        />
       </div>
+      {/* Value — 16px extrabold so it reads as the column's
+          headline. No min-height reservation: the values all
+          fit on one line at the column width, and the wasted
+          vertical space made the card feel hollow. */}
       <span
-        className="text-center text-[11px] font-bold text-[var(--mrq-blue-dark)]"
-        style={{ opacity: 0.55 }}
+        className="text-center text-[16px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] break-words"
+        style={{ marginBottom: 4 }}
+      >
+        {value}
+      </span>
+      {/* Label — reserved 2-line min-height (~28px at 11px/1.3
+          leading) so the "Favourite Game" wrap doesn't push the
+          column taller than its single-line "Games Tried" /
+          "Biggest Win" siblings. Single-line labels top-align
+          in the slot, which keeps them visually tied to the
+          value above instead of floating mid-air. */}
+      <span
+        className="text-center text-[11px] font-bold leading-[1.3] text-[var(--mrq-blue-dark)] block"
+        style={{ opacity: 0.55, minHeight: 28 }}
       >
         {label}
       </span>
