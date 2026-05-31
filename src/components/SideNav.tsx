@@ -359,23 +359,24 @@ const STREAK_DAYS: StreakDay[] = [
 function PlayStreakCard() {
   return (
     <section
-      className="rounded-[14px] bg-white px-[14px] py-[12px] flex flex-col gap-[10px]"
+      // Tighter vertical rhythm (py 12→10, gap 10→8) — ~17% off
+      // the card's height so it reads as a premium summary
+      // rather than a chunky form.
+      className="rounded-[14px] bg-white px-[14px] py-[10px] flex flex-col gap-[8px]"
       style={{ border: "1px solid #e6e6e7" }}
     >
-      {/* Header — single-line two-tier label. The streak count is
-          the headline number, sized + weighted to catch the eye
-          on drawer open; the "day Play Streak" tail sits in a
-          softer brand-navy-at-low-opacity grey so the reading
-          weight is squarely on the count.
-          flex items-baseline keeps both tiers on the same
-          baseline despite the size step. */}
+      {/* Streak hero — the "4" is now the unambiguous focal
+          point at 28px (up from 22). The "day Play Streak" tail
+          drops to 12px / 50% opacity so it reads as a soft
+          descriptor next to the headline number, not a co-
+          equal label fighting for attention. */}
       <p className="flex items-baseline gap-[6px] leading-tight">
-        <span className="text-[22px] font-extrabold text-[var(--mrq-blue-dark)]">
+        <span className="text-[28px] font-extrabold text-[var(--mrq-blue-dark)]">
           4
         </span>
         <span
-          className="text-[13px] font-bold text-[var(--mrq-blue-dark)]"
-          style={{ opacity: 0.55 }}
+          className="text-[12px] font-bold text-[var(--mrq-blue-dark)]"
+          style={{ opacity: 0.5 }}
         >
           day Play Streak
         </span>
@@ -384,7 +385,8 @@ function PlayStreakCard() {
       {/* Day pips — 7 columns, justified across the card width.
           Hit days render the fire.svg illustration; miss days are
           a small hollow hairline circle. Today is marked by the
-          day label sitting at full opacity (others at 55%).
+          day label sitting at full opacity (others quietened to
+          45%).
 
           On open, each fire pops in with a staggered spring so
           the streak builds in front of the user one day at a time
@@ -419,7 +421,7 @@ function PlayStreakCard() {
       {/* Divider — hairline matching the card's outer border so
           the stats section reads as the same surface continuing
           downward rather than a stacked separate card. The
-          parent flex gap-[10px] gives 10px breathing room above
+          parent flex gap-[8px] gives 8px breathing room above
           and below without needing extra margins. */}
       <div
         className="h-px"
@@ -427,15 +429,29 @@ function PlayStreakCard() {
         aria-hidden
       />
 
-      {/* Player stats — three rows sharing the same card surface
-          as the streak above. Label on the left, value pinned to
-          the right; no icons, so the row reads as a clean two-
-          column data line and the card stays calm against the
-          colourful streak fires above. */}
-      <div className="flex flex-col gap-[10px]">
-        <StatRow label="Games Tried" value="27" />
-        <StatRow label="Biggest Win" value="£487" />
-        <StatRow label="Favourite Game" value="Buffalo Bills" />
+      {/* Player stats — secondary subsection inside the same
+          card. The "YOUR STATS" tag whispers the section's role
+          (uppercase 10px at 45% opacity, letter-spaced) so the
+          eye still parses the streak above as the hero. Rows
+          below carry the data: labels quiet (50% opacity), values
+          loud (16px extrabold) so the value is the primary
+          element on each row. */}
+      <div>
+        <span
+          className="block text-[10px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
+          style={{
+            opacity: 0.45,
+            letterSpacing: 0.6,
+            marginBottom: 8,
+          }}
+        >
+          Your Stats
+        </span>
+        <div className="flex flex-col gap-[8px]">
+          <StatRow label="Games Played" value="27" />
+          <StatRow label="Biggest Win" value="£487" />
+          <StatRow label="Favourite Game" value="Buffalo Bills" />
+        </div>
       </div>
     </section>
   );
@@ -443,14 +459,17 @@ function PlayStreakCard() {
 
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-[12px]">
+    // items-baseline aligns the bottoms of the two text spans
+    // even though they're different sizes — values and labels
+    // sit on the same reading line instead of centre-floating.
+    <div className="flex items-baseline gap-[12px]">
       <span
         className="flex-1 text-[13px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
-        style={{ opacity: 0.65 }}
+        style={{ opacity: 0.5 }}
       >
         {label}
       </span>
-      <span className="text-[15px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] text-right">
+      <span className="text-[16px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] text-right">
         {value}
       </span>
     </div>
@@ -498,13 +517,15 @@ function DayPip({
   return (
     <div className="flex flex-col items-center gap-[6px]">
       <span
-        className="text-[11px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
+        className="text-[11px] font-bold uppercase text-[var(--mrq-blue-dark)]"
         style={{
           letterSpacing: 0.4,
           // Today's label sits at full opacity so the user can
           // still pick out "now" when every day in the week has
-          // been hit and the fires look uniform.
-          opacity: isToday ? 1 : 0.55,
+          // been hit and the fires look uniform. Non-today drops
+          // to 45% — quieter than 55% so the fires (and the
+          // streak count above) stay the eye's anchor.
+          opacity: isToday ? 1 : 0.45,
         }}
       >
         {label}
