@@ -359,96 +359,109 @@ const STREAK_DAYS: StreakDay[] = [
 function PlayStreakCard() {
   return (
     <section
-      // Tighter vertical rhythm (py 12→10, gap 10→8) — ~17% off
-      // the card's height so it reads as a premium summary
-      // rather than a chunky form.
-      className="rounded-[14px] bg-white px-[14px] py-[10px] flex flex-col gap-[8px]"
+      // Parent gap bumped 8 → 10 so the divider and weekly
+      // summary block each get a clear beat of breathing room
+      // from the streak block above; the streak block itself
+      // uses a tighter 6-px inner gap so its header + pips
+      // remain visually bound together as one unit.
+      className="rounded-[14px] bg-white px-[14px] py-[10px] flex flex-col gap-[10px]"
       style={{ border: "1px solid #e6e6e7" }}
     >
-      {/* Streak hero — the "4" is now the unambiguous focal
-          point at 28px (up from 22). The "day Play Streak" tail
-          drops to 12px / 50% opacity so it reads as a soft
-          descriptor next to the headline number, not a co-
-          equal label fighting for attention. */}
-      <p className="flex items-baseline gap-[6px] leading-tight">
-        <span className="text-[28px] font-extrabold text-[var(--mrq-blue-dark)]">
-          4
-        </span>
-        <span
-          className="text-[12px] font-bold text-[var(--mrq-blue-dark)]"
-          style={{ opacity: 0.5 }}
-        >
-          day Play Streak
-        </span>
-      </p>
-
-      {/* Day pips — 7 columns, justified across the card width.
-          Hit days render the fire.svg illustration; miss days are
-          a small hollow hairline circle. Today is marked by the
-          day label sitting at full opacity (others quietened to
-          45%).
-
-          On open, each fire pops in with a staggered spring so
-          the streak builds in front of the user one day at a time
-          (Mon → Tue → Wed → Thu). Static elements — labels and
-          miss circles — render immediately so the row is laid out
-          from frame 0 and the fires drop INTO existing slots
-          instead of pushing things around. delayChildren waits
-          ~350ms for the drawer's slide-in (spring stiffness 360
-          damping 38) to settle before the first pop. */}
-      <div className="flex justify-between">
-        {STREAK_DAYS.map((day, i) => {
-          // Count hits BEFORE this position so the animation
-          // order follows chronological reading (Mon's fire pops
-          // first, Tue's second, …) regardless of how the array
-          // is laid out. Miss days get -1 so their pip skips the
-          // animation path entirely.
-          const hitIndex = day.hit
-            ? STREAK_DAYS.slice(0, i).filter((d) => d.hit).length
-            : -1;
-          return (
-            <DayPip
-              key={`${day.label}-${i}`}
-              label={day.label}
-              hit={day.hit}
-              isToday={day.isToday}
-              hitIndex={hitIndex}
-            />
-          );
-        })}
-      </div>
-
-      {/* "Your Week" inline-text divider. The hairline now CARRIES
-          the section label inside it rather than being a plain
-          rule with a separate heading below — the stats read as
-          a continuation of the streak instead of a bolted-on
-          block. Side spans are hairlines that flex-1 either side
-          of the centred text, so the lines stretch / shrink with
-          the card width while the label stays perfectly centred. */}
-      <div className="flex items-center gap-[10px]">
-        <span
-          aria-hidden
-          className="h-px flex-1"
-          style={{ backgroundColor: "#e6e6e7" }}
-        />
-        <span
-          className="text-[11px] font-semibold text-[var(--mrq-blue-dark)]"
-          style={{ opacity: 0.5 }}
-        >
-          Your Week
-        </span>
-        <span
-          aria-hidden
-          className="h-px flex-1"
-          style={{ backgroundColor: "#e6e6e7" }}
-        />
-      </div>
-
-      {/* Weekly summary rows. Labels quiet (50% opacity), values
-          loud (16px extrabold) — values are the primary element
-          on each row. 6-px inner gap so the three rows read as
-          one tight block rather than three drifting lines. */}
+      {/* Streak block — header + pips bound together by a tight
+          gap-[6px] so they read as one unit. The wider parent
+          gap above the divider then gives the section a clear
+          beat of breathing room before the weekly summary
+          opens. */}
       <div className="flex flex-col gap-[6px]">
+        {/* Streak hero — "4" is the unambiguous focal point at
+            28px. The "Day Streak" tail drops to 12px / font-
+            semibold / 50% opacity so it reads as a soft
+            descriptor next to the headline number rather than a
+            co-equal label. (Title-cased "Day Streak" replaces
+            the earlier "day Play Streak" — fewer words, clearer
+            label, doesn't compete with the count.) */}
+        <p className="flex items-baseline gap-[6px] leading-tight">
+          <span className="text-[28px] font-extrabold text-[var(--mrq-blue-dark)]">
+            4
+          </span>
+          <span
+            className="text-[12px] font-semibold text-[var(--mrq-blue-dark)]"
+            style={{ opacity: 0.5 }}
+          >
+            Day Streak
+          </span>
+        </p>
+
+        {/* Day pips — 7 columns, justified across the card
+            width. Hit days render fire.svg; miss days are a
+            small hollow hairline circle. Today's label sits at
+            full opacity (others 45%).
+
+            On open, each fire pops in with a staggered spring
+            so the streak builds in front of the user one day at
+            a time (Mon → Tue → Wed → Thu). Static elements
+            render immediately so the row is laid out from frame
+            0 and the fires drop INTO existing slots instead of
+            pushing things around. delayChildren waits ~350ms
+            for the drawer slide-in to settle before the first
+            pop. */}
+        <div className="flex justify-between">
+          {STREAK_DAYS.map((day, i) => {
+            // Count hits BEFORE this position so the animation
+            // order follows chronological reading (Mon's fire
+            // pops first, Tue's second, …) regardless of how
+            // the array is laid out. Miss days get -1 so their
+            // pip skips the animation path entirely.
+            const hitIndex = day.hit
+              ? STREAK_DAYS.slice(0, i).filter((d) => d.hit).length
+              : -1;
+            return (
+              <DayPip
+                key={`${day.label}-${i}`}
+                label={day.label}
+                hit={day.hit}
+                isToday={day.isToday}
+                hitIndex={hitIndex}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* "Weekly Summary" embedded-label divider. Lines use
+          brand navy at 8% opacity (lighter than the previous
+          #e6e6e7 solid grey) so they recede; -mx-[14px] /
+          px-[6px] pushes the rule almost edge-to-edge of the
+          card so the label sits squarely inside the divider
+          rather than above a truncated stub. The label drops to
+          10-px uppercase / extrabold / letter-spaced — reads as
+          a small-caps section tag embedded in the line, not a
+          floating heading above it. */}
+      <div className="-mx-[14px] flex items-center gap-[8px] px-[6px]">
+        <span
+          aria-hidden
+          className="h-px flex-1"
+          style={{ backgroundColor: "rgba(11, 37, 149, 0.08)" }}
+        />
+        <span
+          className="text-[10px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
+          style={{ opacity: 0.4, letterSpacing: 0.7 }}
+        >
+          Weekly Summary
+        </span>
+        <span
+          aria-hidden
+          className="h-px flex-1"
+          style={{ backgroundColor: "rgba(11, 37, 149, 0.08)" }}
+        />
+      </div>
+
+      {/* Weekly summary rows. Labels quieter (12px / 45%
+          opacity) so they read as captions; values primary
+          (16px extrabold) so the data is the focal point on
+          each line. 4-px inner gap pulls the three rows into
+          one tight cluster rather than three drifting lines. */}
+      <div className="flex flex-col gap-[4px]">
         <StatRow label="Games Played" value="27" />
         <StatRow label="Biggest Win" value="£487" />
         <StatRow label="Favourite Game" value="Buffalo Bills" />
@@ -464,8 +477,8 @@ function StatRow({ label, value }: { label: string; value: string }) {
     // sit on the same reading line instead of centre-floating.
     <div className="flex items-baseline gap-[12px]">
       <span
-        className="flex-1 text-[13px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
-        style={{ opacity: 0.5 }}
+        className="flex-1 text-[12px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
+        style={{ opacity: 0.45 }}
       >
         {label}
       </span>
