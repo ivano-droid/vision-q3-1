@@ -132,68 +132,59 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col gap-[16px] px-[16px] py-[16px]">
-      {/* Account card — single white surface that groups the avatar,
-          name + balance, and the Withdraw / Deposit CTAs. Reads as
-          one "this is you" panel at the top of the drawer instead
-          of two separate rows. Padding sized to match the menu-
-          group rows below so the whole column shares one rhythm. */}
-      <section
-        className="rounded-[18px] bg-white p-[20px]"
-        style={{ border: "1px solid #e6e6e7" }}
-      >
-        {/* Avatar (big) + identity stack on the right. Avatar sized
-            so its diameter roughly matches the height of both CTAs
-            stacked — anchors the card visually without pushing the
-            name off-screen on narrow drawers. */}
-        <header className="flex items-center gap-[16px]">
-          <div className="relative size-[88px] shrink-0 rounded-full overflow-hidden bg-white">
-            <Image
-              src="/assets/avatar.png"
-              alt=""
-              fill
-              sizes="88px"
-              className="object-cover"
-            />
-          </div>
-          <div className="flex min-w-0 flex-col gap-[2px]">
-            <p className="text-[22px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] truncate">
-              Leigh Taylor
-            </p>
-            {/* Static balance — must NOT animate on every drawer
-                open (same bug class as the BrandBar wallet pre-fix:
-                a CountUpAmount here would replay every time the
-                drawer mounts, which is on every open). Static text
-                stays in sync with the BrandBar's £113.48 resting
-                value once that count-up has settled. */}
-            <p className="text-[18px] font-bold leading-tight text-[var(--mrq-blue-dark)]">
-              £113.48
-            </p>
-          </div>
-        </header>
-
-        {/* Withdraw / Deposit — taller + larger type than before
-            so they read as primary actions inside the card rather
-            than menu rows. Withdraw stays white-on-white with the
-            same hairline border the card uses; Deposit is the
-            brand-blue primary. */}
-        <div className="grid grid-cols-2 gap-[10px] mt-[16px]">
-          <button
-            type="button"
-            className="flex items-center justify-center gap-[8px] h-[54px] rounded-[14px] bg-[#f2f3f3] text-[var(--mrq-blue-dark)] text-[17px] font-extrabold active:scale-[0.98] transition-transform"
-          >
-            <MinusIcon className="size-[16px]" />
-            Withdraw
-          </button>
-          <button
-            type="button"
-            onClick={goToDeposit}
-            className="flex items-center justify-center gap-[8px] h-[54px] rounded-[14px] bg-mrq-blue text-white text-[17px] font-extrabold active:scale-[0.98] transition-transform"
-          >
-            <PlusIcon className="size-[16px]" />
-            Deposit
-          </button>
+      {/* Avatar (big) + identity stack on the right, painted directly
+          on the drawer's #f2f3f3 surface — no wrapping card. Avatar
+          sized so its diameter roughly matches the height of both
+          CTAs stacked, which anchors the top of the drawer without
+          needing a panel behind it. */}
+      <header className="flex items-center gap-[16px]">
+        <div className="relative size-[88px] shrink-0 rounded-full overflow-hidden bg-white">
+          <Image
+            src="/assets/avatar.png"
+            alt=""
+            fill
+            sizes="88px"
+            className="object-cover"
+          />
         </div>
-      </section>
+        <div className="flex min-w-0 flex-col gap-[2px]">
+          <p className="text-[22px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] truncate">
+            Leigh Taylor
+          </p>
+          {/* Static balance — must NOT animate on every drawer open
+              (same bug class as the BrandBar wallet pre-fix: a
+              CountUpAmount here would replay every time the drawer
+              mounts, which is on every open). Static text stays in
+              sync with the BrandBar's £113.48 resting value once
+              that count-up has settled. */}
+          <p className="text-[18px] font-bold leading-tight text-[var(--mrq-blue-dark)]">
+            £113.48
+          </p>
+        </div>
+      </header>
+
+      {/* Withdraw / Deposit — taller + larger type than the menu
+          rows below so they read as the drawer's primary actions.
+          Withdraw on white-tinted neutral to lift it off the drawer
+          surface; Deposit on brand blue as the primary. */}
+      <div className="grid grid-cols-2 gap-[10px]">
+        <button
+          type="button"
+          className="flex items-center justify-center gap-[8px] h-[54px] rounded-[14px] bg-white text-[var(--mrq-blue-dark)] text-[17px] font-extrabold active:scale-[0.98] transition-transform"
+          style={{ border: "1px solid #e6e6e7" }}
+        >
+          <MinusIcon className="size-[16px]" />
+          Withdraw
+        </button>
+        <button
+          type="button"
+          onClick={goToDeposit}
+          className="flex items-center justify-center gap-[8px] h-[54px] rounded-[14px] bg-mrq-blue text-white text-[17px] font-extrabold active:scale-[0.98] transition-transform"
+        >
+          <PlusIcon className="size-[16px]" />
+          Deposit
+        </button>
+      </div>
 
       {/* Group 1 */}
       <MenuGroup>
