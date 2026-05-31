@@ -427,90 +427,73 @@ function PlayStreakCard() {
         aria-hidden
       />
 
-      {/* Player stats — 3 equal columns sharing the same surface
-          as the streak above. Each column: icon (40-px bounding
-          box, brand-illustration PNG) → value (extrabold brand
-          navy) → label (smaller, low-opacity navy). Values share
-          a 36-px min-height slot so single-line numbers and the
-          two-line "Buffalo Bills" wrap leave the labels on a
-          common baseline. min-w-0 on each column lets long
-          values wrap inside the column instead of expanding it. */}
-      <div className="grid grid-cols-3 gap-[8px]">
-        <StatColumn
+      {/* Player stats — three rows sharing the same card surface
+          as the streak above. Row form (icon | label | value)
+          beats the previous column grid: values are unbounded
+          on the right so 'Buffalo Bills' never wraps, label /
+          value share the same baseline by construction, and the
+          icon column stays a tidy 40-px gutter on the left. */}
+      <div className="flex flex-col gap-[10px]">
+        <StatRow
           icon="/assets/gamesplayed.png"
-          value="27"
           label="Games Tried"
+          value="27"
         />
-        <StatColumn
+        <StatRow
           icon="/assets/trophy.png"
-          value="£487"
           label="Biggest Win"
+          value="£487"
         />
-        <StatColumn
+        <StatRow
           icon="/assets/favgame.png"
-          value="Buffalo Bills"
           label="Favourite Game"
+          value="Buffalo Bills"
         />
       </div>
     </section>
   );
 }
 
-function StatColumn({
+function StatRow({
   icon,
-  value,
   label,
+  value,
 }: {
   icon: string;
-  value: string;
   label: string;
+  value: string;
 }) {
   return (
-    <div className="flex flex-col items-center min-w-0">
-      {/* Brand-illustration icon. 52×52 bounding box (up from
-          40) so the illustrations have room to breathe — at the
-          smaller size the trophy looked shrunken next to the
-          square-ish heart and the wide controller. items-end
-          on the wrapper sits each illustration on a common
-          baseline regardless of its intrinsic ratio. */}
-      <div
-        className="flex items-end justify-center"
-        style={{ height: 52, marginBottom: 6 }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={icon}
-          alt=""
-          draggable={false}
-          style={{
-            display: "block",
-            maxWidth: 52,
-            maxHeight: 52,
-            objectFit: "contain",
-          }}
-        />
-      </div>
-      {/* Value — 16px extrabold so it reads as the column's
-          headline. No min-height reservation: the values all
-          fit on one line at the column width, and the wasted
-          vertical space made the card feel hollow. */}
+    <div className="flex items-center gap-[12px]">
+      {/* Brand-illustration icon, fixed 36×36 bounding box.
+          object-contain preserves each illustration's intrinsic
+          aspect ratio (trophy tall, controller wide, heart
+          square) so they all read at the same visual scale. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={icon}
+        alt=""
+        draggable={false}
+        className="shrink-0"
+        style={{
+          display: "block",
+          width: 36,
+          height: 36,
+          objectFit: "contain",
+        }}
+      />
+      {/* Label takes the middle, value pins to the right via
+          flex-1 on the label and natural right-alignment on the
+          value. Labels read as soft supporting copy; values as
+          the data the row exists to surface. */}
       <span
-        className="text-center text-[16px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] break-words"
-        style={{ marginBottom: 4 }}
-      >
-        {value}
-      </span>
-      {/* Label — reserved 2-line min-height (~28px at 11px/1.3
-          leading) so the "Favourite Game" wrap doesn't push the
-          column taller than its single-line "Games Tried" /
-          "Biggest Win" siblings. Single-line labels top-align
-          in the slot, which keeps them visually tied to the
-          value above instead of floating mid-air. */}
-      <span
-        className="text-center text-[11px] font-bold leading-[1.3] text-[var(--mrq-blue-dark)] block"
-        style={{ opacity: 0.55, minHeight: 28 }}
+        className="flex-1 text-[13px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
+        style={{ opacity: 0.65 }}
       >
         {label}
+      </span>
+      <span className="text-[15px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] text-right">
+        {value}
       </span>
     </div>
   );
