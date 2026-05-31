@@ -327,12 +327,6 @@ function MenuItem({
 
 /* ----------- Play Streak card ----------- */
 
-// Brand-of-fire orange — warm enough to read as "streak / heat" but
-// not the saturated red that would clash with the brand-navy text
-// next to it. Used for both the header flame and the filled day
-// pips so the card has one accent colour instead of two.
-const STREAK_ACCENT = "#F97316";
-
 // Prototype state — Mon–Sun for the current week with a 4-day
 // streak ending Thursday (today). When the back-end's wired we'd
 // derive `hit` from the player's session log keyed by day-of-week
@@ -411,33 +405,56 @@ function DayPip({
   hit: boolean;
   isToday: boolean;
 }) {
+  // Fixed height for the content row so the day initials stay
+  // baseline-aligned across hit / miss columns even though the
+  // fire SVG and the hollow miss-circle have different intrinsic
+  // dimensions.
+  const ROW_H = 31;
+  // The fire SVG's intrinsic 80×103 ratio — width 24 → height 31.
+  const FIRE_W = 24;
+  const FIRE_H = 31;
+  // Hollow miss-day circle sized to roughly match the fire's
+  // visual mass so a partially-hit week still feels balanced.
+  const MISS_DIAM = 22;
   return (
     <div className="flex flex-col items-center gap-[6px]">
       <span
         className="text-[11px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
-        style={{ letterSpacing: 0.4, opacity: 0.55 }}
+        style={{
+          letterSpacing: 0.4,
+          // Today's label sits at full opacity so the user can
+          // still pick out "now" when every day in the week has
+          // been hit and the fires look uniform.
+          opacity: isToday ? 1 : 0.55,
+        }}
       >
         {label}
       </span>
-      <span
-        className="grid place-items-center size-[28px] rounded-full"
-        style={{
-          backgroundColor: hit ? STREAK_ACCENT : "transparent",
-          border: hit
-            ? isToday
-              ? `2px solid ${STREAK_ACCENT}`
-              : "none"
-            : "1.5px solid #e6e6e7",
-          // Subtle white ring around today's pip so it's obvious
-          // even when the streak is unbroken (all days look
-          // filled otherwise — easy to miss which one is "now").
-          boxShadow: isToday
-            ? `0 0 0 2px #ffffff, 0 0 0 4px ${STREAK_ACCENT}`
-            : undefined,
-        }}
+      <div
+        className="flex items-end justify-center"
+        style={{ height: ROW_H }}
       >
-        {hit && <FlameIcon className="size-[14px] text-white" />}
-      </span>
+        {hit ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src="/assets/fire.svg"
+            alt=""
+            width={FIRE_W}
+            height={FIRE_H}
+            draggable={false}
+            style={{ display: "block" }}
+          />
+        ) : (
+          <span
+            className="rounded-full self-center"
+            style={{
+              width: MISS_DIAM,
+              height: MISS_DIAM,
+              border: "1.5px solid #e6e6e7",
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -464,31 +481,6 @@ function HeartIcon() {
 }
 function GiftIcon() {
   return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="size-full" aria-hidden><rect x="2.5" y="6" width="15" height="3.5" rx="0.5" /><path d="M4 9.5V17a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5" /><path d="M10 6v12" /><path d="M10 6c-1.25-1.6-4.6-1.6-4.6 0 0 .85.85 1.3 2.1 1.3 1.25 0 2.5-.45 2.5-1.3Z" /><path d="M10 6c1.25-1.6 4.6-1.6 4.6 0 0 .85-.85 1.3-2.1 1.3-1.25 0-2.5-.45-2.5-1.3Z" /></svg>;
-}
-function FlameIcon({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  // Filled flame — single-path streak/fire glyph. Two lobes: an
-  // outer flame that points up and a smaller inner cut so the
-  // shape reads as fire rather than a teardrop. Filled (not
-  // stroked) so it stays legible at the 14px mini size used
-  // inside the day pips as well as the 36px hero size in the
-  // card header.
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      style={style}
-      aria-hidden
-    >
-      <path d="M13.5 1.5c.3 2.3 1.5 4 3 5.5 2 2 3.5 4 3.5 7a8 8 0 0 1-16 0c0-2.4 1-4.3 2.4-5.8.4.7.9 1.3 1.6 1.6.4-2 1.7-4 5.5-8.3zM12 20a3.5 3.5 0 0 0 3.5-3.5c0-1.3-.7-2.3-1.5-3.3-.7.6-1.5 1-2.2 1 .4-1.4 0-2.7-1-4-.7 1-1.3 2-1.3 3.5 0 1 .4 2 .8 2.8.5 1 1.7 3.5 1.7 3.5z" />
-    </svg>
-  );
 }
 function DiamondIcon() {
   // Gem/diamond outline — trapezoidal top + V bottom + a horizontal
