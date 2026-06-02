@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useShell } from "@/lib/filter-context";
 
 /**
- * Branded splash for the returning user (Figma 318:94603).
+ * Branded splash for the returning user (Figma 273:66782).
  *
  *   ┌─────────────────────────────┐
  *   │                             │
@@ -14,16 +14,16 @@ import { useShell } from "@/lib/filter-context";
  *   │   LOVE TO HATE              │
  *   │                             │
  *   │                             │
- *   │       [character]           │  ← Mr Q character, slides up
- *   │                             │     from below + fades in
+ *   │   All winnings              │  ← fades in from the LEFT
+ *   │        paid in cash         │  ← fades in from the RIGHT
+ *   │                             │
  *   └─────────────────────────────┘
  *
- * The tagline is rendered from a flattened SVG (Figma 273:66869)
- * — the type was already outlined in the source design, so we
- * ship the exact strokes rather than re-typesetting in webfonts.
- * This sidesteps any font-loading flicker on first paint. The
- * character is a PNG (man_splash.png) anchored to the bottom of
- * the splash.
+ * The tagline and bottom block are rendered from flattened SVGs
+ * (Figma 273:66869 / 273:66872 / 273:66879) — the type was already
+ * outlined in the source design, so we ship the exact strokes
+ * rather than re-typesetting in webfonts. This sidesteps any
+ * font-loading flicker on first paint.
  *
  * Plays for ~2600 ms on every app open ONLY if the user has the
  * `hasLoggedIn` flag set in localStorage. First-time users get the
@@ -163,46 +163,81 @@ export function SimpleSplashGate() {
           </div>
 
           {/* ───────────────────────────────────────────────
-              BOTTOM BLOCK — Mr Q character (man_splash.png).
-              Anchored to the BOTTOM-RIGHT edge of the splash so
-              the character leans into the corner like a poster
-              edge rather than sitting centred on a pedestal.
-              Slides up from 64-px below its resting position +
-              fades in from 0, ~0.4 s after the tagline so it
-              reads as the third beat in the choreography
-              (logo → tagline → character).
+              BOTTOM BLOCK — "All winnings / paid in cash".
+              Each line is a flattened SVG lifted from the Figma
+              source (273:66872 and 273:66879). Both SVGs share
+              the same viewBox height (49.2px), so rendering both
+              at the same height ratio keeps the strokes at the
+              identical visual scale the designer drew them at.
+              Line 1 slides in from the left; line 2 slides in
+              from the right with a small delay so the two beats
+              read sequentially.
               ─────────────────────────────────────────────── */}
           {active && (
             <div
               style={{
                 marginTop: "auto",
+                paddingLeft: 24,
+                paddingRight: 24,
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 56px)",
                 display: "flex",
-                justifyContent: "flex-end",
-                pointerEvents: "none",
+                flexDirection: "column",
+                // Centre the stagger block horizontally inside
+                // the splash. The inner wrapper sizes itself to
+                // the wider of the two staggered lines (line 2's
+                // right edge wins because of the indent), so the
+                // whole block lands in the middle of the screen
+                // rather than hugging the left edge.
+                alignItems: "center",
               }}
             >
-              <motion.img
-                src="/assets/man_splash.png"
-                alt=""
-                draggable={false}
-                initial={{ y: 64, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: 0.42,
-                }}
-                style={{
-                  display: "block",
-                  // ~85% of the mobile-frame column — a touch
-                  // bigger than before so the character has real
-                  // presence, but still leaves room on the left
-                  // for the brand-blue surface to breathe.
-                  width: "85%",
-                  maxWidth: 400,
-                  height: "auto",
-                }}
-              />
+              {/* Stagger wrapper — width sized to its widest
+                  child via fit-content, so the centering works
+                  off the visual bounding box of the diagonal
+                  arrangement (line 1 left-aligned, line 2 indented
+                  to put its "p" under line 1's "w"). */}
+              <div style={{ width: "fit-content" }}>
+                <motion.img
+                  src="/assets/splash/allwinnings.svg"
+                  alt=""
+                  draggable={false}
+                  initial={{ x: -56, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{
+                    duration: 0.55,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0.38,
+                  }}
+                  style={{
+                    display: "block",
+                    height: 48,
+                    width: "auto",
+                  }}
+                />
+                <motion.img
+                  src="/assets/splash/paidincash.svg"
+                  alt=""
+                  draggable={false}
+                  initial={{ x: 56, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{
+                    duration: 0.55,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0.58,
+                  }}
+                  style={{
+                    display: "block",
+                    height: 48,
+                    width: "auto",
+                    // Indents "paid in cash" so the "p" lands
+                    // roughly under the "w" of "winnings" above.
+                    marginLeft: 64,
+                    // Small positive offset for a proper bold-
+                    // display line-height (~1.2).
+                    marginTop: 8,
+                  }}
+                />
+              </div>
             </div>
           )}
         </motion.div>
