@@ -285,10 +285,13 @@ export function LoginGate() {
                 </div>
               </div>
 
-              {/* CTA stack */}
+              {/* CTA stack — tighter 12-px gap pulls 'Log in' and
+                  'Log in with Google' close to each other with
+                  the 'or' divider as a small visual breather
+                  rather than a hard separator. */}
               <div
                 className="flex flex-col items-stretch w-full"
-                style={{ gap: 20, paddingTop: 12 }}
+                style={{ gap: 12, paddingTop: 12 }}
               >
                 <button
                   type="submit"
