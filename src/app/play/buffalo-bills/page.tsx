@@ -56,8 +56,9 @@ export default function BuffaloBillsPage() {
             transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
           >
             <GameLoadingScreen
-              gameLogo="/assets/buffalo_bills_logo_loading.png"
+              gameLogo="/assets/BB_asset_loading.png"
               rtp="92.99%"
+              gameLogoWidth={150}
             />
           </motion.div>
         )}

@@ -30,7 +30,7 @@ import { motion, useReducedMotion } from "framer-motion";
  *
  * Assets the consumer must provide:
  *   • /assets/q_approved_loading.png  — circular brand-mark badge
- *   • /assets/picked_by_nerds_loading.png — outlined sticker text
+ *   • /assets/thisgame_loading.png    — outlined sticker text
  *     ("This game was picked by our casino nerds" + sub-line)
  *   • Game-specific logo passed as the `gameLogo` prop
  *
@@ -79,19 +79,25 @@ export function GameLoadingScreen({
       style={{
         left: "var(--frame-right-offset)",
         right: "var(--frame-right-offset)",
-        // Brand blue — matches /assets/q-approved.svg's stamp
-        // background and the rest of the brand surfaces.
+        // Brand blue — matches /assets/q_approved_loading.png's
+        // stamp background and the rest of the brand surfaces.
         backgroundColor: "var(--mrq-blue, #0a2ecb)",
-        // Top safe-area inset keeps the Q badge clear of the
-        // notch/island on iPhone; bottom inset eats the home-
-        // indicator gap.
-        paddingTop: "calc(env(safe-area-inset-top) + 80px)",
+        // Top padding sized so the Q badge's top edge sits at
+        // ~20% from the viewport top, matching Figma 317:93585
+        // (Q badge y=376 / frame=1920 → 19.6% from top). On
+        // iPhone with a 47-px safe-area-inset-top, 47+100=147
+        // lands ~17% on iPhone 14's 844-tall viewport; close
+        // enough that the badge feels suspended in the upper
+        // third rather than hugging the top edge.
+        paddingTop: "calc(env(safe-area-inset-top) + 100px)",
         paddingBottom: "env(safe-area-inset-bottom)",
         paddingLeft: 24,
         paddingRight: 24,
       }}
     >
-      {/* Q Approved badge — first beat */}
+      {/* Q Approved badge — first beat. Sized to 130 px so it
+          matches the Figma ratio of 30% of frame width on a
+          375-px mobile column. */}
       <motion.img
         src="/assets/q_approved_loading.png"
         alt=""
@@ -100,17 +106,21 @@ export function GameLoadingScreen({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={transition(0.15)}
         style={{
-          width: 140,
-          height: 140,
+          width: 130,
+          height: 130,
           objectFit: "contain",
           display: "block",
         }}
       />
 
       {/* Sticker — second beat. Lands with a tiny tilt-settle
-          so it feels stamped onto the surface, not faded in. */}
+          so it feels stamped onto the surface, not faded in.
+          maxWidth 300 keeps it at ~80% of mobile-frame width
+          per the Figma (sticker is 880/1080 ≈ 81% in the
+          design). marginTop 56 gives the Q→sticker gap room to
+          breathe — Figma has ~10% of viewport between them. */}
       <motion.img
-        src="/assets/picked_by_nerds_loading.png"
+        src="/assets/thisgame_loading.png"
         alt="This game was picked by our casino nerds"
         draggable={false}
         initial={{ scale: 0.7, opacity: 0, rotate: -3 }}
@@ -118,9 +128,9 @@ export function GameLoadingScreen({
         transition={transition(0.45)}
         style={{
           width: "100%",
-          maxWidth: 320,
+          maxWidth: 300,
           height: "auto",
-          marginTop: 36,
+          marginTop: 56,
           display: "block",
         }}
       />
