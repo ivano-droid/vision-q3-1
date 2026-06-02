@@ -164,19 +164,20 @@ export function SimpleSplashGate() {
 
           {/* ───────────────────────────────────────────────
               BOTTOM BLOCK — Mr Q character (man_splash.png).
-              Anchored flush to the bottom edge of the splash so
-              the character feels grounded on the surface rather
-              than floating in space. Slides up from 64-px below
-              its resting position + fades in, ~0.4 s after the
-              tagline so it reads as the third beat in the
-              choreography (logo → tagline → character).
+              Anchored to the BOTTOM-RIGHT edge of the splash so
+              the character leans into the corner like a poster
+              edge rather than sitting centred on a pedestal.
+              Slides up from 64-px below its resting position +
+              fades in from 0, ~0.4 s after the tagline so it
+              reads as the third beat in the choreography
+              (logo → tagline → character).
               ─────────────────────────────────────────────── */}
           {active && (
             <div
               style={{
                 marginTop: "auto",
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "flex-end",
                 pointerEvents: "none",
               }}
             >
@@ -187,17 +188,18 @@ export function SimpleSplashGate() {
                 initial={{ y: 64, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{
-                  duration: 0.6,
+                  duration: 0.7,
                   ease: [0.22, 1, 0.36, 1],
                   delay: 0.42,
                 }}
                 style={{
                   display: "block",
-                  // ~72% of the mobile-frame column so the
-                  // character sits comfortably anchored at the
-                  // bottom without dominating the splash.
-                  width: "72%",
-                  maxWidth: 320,
+                  // ~85% of the mobile-frame column — a touch
+                  // bigger than before so the character has real
+                  // presence, but still leaves room on the left
+                  // for the brand-blue surface to breathe.
+                  width: "85%",
+                  maxWidth: 400,
                   height: "auto",
                 }}
               />
