@@ -29,8 +29,8 @@ import { motion, useReducedMotion } from "framer-motion";
  * correctly without animation.
  *
  * Assets the consumer must provide:
- *   • /assets/q-approved.svg          — circular brand-mark badge
- *   • /assets/picked-by-nerds.svg     — outlined sticker text
+ *   • /assets/q_approved_loading.png  — circular brand-mark badge
+ *   • /assets/picked_by_nerds_loading.png — outlined sticker text
  *     ("This game was picked by our casino nerds" + sub-line)
  *   • Game-specific logo passed as the `gameLogo` prop
  *
@@ -93,7 +93,7 @@ export function GameLoadingScreen({
     >
       {/* Q Approved badge — first beat */}
       <motion.img
-        src="/assets/q-approved.svg"
+        src="/assets/q_approved_loading.png"
         alt=""
         draggable={false}
         initial={{ scale: 0.55, opacity: 0, y: -20 }}
@@ -110,7 +110,7 @@ export function GameLoadingScreen({
       {/* Sticker — second beat. Lands with a tiny tilt-settle
           so it feels stamped onto the surface, not faded in. */}
       <motion.img
-        src="/assets/picked-by-nerds.svg"
+        src="/assets/picked_by_nerds_loading.png"
         alt="This game was picked by our casino nerds"
         draggable={false}
         initial={{ scale: 0.7, opacity: 0, rotate: -3 }}
