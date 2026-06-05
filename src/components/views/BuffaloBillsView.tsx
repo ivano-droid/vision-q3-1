@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { useShell } from "@/lib/filter-context";
-import { GameTileInfo } from "@/components/GameTileInfo";
 import { getGameDetails } from "@/lib/games-catalogue";
 
 /**
@@ -405,7 +404,6 @@ function GameInfoCard() {
 /* Similar games tile — tap launches the game (when known) or
    stubs; the i chip opens the quick-look sheet. */
 function SimilarGameTile({ src, alt }: { src: string; alt: string }) {
-  const { openGameDetails } = useShell();
   const details = getGameDetails(alt, src);
   return (
     <button
@@ -439,7 +437,6 @@ function SimilarGameTile({ src, alt }: { src: string; alt: string }) {
         className="absolute inset-0 size-full object-cover"
         draggable={false}
       />
-      <GameTileInfo onClick={() => openGameDetails(details)} />
     </button>
   );
 }

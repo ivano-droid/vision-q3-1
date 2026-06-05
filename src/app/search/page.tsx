@@ -3,14 +3,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  CategoryMegaCardsRail,
-  type MegaCardCategory,
-} from "@/components/rails/CategoryMegaCardsRail";
 import { GameRail } from "@/components/rails/GameRail";
 import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
 import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
-import { BINGO_TILES } from "@/lib/bingo-rooms";
 import {
   SEARCHABLE_GAMES,
   getAllProviders,
@@ -136,59 +131,6 @@ const G = (i: number, alt: string) => ({
   alt,
 });
 
-const TILES_HOT = [
-  G(1, "Buffalo Bills"),
-  G(7, "Mummy Mania"),
-  G(11, "Maze Escape"),
-  G(13, "Snake Arena"),
-  G(4, "Jewel Stepper"),
-  G(8, "Tiki Tumble"),
-];
-
-// Game tile pools used by the mega-cards rail. The standalone Slots /
-// Quick games / Live Casino rails that used to live further down the
-// page were removed (per the Explore redesign — Figma 133:39525) in
-// favour of the Discover new games circular row up top + the Browse
-// all categories grid at the bottom.
-//
-// Live Casino uses real dealer-table art from /public/assets/live/
-// (a mix of "popular" titles and table-game thumbnails) so the
-// preview is honest — the user sees the kind of content that
-// actually lives behind the slide, not generic slot reels.
-const TILES_LIVE_CASINO = [
-  { src: "/assets/live/popular-01.png", alt: "Popular live game 1" },
-  { src: "/assets/live/table-01.png", alt: "Live table 1" },
-  { src: "/assets/live/popular-02.png", alt: "Popular live game 2" },
-  { src: "/assets/live/table-02.png", alt: "Live table 2" },
-  { src: "/assets/live/popular-03.png", alt: "Popular live game 3" },
-  { src: "/assets/live/table-03.png", alt: "Live table 3" },
-];
-
-// Bingo uses the real MrQ bingo lobby room art (five 1:1 room
-// thumbnails) — same catalogue the /bingo page renders from. Only
-// five unique rooms exist, so the sixth slot repeats Tropic Like
-// It's Hot in the bottom-right corner, arranged so no column or
-// horizontal pair stacks the same room:
-//   row 1: tropic        | cheap-as-chips | dab-and-disco
-//   row 2: on-the-house  | pinch-a-penny  | tropic
-const TILES_BINGO = [
-  ...BINGO_TILES,
-  BINGO_TILES[0], // repeat the flagship in slot 6
-];
-
-// Real arena artwork — the same set of "eligible games" used on
-// /arena's leaderboard rails. Keeps the mega-card preview honest:
-// what the user sees here is exactly what they'll see in the Arena
-// experience itself, not generic slot art.
-const TILES_ARENA = [
-  { src: "/assets/arena/eligible-1.png", alt: "Arena eligible 1" },
-  { src: "/assets/arena/eligible-2.png", alt: "Arena eligible 2" },
-  { src: "/assets/arena/eligible-3.png", alt: "Arena eligible 3" },
-  { src: "/assets/arena/eligible-4.png", alt: "Arena eligible 4" },
-  { src: "/assets/arena/eligible-5.png", alt: "Arena eligible 5" },
-  { src: "/assets/arena/eligible-6.png", alt: "Arena eligible 6" },
-];
-
 // Three side-scrolling rails that sit between the Casino mega-card
 // and Browse all categories. Same slot-NN art pool, just sequenced
 // differently so each rail feels distinct.
@@ -220,52 +162,6 @@ const TILES_PICKED_BY_Q = [
   G(1, "Buffalo Bills"),
   G(7, "Mummy Mania"),
   G(5, "Golden Catch"),
-];
-
-// Category mega-cards (Casino, Live Casino, Bingo, Arena) — each is
-// a wide card with a category icon + a small embedded grid of 6
-// games. Icons are the new flat MrQ-blue line/fill icons (Figma
-// node 173:30744) — not the colourful "burst" illustration
-// stickers used on the Start Browsing tiles. They're cleaner on a
-// busy white card.
-const MEGA_CATEGORIES: MegaCardCategory[] = [
-  {
-    key: "casino",
-    title: "Casino",
-    subtitle: "Hot Right Now",
-    sticker: "/assets/mega/casino.svg",
-    tiles: TILES_HOT.slice(0, 6),
-    // "See all" lands on the curated casino homepage (the same
-    // destination the Start Browsing Casino sticker uses).
-    seeAllHref: "/casino",
-  },
-  {
-    key: "live",
-    title: "Live Casino",
-    subtitle: "Hot Right Now",
-    sticker: "/assets/mega/live.svg",
-    tiles: TILES_LIVE_CASINO.slice(0, 6),
-    // /live is now a real Live Casino lobby (mirrors /casino).
-    seeAllHref: "/live",
-  },
-  {
-    key: "bingo",
-    title: "Bingo",
-    subtitle: "Hot Right Now",
-    sticker: "/assets/mega/bingo.svg",
-    tiles: TILES_BINGO.slice(0, 6),
-    // /bingo is a real lobby page now.
-    seeAllHref: "/bingo",
-  },
-  {
-    key: "arena",
-    title: "Arena",
-    subtitle: "Hot Right Now",
-    sticker: "/assets/mega/arena.svg",
-    tiles: TILES_ARENA.slice(0, 6),
-    // Arena has a real dashboard at /arena, so wire See all to it.
-    seeAllHref: "/arena",
-  },
 ];
 
 // Browse all categories — 2-col grid of navigation cards.
@@ -497,8 +393,6 @@ export default function SearchPage() {
           fullscreen overlay just covers it when the modal opens. */}
       <div className="flex flex-col pt-[14px]">
         <StartBrowsing items={BROWSE} />
-        <CategoryMegaCardsRail categories={MEGA_CATEGORIES} />
-
         {/* Three editorial rails — promotional rows that sit between
             the category mega-card and the full Browse-all-categories
             grid. Reuses GameRail (same component the lobby + Casino

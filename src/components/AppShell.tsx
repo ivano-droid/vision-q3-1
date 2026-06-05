@@ -7,7 +7,6 @@ import { BrandBar } from "./BrandBar";
 import { BottomNav } from "./BottomNav";
 import { SideNav } from "./SideNav";
 import { DepositSheet } from "./DepositSheet";
-import { GameDetailsSheet } from "./GameDetailsSheet";
 import { LoginGate } from "./LoginGate";
 import { ResumePlayingBar } from "./ResumePlayingBar";
 import { SimpleSplashGate } from "./SimpleSplashGate";
@@ -54,8 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // step around the leaderboard); the shell just provides matching
   // surfaces so the BrandBar curve wedge and any overscroll show
   // the right colour.
-  const isBrandSurface =
-    pathname.startsWith("/rewards") || pathname.startsWith("/arena");
+  const isBrandSurface = pathname.startsWith("/arena");
   const BRAND_TOP_BG = "#0a2ecb"; // brand-blue (matches BrandBar)
   const BRAND_BOTTOM_BG = "#0C2287"; // Brand/900 — darker blue
 
@@ -91,22 +89,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   // search input.
   const isSearchSurface = pathname.startsWith("/search");
 
-  // Skip the cross-route fade-up wrapper on any surface that
-  // owns its own entrance motion. Otherwise every BottomNav tap
-  // / link cross-fades content over ~260ms using the same
-  // curve the rails use (cubic-bezier(0.22, 1, 0.36, 1)) so the
-  // route transition reads as part of the existing motion
-  // system, not a new flavour layered on top.
-  //
-  // /rewards and /arena are added here for the same reason as
-  // /search: the page paints its own brand-blue/dark surface at
-  // the top, and the y:6→0 wrapper would briefly expose the
-  // darker BRAND_BOTTOM_BG sitting underneath as a hairline
-  // strip on mount.
+  // /casino and /live routes have a sticky sub-nav. CSS sticky inside a
+  // Framer Motion transform wrapper loses its viewport anchor,
+  // so skip the y:6→0 transition for these routes.
+  const isCasinoSurface = pathname.startsWith("/casino") || pathname.startsWith("/live");
+
   const skipPageTransition =
     ownsChrome ||
     isDiscoverSurface ||
     isSearchSurface ||
+    isCasinoSurface ||
     isBrandSurface ||
     reduce === true;
 
@@ -189,7 +181,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!ownsChrome && <ResumePlayingBar />}
         <SideNav />
         <DepositSheet />
-        <GameDetailsSheet />
       </div>
 
       {/* Boot-time gate stack. All three components render visible

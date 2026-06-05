@@ -39,6 +39,9 @@ yarn-error.log*
 # local tooling (Claude Code session config)
 .claude/
 
+# MCP config — contains API tokens, never commit
+.mcp.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

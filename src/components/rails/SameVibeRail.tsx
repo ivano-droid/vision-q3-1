@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
-import { GameTileInfo } from "@/components/GameTileInfo";
-import { useShell } from "@/lib/filter-context";
 import { getGameDetails } from "@/lib/games-catalogue";
 
 /**
@@ -28,7 +26,6 @@ export type SameVibeCard = { src: string; alt: string };
    known) or stubs; the i chip opens the quick-look sheet. */
 function SameVibeCardTile({ card }: { card: SameVibeCard }) {
   const router = useRouter();
-  const { openGameDetails } = useShell();
   const details = getGameDetails(card.alt, card.src);
 
   return (
@@ -66,11 +63,6 @@ function SameVibeCardTile({ card }: { card: SameVibeCard }) {
       {/* Landscape cards are taller — scale the badge up a
           touch so it doesn't get lost against the larger
           surface, but keep it well in the corner. */}
-      <GameTileInfo
-        size={44}
-        chipSize={24}
-        onClick={() => openGameDetails(details)}
-      />
     </div>
   );
 }

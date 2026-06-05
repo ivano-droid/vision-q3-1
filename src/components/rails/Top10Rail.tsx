@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
-import { GameTileInfo } from "@/components/GameTileInfo";
-import { useShell } from "@/lib/filter-context";
 import { getGameDetails } from "@/lib/games-catalogue";
 
 /**
@@ -77,7 +75,6 @@ export function Top10Rail({
 
 function Top10Item({ rank, tile }: { rank: number; tile: Top10Tile }) {
   const router = useRouter();
-  const { openGameDetails } = useShell();
   const details = getGameDetails(tile.alt, tile.src);
 
   return (
@@ -112,7 +109,6 @@ function Top10Item({ rank, tile }: { rank: number; tile: Top10Tile }) {
           className="absolute inset-0 h-full w-full object-cover pointer-events-none"
           draggable={false}
         />
-        <GameTileInfo />
       </span>
     </button>
   );

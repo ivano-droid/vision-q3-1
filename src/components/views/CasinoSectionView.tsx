@@ -3,13 +3,9 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { getGameDetails } from "@/lib/games-catalogue";
-import { CATEGORIES, CATEGORY_GRID_TILES } from "@/lib/casino-categories";
+import type { CasinoSection } from "@/lib/casino-sections";
 
-function labelFor(key: string): string {
-  return CATEGORIES.find((c) => c.key === key)?.label ?? key;
-}
-
-function CategoryTile({ tile }: { tile: { src: string; alt: string } }) {
+function SectionTile({ tile }: { tile: { src: string; alt: string } }) {
   const router = useRouter();
   const details = getGameDetails(tile.alt, tile.src);
 
@@ -19,7 +15,7 @@ function CategoryTile({ tile }: { tile: { src: string; alt: string } }) {
       aria-label={tile.alt}
       onClick={() => {
         if (details.href) { router.push(details.href); return; }
-        if (typeof window !== "undefined") console.log("[CasinoCategory] open →", tile.alt);
+        if (typeof window !== "undefined") console.log("[CasinoSection] open →", tile.alt);
       }}
       className="relative aspect-square overflow-hidden rounded-[12px] active:scale-[0.98] transition-transform"
       style={{ boxShadow: "0 4px 12px -4px rgba(10, 46, 203, 0.2)" }}
@@ -35,22 +31,19 @@ function CategoryTile({ tile }: { tile: { src: string; alt: string } }) {
   );
 }
 
-export function CasinoCategoryView({ category }: { category: string }) {
+export function CasinoSectionView({ section }: { section: CasinoSection }) {
   const reduce = useReducedMotion();
-  const tiles = CATEGORY_GRID_TILES[category] ?? [];
 
   return (
-    <>
-      <motion.div
-        className="grid grid-cols-3 gap-[8px] px-[16px] pt-[14px] pb-[24px]"
-        initial={reduce ? false : { opacity: 0, y: 6 }}
-        animate={reduce ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {tiles.map((tile, i) => (
-          <CategoryTile key={`${tile.src}-${i}`} tile={tile} />
-        ))}
-      </motion.div>
-    </>
+    <motion.div
+      className="grid grid-cols-3 gap-[8px] px-[16px] pt-[14px] pb-[24px]"
+      initial={reduce ? false : { opacity: 0, y: 6 }}
+      animate={reduce ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {section.tiles.map((tile, i) => (
+        <SectionTile key={`${tile.src}-${i}`} tile={tile} />
+      ))}
+    </motion.div>
   );
 }

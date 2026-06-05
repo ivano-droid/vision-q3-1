@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
-import { GameTileInfo } from "@/components/GameTileInfo";
-import { useShell } from "@/lib/filter-context";
 import { getGameDetails } from "@/lib/games-catalogue";
 
 /**
@@ -95,7 +93,6 @@ function GameTile({
   height: number;
 }) {
   const router = useRouter();
-  const { openGameDetails } = useShell();
   const details = getGameDetails(alt, src);
 
   return (
@@ -129,7 +126,6 @@ function GameTile({
         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
         draggable={false}
       />
-      <GameTileInfo onClick={() => openGameDetails(details)} />
     </button>
   );
 }

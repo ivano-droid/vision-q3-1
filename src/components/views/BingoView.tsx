@@ -35,7 +35,7 @@ export function BingoView() {
     <>
       {/* In-page header — title only. No CTA pill on bingo since the
           page is single-surface (rooms list lives right below). */}
-      <div className="px-[16px] pt-[16px] pb-[18px]">
+      <div className="bg-white px-[16px] pt-[16px] pb-[18px]">
         <h1 className="text-[28px] font-extrabold leading-none text-[var(--mrq-blue-dark)]">
           Bingo
         </h1>

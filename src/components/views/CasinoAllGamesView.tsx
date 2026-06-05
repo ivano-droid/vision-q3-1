@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { CategoriesSheet } from "../CategoriesSheet";
 import { ChevronDownIcon } from "../CategoryChevron";
-import { GameTileInfo } from "../GameTileInfo";
-import { useShell } from "@/lib/filter-context";
 import { getGameDetails, type GameDetails } from "@/lib/games-catalogue";
 import { ALL_GAMES_TILES, CATEGORIES } from "@/lib/casino-categories";
 
@@ -110,7 +108,6 @@ function AllGamesTile({
   tile: { src: string; alt: string };
 }) {
   const router = useRouter();
-  const { openGameDetails } = useShell();
   const details: GameDetails = getGameDetails(tile.alt, tile.src);
 
   return (
@@ -137,7 +134,6 @@ function AllGamesTile({
         draggable={false}
         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
       />
-      <GameTileInfo onClick={() => openGameDetails(details)} />
     </button>
   );
 }

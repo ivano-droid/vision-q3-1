@@ -14,24 +14,24 @@ import { haptics } from "@/lib/haptics";
  *
  * Bar shape (351 × 60, rounded-full):
  *
- *   ╭─────────────────────────────────────────────────────────╮
- *   │ ╭─────╮              ╭───────╮                  ╭─────╮ │
- *   │ │ ⌂   │   ▶︎       🔍         🎁          │ │ ←─┐
- *   │ ╰─────╯              ╰───────╯                  ╰─────╯ │   │
- *   │ My Q    Top Picks    Explore           Rewards          │  pills
- *   ╰─────────────────────────────────────────────────────────╯
- *      ▲       ▲              ▲                     ▲
- *      80      84             84                    80
+ *   ╭───────────────────────────────────────────╮
+ *   │ ╭─────╮         ╭───────╮         ╭─────╮│
+ *   │ │ ⌂   │        🔍               🎁      ││ ←─┐
+ *   │ ╰─────╯         ╰───────╯         ╰─────╯│   │
+ *   │  My Q            Explore           Rewards│  pills
+ *   ╰───────────────────────────────────────────╯
+ *      ▲                  ▲                  ▲
+ *      80                 84                 80
  *
  * Spacing rule (the key insight from Figma):
  *   • Outer pills (My Q, Rewards) are PINNED at 4px from the bar's
  *     outer edge, and are 80px wide. So they read as having an
  *     intentional gap to the bar's rounded end-cap, identical on
  *     both ends.
- *   • Inner pills (Top Picks, Explore) are 84px wide and centred
- *     on their column. The extra 4px of width pulls them visually
- *     wider than the outer pills, which compensates for the lack
- *     of a bar-edge "anchor" on either side.
+ *   • Inner pill (Explore) is 84px wide and centred on its column.
+ *     The extra 4px of width pulls it visually wider than the outer
+ *     pills, which compensates for the lack of a bar-edge "anchor"
+ *     on either side.
  *
  * Bar internal padding is asymmetric — pl-4 / pr-8 — exactly per
  * Figma. The pr-8 absorbs the 4px gap on the Rewards side AS PART
@@ -47,33 +47,24 @@ import { haptics } from "@/lib/haptics";
  * the pill animates to its new position+width.
  */
 
-// ── Figma constants ────────────────────────────────────────────────
-// Bar width is matched to the ResumePlayingBar's inner card width
-// (mobile-frame 375 minus 12px gutter on each side = 351). Both
-// floating elements above the safe area now occupy the same
-// horizontal footprint, so the nav doesn't read as narrower than
-// the resume bar that sits above it.
-const BAR_MAX_W = 351;
-const BAR_H = 60;
-const BAR_PAD_L = 4; // Figma pl-4
-const BAR_PAD_R = 8; // Figma pr-8 (asymmetric — see notes above)
-const TAB_GAP = 4; // Figma gap-4
-const PILL_W_OUTER = 80; // My Q, Rewards
-const PILL_W_INNER = 84; // Top Picks, Explore (extends into gaps)
-const PILL_H = 52; // Figma h-52
+// ── Geometry ──────────────────────────────────────────────────────
+// 3-tab bar: narrower than the original 4-tab Figma spec.
+// Pill is always centred on whichever tab column is active — no
+// edge-pinning needed with only three equally-spaced items.
+const BAR_MAX_W = 272;
+const BAR_H = 56;
+const BAR_PAD_L = 4;
+const BAR_PAD_R = 4; // symmetric
+const TAB_GAP = 4;
+const PILL_W = 84; // single width for all tabs
+const PILL_H = 48;
 const PILL_TOP = 4;
-const PILL_PINNED_INSET = 4; // outer pills pinned this far from bar's outer edge
 const ICON_SIZE = 24;
-const ICON_LABEL_GAP = 2; // Figma gap-2 between icon and label
-// Bumped from 10 → 11 to align with iOS HIG tab bar conventions
-// (Apple's reference is 10pt, but 11px reads more confidently on
-// modern screen densities and still fits inside the 84px inner
-// pill for "Top Picks" — the longest label). Line-height stays
-// at 16px so the icon + label vertical rhythm doesn't shift.
+const ICON_LABEL_GAP = 2;
 const LABEL_FONT_SIZE = 11;
 const LABEL_LINE_H = 16;
 
-type TabKey = "lobby" | "discover" | "search" | "rewards";
+type TabKey = "lobby" | "search" | "rewards";
 
 type Tab = {
   key: TabKey;
@@ -83,7 +74,6 @@ type Tab = {
   iconActive: string;
 };
 
-const OUTER_TABS = new Set<TabKey>(["lobby", "rewards"]);
 
 const TABS: Tab[] = [
   {
@@ -92,13 +82,6 @@ const TABS: Tab[] = [
     label: "My Q",
     iconInactive: "/assets/nav-icons/my-q-inactive.svg",
     iconActive: "/assets/nav-icons/my-q-active.svg",
-  },
-  {
-    key: "discover",
-    href: "/discover",
-    label: "Top Picks",
-    iconInactive: "/assets/nav-icons/top-picks-inactive.svg",
-    iconActive: "/assets/nav-icons/top-picks-active.svg",
   },
   {
     key: "search",
@@ -121,7 +104,6 @@ const TABS: Tab[] = [
  *  experience which Explore represents. */
 function activeTabFor(pathname: string): TabKey {
   if (pathname === "/" || pathname === "") return "lobby";
-  if (pathname.startsWith("/discover")) return "discover";
   if (pathname.startsWith("/rewards")) return "rewards";
   if (pathname.startsWith("/search")) return "search";
   // /casino, /live, /bingo and /arena are all opened from the Explore
@@ -144,10 +126,7 @@ export function BottomNav() {
   //   everything else      → #ffffff (default for #f5f5f5 routes)
   let scrimSolid = "#ffffff";
   let scrimFade = "rgba(255, 255, 255, 0)";
-  if (
-    pathname.startsWith("/rewards") ||
-    pathname.startsWith("/arena")
-  ) {
+  if (pathname.startsWith("/arena")) {
     scrimSolid = "#0C2287";
     scrimFade = "rgba(12, 34, 135, 0)";
   }
@@ -155,41 +134,22 @@ export function BottomNav() {
   const rowRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<TabKey, HTMLAnchorElement | null>>({
     lobby: null,
-    discover: null,
     search: null,
     rewards: null,
   });
 
-  // Pill state carries BOTH position and width — outer tabs use 80
-  // pinned to a bar edge; inner tabs use 84 centred on their column.
+  // Pill is always centred on the active tab column.
   const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
 
   useLayoutEffect(() => {
     const measure = () => {
       const row = rowRef.current;
-      if (!row) return;
-
-      if (active === "lobby") {
-        // Pinned 4px from bar's left edge.
-        setPill({ x: PILL_PINNED_INSET, w: PILL_W_OUTER });
-        return;
-      }
-      if (active === "rewards") {
-        // Pinned 4px from bar's right edge.
-        const rowWidth = row.getBoundingClientRect().width;
-        setPill({
-          x: rowWidth - PILL_PINNED_INSET - PILL_W_OUTER,
-          w: PILL_W_OUTER,
-        });
-        return;
-      }
-      // Inner tab — centre the wider 84px pill on the column.
       const el = tabRefs.current[active];
-      if (!el) return;
+      if (!row || !el) return;
       const rowRect = row.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
-      const tabCentre = elRect.left - rowRect.left + elRect.width / 2;
-      setPill({ x: tabCentre - PILL_W_INNER / 2, w: PILL_W_INNER });
+      const centre = elRect.left - rowRect.left + elRect.width / 2;
+      setPill({ x: centre - PILL_W / 2, w: PILL_W });
     };
     measure();
     window.addEventListener("resize", measure);
@@ -249,7 +209,7 @@ export function BottomNav() {
             ref={rowRef}
             className="relative mx-auto flex items-center rounded-full"
             style={{
-              maxWidth: BAR_MAX_W,
+              width: BAR_MAX_W,
               height: BAR_H,
               paddingLeft: BAR_PAD_L,
               paddingRight: BAR_PAD_R,
@@ -428,6 +388,3 @@ function TabItem({
   );
 }
 
-// Suppress unused warning for OUTER_TABS — kept exported in case
-// future logic needs to query whether a tab is outer.
-void OUTER_TABS;

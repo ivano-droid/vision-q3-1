@@ -36,29 +36,27 @@ import { CountUpAmount } from "@/components/CountUpAmount";
  * `history.length > 1` check.
  */
 
-/** Routes that get a back arrow in the brand bar. The page itself owns
- *  the visible title now (Casino page renders "Casino" next to its
- *  Categories+ CTA, etc.), so we don't render a title here. */
+/** Routes that show a back arrow instead of the MrQ logo. */
 function showsBackArrow(pathname: string): boolean {
   return (
-    pathname === "/casino" ||
-    pathname.startsWith("/casino/") ||
-    pathname.startsWith("/arena") ||
-    pathname.startsWith("/bingo")
+    pathname.startsWith("/casino") ||
+    pathname.startsWith("/live") ||
+    pathname.startsWith("/bingo") ||
+    pathname.startsWith("/arena")
   );
 }
 
-/** Where the back arrow leads. Sub-routes under /casino (per-category
- *  pages, the all-games browse) drop one level back to /casino — the
- *  casino homepage. /arena and /bingo land the user on /search (the
- *  Explore page) since both verticals are opened from the Explore
- *  mega-card carousel, not directly from the lobby. Anything else
- *  goes to the lobby. */
+/** Where the back arrow leads.
+ *  - Sub-pages within a vertical → the vertical homepage
+ *  - Vertical homepages → /search (Explore), since all verticals are
+ *    reached from the Explore page, not the lobby
+ */
 function backHrefFor(pathname: string): string {
+  // Sub-pages drop back to their vertical homepage
   if (pathname.startsWith("/casino/")) return "/casino";
-  if (pathname.startsWith("/arena")) return "/search";
-  if (pathname.startsWith("/bingo")) return "/search";
-  return "/";
+  if (pathname.startsWith("/live/"))   return "/live";
+  // Vertical homepages + bingo + arena → Explore
+  return "/search";
 }
 
 export function BrandBar() {
@@ -67,11 +65,10 @@ export function BrandBar() {
   const backArrow = showsBackArrow(pathname);
   const backHref = backHrefFor(pathname);
   const backLabel =
-    backHref === "/casino"
-      ? "Back to Casino"
-      : backHref === "/search"
-        ? "Back to Explore"
-        : "Back to lobby";
+    backHref === "/casino" ? "Back to Casino" :
+    backHref === "/live"   ? "Back to Live Casino" :
+    backHref === "/search" ? "Back to Explore" :
+    "Back to lobby";
 
   // On /search the brand bar sits directly on top of the page's own
   // sticky search-input band (which is also blue). To let the two
@@ -83,7 +80,9 @@ export function BrandBar() {
   // the mobile-frame surface brand-blue on that route, so the
   // small wedge of "behind the BrandBar" that the curve exposes
   // shows blue (matching the BrandBar) instead of #f5f5f5.
-  const roundedBottom = pathname !== "/search";
+  // Flat on /search (search bar follows seamlessly) and /rewards
+  // (the "For you" blue section continues the BrandBar's blue).
+  const roundedBottom = pathname !== "/search" && !pathname.startsWith("/rewards");
 
   return (
     <header

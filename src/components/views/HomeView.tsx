@@ -1,9 +1,7 @@
 import { HeroCarousel } from "@/components/carousel/HeroCarousel";
 import { GameRail } from "@/components/rails/GameRail";
 import { RecentlyPlayedGrid } from "@/components/rails/RecentlyPlayedGrid";
-import { BigWinsRow } from "@/components/rails/BigWinsRow";
 import { SameVibeRail } from "@/components/rails/SameVibeRail";
-import { LatestBigWinsRow } from "@/components/rails/LatestBigWinsRow";
 import { QRewardsCard } from "@/components/QRewardsCard";
 
 /**
@@ -55,22 +53,6 @@ const PICK_UP_GRID = [
 ];
 
 // Prize amounts in a realistic £80–£250 range — session wins a
-// real player would recognise, not lottery-jackpot fiction. The
-// count-up scrolls each pill from £0 up to its value.
-const RECENT_WINS = [
-  { src: "/assets/games/slot-04.png", alt: "Western Gold", prize: "£87.40" },
-  {
-    src: "/assets/games/slot-01.png",
-    alt: "Buffalo Bills",
-    prize: "£245.80",
-    href: "/play/buffalo-bills",
-  },
-  { src: "/assets/live/popular-03.png", alt: "Lightning Roulette", prize: "£162.50" },
-  { src: "/assets/games/slot-13.png", alt: "Snake Arena", prize: "£218.75" },
-  { src: "/assets/games/slot-11.png", alt: "Maze Escape", prize: "£134.20" },
-  { src: "/assets/games/slot-07.png", alt: "Mummy Mania", prize: "£96.90" },
-];
-
 // Same-vibe recommendations — landscape cards. Re-uses slot artwork
 // for now; landscape promo art can replace the `src` later.
 const SAME_VIBE_TIKI_TUMBLE = [
@@ -89,37 +71,6 @@ const HOT_RIGHT_NOW = [
   G(8, "Tiki Tumble"),
 ];
 
-const LATEST_WINS = [
-  {
-    src: "/assets/games/slot-01.png",
-    alt: "Buffalo Bills",
-    username: "SophieW",
-    amount: "£1,200",
-    game: "Spaceman",
-  },
-  {
-    src: "/assets/games/slot-04.png",
-    alt: "Jewel Stepper",
-    username: "MarkR",
-    amount: "£840",
-    game: "Jewel Stepper",
-  },
-  {
-    src: "/assets/games/slot-13.png",
-    alt: "Snake Arena",
-    username: "Jamie85",
-    amount: "£520",
-    game: "Snake Arena",
-  },
-  {
-    src: "/assets/games/slot-08.png",
-    alt: "Tiki Tumble",
-    username: "ElenaP",
-    amount: "£310",
-    game: "Tiki Tumble",
-  },
-];
-
 export function HomeView() {
   return (
     <>
@@ -135,21 +86,17 @@ export function HomeView() {
         showSeeAll={false}
       />
 
-      <BigWinsRow title="My Recent Big Wins" items={RECENT_WINS} />
-
       <SameVibeRail
         title="Same Vibe as Tiki Tumble"
         items={SAME_VIBE_TIKI_TUMBLE}
       />
 
       <GameRail
-        title="Hot Right Now"
+        title="My Most Played Games"
         tiles={HOT_RIGHT_NOW}
         tileWidth={109}
         tileHeight={109}
       />
-
-      <LatestBigWinsRow title="Latest Big Wins" items={LATEST_WINS} />
 
       {/* Q Rewards summary — Figma 255:37506. Brand-blue card with
           "My Q Rewards" heading + gift sticker, two active reward
