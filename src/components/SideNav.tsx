@@ -138,27 +138,18 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
           CTAs stacked, which anchors the top of the drawer without
           needing a panel behind it. */}
       <header className="flex items-center gap-[16px]">
-        <div className="relative size-[88px] shrink-0 rounded-full overflow-hidden bg-white">
+        <div className="relative size-[56px] shrink-0 rounded-full overflow-hidden bg-white">
           <Image
             src="/assets/avatar.png"
             alt=""
             fill
-            sizes="88px"
+            sizes="56px"
             className="object-cover"
           />
         </div>
         <div className="flex min-w-0 flex-col gap-[2px]">
           <p className="text-[22px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] truncate">
             Leigh Taylor
-          </p>
-          {/* Static balance — must NOT animate on every drawer open
-              (same bug class as the BrandBar wallet pre-fix: a
-              CountUpAmount here would replay every time the drawer
-              mounts, which is on every open). Static text stays in
-              sync with the BrandBar's £113.48 resting value once
-              that count-up has settled. */}
-          <p className="text-[18px] font-bold leading-tight text-[var(--mrq-blue-dark)]">
-            £113.48
           </p>
         </div>
       </header>
@@ -185,20 +176,6 @@ function DrawerContent({ onClose }: { onClose: () => void }) {
           Deposit
         </button>
       </div>
-
-      {/* Play Streak — Duolingo-style streak card. Header row
-          (flame + count + label) over a 7-pip Mon–Sun day row
-          showing which days in the current week have been hit.
-          Prototype is static: a 4-day streak ending on Thursday
-          (today). When the back-end's there we'd compute the
-          `STREAK_DAYS` array from the player's session log.
-
-          "Play Streak" rather than "Win Streak" — playing is what
-          we want to celebrate, and the name keeps MrQ on the
-          right side of its anti-Generic-Casino, RG-conscious tone
-          (a flashing "Win Streak" badge in a casino app would be
-          a flag for both regulators and players). */}
-      <PlayStreakCard />
 
       {/* Group 1 */}
       <MenuGroup>
@@ -336,253 +313,6 @@ function MenuItem({
         <ChevronRightIcon />
       </span>
     </button>
-  );
-}
-
-/* ----------- Play Streak card ----------- */
-
-// Prototype state — Mon–Sun for the current week with a 4-day
-// streak ending Thursday (today). When the back-end's wired we'd
-// derive `hit` from the player's session log keyed by day-of-week
-// and `isToday` from the current weekday.
-type StreakDay = { label: string; hit: boolean; isToday: boolean };
-const STREAK_DAYS: StreakDay[] = [
-  { label: "M", hit: true, isToday: false },
-  { label: "T", hit: true, isToday: false },
-  { label: "W", hit: true, isToday: false },
-  { label: "T", hit: true, isToday: true },
-  { label: "F", hit: false, isToday: false },
-  { label: "S", hit: false, isToday: false },
-  { label: "S", hit: false, isToday: false },
-];
-
-function PlayStreakCard() {
-  return (
-    <section
-      // Parent gap bumped 8 → 10 so the divider and weekly
-      // summary block each get a clear beat of breathing room
-      // from the streak block above; the streak block itself
-      // uses a tighter 6-px inner gap so its header + pips
-      // remain visually bound together as one unit.
-      className="rounded-[14px] bg-white px-[14px] py-[10px] flex flex-col gap-[10px]"
-      style={{ border: "1px solid #e6e6e7" }}
-    >
-      {/* Streak block — header + pips bound together by a tight
-          gap-[6px] so they read as one unit. The wider parent
-          gap above the divider then gives the section a clear
-          beat of breathing room before the weekly summary
-          opens. */}
-      <div className="flex flex-col gap-[6px]">
-        {/* Streak hero — "4" is the unambiguous focal point at
-            28px. The "Day Streak" tail drops to 12px / font-
-            semibold / 50% opacity so it reads as a soft
-            descriptor next to the headline number rather than a
-            co-equal label. (Title-cased "Day Streak" replaces
-            the earlier "day Play Streak" — fewer words, clearer
-            label, doesn't compete with the count.) */}
-        <p className="flex items-baseline gap-[6px] leading-tight">
-          <span className="text-[28px] font-extrabold text-[var(--mrq-blue-dark)]">
-            4
-          </span>
-          <span
-            className="text-[12px] font-semibold text-[var(--mrq-blue-dark)]"
-            style={{ opacity: 0.5 }}
-          >
-            Day Streak
-          </span>
-        </p>
-
-        {/* Day pips — 7 columns, justified across the card
-            width. Hit days render fire.svg; miss days are a
-            small hollow hairline circle. Today's label sits at
-            full opacity (others 45%).
-
-            On open, each fire pops in with a staggered spring
-            so the streak builds in front of the user one day at
-            a time (Mon → Tue → Wed → Thu). Static elements
-            render immediately so the row is laid out from frame
-            0 and the fires drop INTO existing slots instead of
-            pushing things around. delayChildren waits ~350ms
-            for the drawer slide-in to settle before the first
-            pop. */}
-        <div className="flex justify-between">
-          {STREAK_DAYS.map((day, i) => {
-            // Count hits BEFORE this position so the animation
-            // order follows chronological reading (Mon's fire
-            // pops first, Tue's second, …) regardless of how
-            // the array is laid out. Miss days get -1 so their
-            // pip skips the animation path entirely.
-            const hitIndex = day.hit
-              ? STREAK_DAYS.slice(0, i).filter((d) => d.hit).length
-              : -1;
-            return (
-              <DayPip
-                key={`${day.label}-${i}`}
-                label={day.label}
-                hit={day.hit}
-                isToday={day.isToday}
-                hitIndex={hitIndex}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      {/* "Weekly Summary" embedded-label divider. Lines use
-          brand navy at 8% opacity (lighter than the previous
-          #e6e6e7 solid grey) so they recede; -mx-[14px] /
-          px-[6px] pushes the rule almost edge-to-edge of the
-          card so the label sits squarely inside the divider
-          rather than above a truncated stub. The label drops to
-          10-px uppercase / extrabold / letter-spaced — reads as
-          a small-caps section tag embedded in the line, not a
-          floating heading above it. */}
-      <div className="-mx-[14px] flex items-center gap-[8px] px-[6px]">
-        <span
-          aria-hidden
-          className="h-px flex-1"
-          style={{ backgroundColor: "rgba(11, 37, 149, 0.08)" }}
-        />
-        <span
-          className="text-[10px] font-extrabold uppercase text-[var(--mrq-blue-dark)]"
-          style={{ opacity: 0.4, letterSpacing: 0.7 }}
-        >
-          Weekly Summary
-        </span>
-        <span
-          aria-hidden
-          className="h-px flex-1"
-          style={{ backgroundColor: "rgba(11, 37, 149, 0.08)" }}
-        />
-      </div>
-
-      {/* Weekly summary rows. Labels quieter (12px / 45%
-          opacity) so they read as captions; values primary
-          (16px extrabold) so the data is the focal point on
-          each line. 4-px inner gap pulls the three rows into
-          one tight cluster rather than three drifting lines. */}
-      <div className="flex flex-col gap-[4px]">
-        <StatRow label="Games Played" value="27" />
-        <StatRow label="Biggest Win" value="£487" />
-        <StatRow label="Favourite Game" value="Buffalo Bills" />
-      </div>
-    </section>
-  );
-}
-
-function StatRow({ label, value }: { label: string; value: string }) {
-  return (
-    // items-baseline aligns the bottoms of the two text spans
-    // even though they're different sizes — values and labels
-    // sit on the same reading line instead of centre-floating.
-    <div className="flex items-baseline gap-[12px]">
-      <span
-        className="flex-1 text-[12px] font-bold leading-tight text-[var(--mrq-blue-dark)]"
-        style={{ opacity: 0.45 }}
-      >
-        {label}
-      </span>
-      <span className="text-[16px] font-extrabold leading-tight text-[var(--mrq-blue-dark)] text-right">
-        {value}
-      </span>
-    </div>
-  );
-}
-
-// Stagger / delay tokens for the day-pip pop-in. Pulled out as
-// named constants so the comment up in PlayStreakCard can refer
-// to them without drifting.
-//   • DRAWER_SETTLE_MS — drawer's spring (stiffness 360 damping
-//     38) finishes its slide-in around 350 ms; the fires hold
-//     until then so they don't compete with the drawer entrance.
-//   • FIRE_STAGGER_MS  — gap between successive fire pops. 120 ms
-//     is fast enough to feel snappy across a 4-day streak (~480
-//     ms total) but slow enough that each pop reads individually.
-const DRAWER_SETTLE_MS = 350;
-const FIRE_STAGGER_MS = 120;
-
-function DayPip({
-  label,
-  hit,
-  isToday,
-  hitIndex,
-}: {
-  label: string;
-  hit: boolean;
-  isToday: boolean;
-  /** Chronological position of this hit day in the streak (0 =
-   *  first hit of the week, 1 = second, …). Drives the fire's
-   *  per-pip animation delay. -1 for miss days; the fire isn't
-   *  rendered for those so the value is ignored. */
-  hitIndex: number;
-}) {
-  // Fixed height for the content row so the day initials stay
-  // baseline-aligned across hit / miss columns even though the
-  // fire SVG and the hollow miss-circle have different intrinsic
-  // dimensions.
-  const ROW_H = 31;
-  // The fire SVG's intrinsic 80×103 ratio — width 24 → height 31.
-  const FIRE_W = 24;
-  const FIRE_H = 31;
-  // Hollow miss-day circle sized to roughly match the fire's
-  // visual mass so a partially-hit week still feels balanced.
-  const MISS_DIAM = 22;
-  return (
-    <div className="flex flex-col items-center gap-[6px]">
-      <span
-        className="text-[11px] font-bold uppercase text-[var(--mrq-blue-dark)]"
-        style={{
-          letterSpacing: 0.4,
-          // Today's label sits at full opacity so the user can
-          // still pick out "now" when every day in the week has
-          // been hit and the fires look uniform. Non-today drops
-          // to 45% — quieter than 55% so the fires (and the
-          // streak count above) stay the eye's anchor.
-          opacity: isToday ? 1 : 0.45,
-        }}
-      >
-        {label}
-      </span>
-      <div
-        className="flex items-end justify-center"
-        style={{ height: ROW_H }}
-      >
-        {hit ? (
-          // Stiff spring with low damping = a satisfying "pop"
-          // with a slight overshoot. Origin set to bottom-centre
-          // so the flame appears to spring UP out of the row
-          // (matches the visual metaphor of a fire kindling) and
-          // the day label stays anchored above.
-          <motion.img
-            src="/assets/fire.svg"
-            alt=""
-            width={FIRE_W}
-            height={FIRE_H}
-            draggable={false}
-            style={{ display: "block", transformOrigin: "bottom center" }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{
-              delay:
-                (DRAWER_SETTLE_MS + hitIndex * FIRE_STAGGER_MS) / 1000,
-              type: "spring",
-              stiffness: 420,
-              damping: 16,
-              mass: 0.7,
-            }}
-          />
-        ) : (
-          <span
-            className="rounded-full self-center"
-            style={{
-              width: MISS_DIAM,
-              height: MISS_DIAM,
-              border: "1.5px solid #e6e6e7",
-            }}
-          />
-        )}
-      </div>
-    </div>
   );
 }
 
