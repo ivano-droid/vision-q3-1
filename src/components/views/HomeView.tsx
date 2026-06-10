@@ -91,13 +91,6 @@ export function HomeView() {
         items={SAME_VIBE_TIKI_TUMBLE}
       />
 
-      <GameRail
-        title="My Most Played Games"
-        tiles={HOT_RIGHT_NOW}
-        tileWidth={109}
-        tileHeight={109}
-      />
-
       {/* Q Rewards summary — Figma 255:37506. Brand-blue card with
           "My Q Rewards" heading + gift sticker, two active reward
           rows (Free Spins, Free Bingo Bash) and a "See all Rewards"
@@ -105,6 +98,13 @@ export function HomeView() {
           expand QClubCard treatment with a tighter, on-brand
           rewards summary at the bottom of the feed. */}
       <QRewardsCard />
+
+      <GameRail
+        title="Picked For You, By Q"
+        tiles={HOT_RIGHT_NOW}
+        tileWidth={109}
+        tileHeight={109}
+      />
     </>
   );
 }

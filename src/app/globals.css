@@ -112,7 +112,7 @@ html, body {
 
 @media (min-width: 600px) {
   html, body {
-    background: var(--mrq-blue);
+    background: #f4f4f5;
   }
 }
 

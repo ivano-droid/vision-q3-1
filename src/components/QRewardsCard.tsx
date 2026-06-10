@@ -4,59 +4,59 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
- * Q Rewards summary card — Figma 255:37506.
+ * Q Rewards summary card — Figma 29003:5542.
  *
  *   ┌───────────────────────────────────┐
- *   │  My Q Rewards          🎁       │  ← yellow heading + gift sticker
+ *   │  My [Q] Rewards         🎁       │  yellow heading + gift sticker
  *   │  ┌──────────────────────────────┐ │
- *   │  │ [art] 20 Free Spins Avail.   │ │  ← reward row
- *   │  │       Valid until 30th June  │ │
+ *   │  │ [art] U vs. Q       [ Free ] │ │  "free" badge row
+ *   │  │       Play for free every day│ │
  *   │  └──────────────────────────────┘ │
  *   │  ┌──────────────────────────────┐ │
- *   │  │ [art] 1 Free Bingo Bash      │ │  ← reward row
- *   │  │       Valid until 12th July  │ │
+ *   │  │ [art] May Megahaul Cash Bonus│ │  progress row
+ *   │  │       ████████████░░░░░░░░░░ │ │  bar next to title
+ *   │  │ Wagered £14…    Valid 30 May │ │  wagered left / valid right
  *   │  └──────────────────────────────┘ │
  *   │  ┌──────────────────────────────┐ │
- *   │  │       See all Rewards         │ │  ← secondary CTA → /rewards
+ *   │  │       See all Rewards        │ │  CTA → /rewards
  *   │  └──────────────────────────────┘ │
  *   └───────────────────────────────────┘
- *
- * Surface:
- *   • Brand-blue #0b2fcb body, rounded-12.
- *   • Yellow "My Q Rewards" headline with the swirly MrQ Q glyph
- *     inserted between the two words (top-left).
- *   • Wrapped-ribbon gift box graphic top-right, rotated ~12°.
- *
- * Each reward row uses the same Brand/900 #0a2392 fill so it sits
- * one step deeper than the outer card, with the game/promo art on
- * the left and the title + valid-until copy stacked next to it.
- *
- * Replaces the older <QClubCard /> on the home feed.
  */
 
-type Reward = {
-  /** Game / promo art square. */
+type FreeReward = {
+  kind: "free";
   src: string;
-  /** Headline number ("20 Free", "1 Free"). */
-  highlight: string;
-  /** Rest of the title ("Spins Available", "Bingo Bash"). */
-  rest: string;
-  /** Sub-line copy (expiry date). */
-  validUntil: string;
+  title: string;
+  sub: string;
 };
+
+type ProgressReward = {
+  kind: "progress";
+  src: string;
+  title: string;
+  sub: string;
+  wagered: number;
+  target: number;
+  currency: string;
+};
+
+type Reward = FreeReward | ProgressReward;
 
 const REWARDS: Reward[] = [
   {
-    src: "/assets/qrewards/sweet-bonanza.png",
-    highlight: "20 Free",
-    rest: "Spins Available",
-    validUntil: "Valid until 30th June",
+    kind: "free",
+    src: "/assets/qrewards/u-vs-q.png",
+    title: "U vs. Q",
+    sub: "Play for free every day",
   },
   {
-    src: "/assets/qrewards/cheap-as-chips.png",
-    highlight: "1 Free",
-    rest: "Bingo Bash",
-    validUntil: "Valid until 12th July",
+    kind: "progress",
+    src: "/assets/qrewards/may-megahaul.png",
+    title: "May Megahaul Cash Bonus",
+    sub: "Valid until 30th May",
+    wagered: 14,
+    target: 20,
+    currency: "£",
   },
 ];
 
@@ -73,15 +73,8 @@ export function QRewardsCard() {
     >
       <div
         className="relative w-full overflow-hidden rounded-[16px]"
-        style={{
-          backgroundColor: "#0b2fcb",
-          padding: 15,
-        }}
+        style={{ backgroundColor: "#0b2fcb", padding: 15 }}
       >
-        {/* Gift box graphic — top-right, slightly oversized so it
-            bleeds toward the corner. Rotation matches the Figma's
-            playful tilt. Pointer-events:none so it never steals
-            clicks from the rewards beneath. */}
         <span
           aria-hidden
           className="absolute pointer-events-none"
@@ -105,22 +98,10 @@ export function QRewardsCard() {
           />
         </span>
 
-        {/* Heading row — "Your [Q] Rewards", with the Q rendered as
-            a separate SVG between the two words. Yellow brand colour
-            so it reads as a celebratory header against the
-            brand-blue surface. */}
-        <div
-          className="relative flex items-center"
-          style={{ height: 32, gap: 6 }}
-        >
+        <div className="relative flex items-center" style={{ height: 32, gap: 6 }}>
           <span
             className="font-extrabold"
-            style={{
-              color: "#ffdf00",
-              fontSize: 22,
-              lineHeight: 1.6,
-              letterSpacing: 0.15,
-            }}
+            style={{ color: "#ffdf00", fontSize: 22, lineHeight: 1.6, letterSpacing: 0.15 }}
           >
             My
           </span>
@@ -135,37 +116,36 @@ export function QRewardsCard() {
           />
           <span
             className="font-extrabold"
-            style={{
-              color: "#ffdf00",
-              fontSize: 22,
-              lineHeight: 1.6,
-              letterSpacing: 0.15,
-            }}
+            style={{ color: "#ffdf00", fontSize: 22, lineHeight: 1.6, letterSpacing: 0.15 }}
           >
             Rewards
           </span>
         </div>
 
-        {/* Reward rows */}
         <div className="relative flex flex-col" style={{ gap: 13, marginTop: 14 }}>
-          {REWARDS.map((reward, i) => (
-            <RewardRow key={i} reward={reward} />
-          ))}
+          {REWARDS.map((reward, i) =>
+            reward.kind === "free" ? (
+              <FreeRewardRow key={i} reward={reward} />
+            ) : (
+              <ProgressRewardRow key={i} reward={reward} />
+            )
+          )}
         </div>
 
-        {/* See all Rewards CTA — routes to /rewards. White fill with
-            navy text reads as a clear primary action against the
-            brand-blue card surface. */}
         <Link
           href="/rewards"
           className="relative mt-[13px] flex items-center justify-center rounded-[12px] active:scale-[0.99] transition-transform"
           style={{
-            height: 48,
+            paddingTop: 12,
+            paddingBottom: 12,
+            paddingLeft: 32,
+            paddingRight: 32,
             backgroundColor: "#ffffff",
-            color: "var(--mrq-blue-dark)",
-            fontSize: 16,
+            color: "#0a2ecb",
+            fontSize: 18,
             fontWeight: 800,
             letterSpacing: -0.2,
+            lineHeight: "24px",
           }}
         >
           See all Rewards
@@ -175,13 +155,14 @@ export function QRewardsCard() {
   );
 }
 
-function RewardRow({ reward }: { reward: Reward }) {
+function FreeRewardRow({ reward }: { reward: FreeReward }) {
   return (
     <div
       className="flex items-center"
       style={{
-        height: 68,
-        paddingLeft: 8,
+        paddingTop: 8,
+        paddingBottom: 8,
+        paddingLeft: 12,
         paddingRight: 12,
         gap: 12,
         backgroundColor: "#0a2392",
@@ -203,24 +184,159 @@ function RewardRow({ reward }: { reward: Reward }) {
       <div className="flex flex-1 flex-col min-w-0">
         <p
           className="leading-tight"
-          style={{ color: "#f2f3f3", fontSize: 17 }}
+          style={{ color: "#ffffff", fontSize: 17, fontWeight: 700 }}
         >
-          <span style={{ color: "#fde031", fontWeight: 700 }}>
-            {reward.highlight}
-          </span>
-          <span style={{ fontWeight: 700 }}> {reward.rest}</span>
+          {reward.title}
         </p>
         <p
           className="leading-[1.6] mt-[2px]"
+          style={{ color: "#f2f3f3", fontSize: 12, fontWeight: 500, letterSpacing: 0.2 }}
+        >
+          {reward.sub}
+        </p>
+      </div>
+      <FreeBadge />
+    </div>
+  );
+}
+
+function FreeBadge() {
+  return (
+    <span
+      className="shrink-0 inline-flex items-center justify-center"
+      style={{
+        gap: 4,
+        paddingTop: 2,
+        paddingBottom: 2,
+        paddingLeft: 8,
+        paddingRight: 8,
+        backgroundColor: "#ffffff",
+        borderRadius: 4,
+        boxShadow: "0 4px 4px rgba(10, 46, 203, 0.24)",
+      }}
+    >
+      <GiftIcon />
+      <span
+        style={{
+          color: "#0c2287",
+          fontSize: 12,
+          fontWeight: 800,
+          letterSpacing: 0.2,
+          lineHeight: 1.6,
+        }}
+      >
+        Free
+      </span>
+    </span>
+  );
+}
+
+function GiftIcon() {
+  return (
+    <svg
+      aria-hidden
+      width={12}
+      height={12}
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 4H8.85a1.75 1.75 0 0 0-2.85-2 1.75 1.75 0 0 0-2.85 2H2a1 1 0 0 0-1 1v1.5a.5.5 0 0 0 .5.5H2v3.5A1 1 0 0 0 3 11.5h6a1 1 0 0 0 1-1V7h.5a.5.5 0 0 0 .5-.5V5a1 1 0 0 0-1-1ZM7 3a.75.75 0 1 1 1.5 0c0 .55-.5 1-1.25 1H7V3Zm-3.5 0A.75.75 0 0 1 4.25 2.25.75.75 0 0 1 5 3v1h-.25C4 4 3.5 3.55 3.5 3ZM2 5h3.5v1H2V5Zm1 5.5V7h2.5v3.5H3Zm3.5 0V7H9v3.5H6.5ZM10 6H6.5V5H10v1Z"
+        fill="#0c2287"
+      />
+    </svg>
+  );
+}
+
+function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
+  const pct = Math.max(0, Math.min(1, reward.wagered / reward.target));
+
+  return (
+    <div
+      className="flex flex-col"
+      style={{
+        paddingTop: 8,
+        paddingBottom: 8,
+        paddingLeft: 12,
+        paddingRight: 12,
+        gap: 12,
+        backgroundColor: "#0a2392",
+        borderRadius: 12,
+      }}
+    >
+      <div className="flex items-center" style={{ gap: 12 }}>
+        <span
+          className="relative shrink-0 overflow-hidden"
           style={{
-            color: "#f2f3f3",
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: 0.2,
-            opacity: 0.85,
+            width: 52,
+            height: 52,
+            borderRadius: 7.172,
+            border: "1.57px solid rgba(255, 255, 255, 0.6)",
           }}
         >
-          {reward.validUntil}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={reward.src}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </span>
+        <div className="flex flex-1 flex-col min-w-0" style={{ gap: 8 }}>
+          <p
+            style={{
+              color: "#ffffff",
+              fontSize: 14,
+              fontWeight: 800,
+              letterSpacing: 0.1,
+              lineHeight: 1.6,
+            }}
+          >
+            {reward.title}
+          </p>
+          <div
+            aria-hidden
+            className="relative w-full overflow-hidden"
+            style={{ height: 8, borderRadius: 100, backgroundColor: "#ffffff" }}
+          >
+            <div
+              className="absolute left-0 top-0 h-full"
+              style={{
+                width: `${pct * 100}%`,
+                borderRadius: 100,
+                background:
+                  "linear-gradient(to right, #f05cd2 0%, #d000ca 54.327%, #8f47f1 99.038%)",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between" style={{ width: "100%" }}>
+        <p
+          style={{
+            color: "#ffffff",
+            fontSize: 12,
+            fontWeight: 500,
+            letterSpacing: 0.2,
+            lineHeight: 1.6,
+          }}
+        >
+          Wagered {reward.currency}
+          {reward.wagered} of {reward.currency}
+          {reward.target}
+        </p>
+        <p
+          style={{
+            color: "rgba(255, 255, 255, 0.6)",
+            fontSize: 12,
+            fontWeight: 500,
+            letterSpacing: 0.2,
+            lineHeight: 1.6,
+          }}
+        >
+          {reward.sub}
         </p>
       </div>
     </div>

@@ -26,7 +26,7 @@ const anton = Anton({
 const APP_ICON = "/assets/rewards/app_icon.png";
 
 export const metadata: Metadata = {
-  title: "MrQ — Concept",
+  title: "MrQ — Q3 Prototype",
   description: "MrQ mobile app concept",
   // PWA / Add-to-Home-Screen
   manifest: "/manifest.webmanifest",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   // use the brand app icon.
   openGraph: {
     type: "website",
-    title: "MrQ — Concept",
+    title: "MrQ — Q3 Prototype",
     description: "MrQ mobile app concept",
     siteName: "MrQ",
     images: [
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "MrQ — Concept",
+    title: "MrQ — Q3 Prototype",
     description: "MrQ mobile app concept",
     images: [APP_ICON],
   },
