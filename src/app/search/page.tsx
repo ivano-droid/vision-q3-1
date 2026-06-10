@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GameRail } from "@/components/rails/GameRail";
+import { LiveCasinoRail } from "@/components/rails/LiveCasinoRail";
 import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
 import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
 import {
@@ -162,6 +163,16 @@ const TILES_PICKED_BY_Q = [
   G(1, "Buffalo Bills"),
   G(7, "Mummy Mania"),
   G(5, "Golden Catch"),
+];
+
+// Bingo rail — 109×109 lobby art (same square-tile rail as the
+// editorial rows above). Tile names mirror the live MrQ bingo rooms.
+const TILES_BINGO = [
+  { src: "/assets/bingo/lobby-tropic-like-its-hot.png", alt: "Tropic Like It's Hot" },
+  { src: "/assets/bingo/lobby-cheap-as-chips.png", alt: "Cheap As Chips" },
+  { src: "/assets/bingo/lobby-dab-and-disco.png", alt: "Dab And Disco" },
+  { src: "/assets/bingo/lobby-on-the-house.png", alt: "On The House" },
+  { src: "/assets/bingo/lobby-pinch-a-penny.png", alt: "Pinch A Penny" },
 ];
 
 // Browse all categories — 2-col grid of navigation cards.
@@ -410,11 +421,18 @@ export default function SearchPage() {
           tileHeight={109}
         />
         <GameRail
+          title="Bingo"
+          tiles={TILES_BINGO}
+          tileWidth={109}
+          tileHeight={109}
+        />
+        <GameRail
           title="Picked For You, By Q"
           tiles={TILES_PICKED_BY_Q}
           tileWidth={109}
           tileHeight={109}
         />
+        <LiveCasinoRail />
 
         <ThemesGrid title="Browse All Categories" items={BROWSE_CATEGORIES} />
       </div>
