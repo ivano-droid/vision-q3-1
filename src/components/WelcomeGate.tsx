@@ -207,45 +207,45 @@ export function WelcomeGate() {
                 Log in
               </button>
 
-              {/* Footer trust badges — 18+, GambleAware, Trustpilot.
-                  18+ and GambleAware are grouped tighter (8px
-                  apart) since they read as one badge — the
-                  GambleAware text was floating loose with a uniform
-                  20px gap. Trustpilot stays at 20px from the group. */}
+              {/* Footer trust strip — Figma 27521:207254. Circular
+                  18+ badge · GambleAware · App-Store rating pill, all
+                  at a uniform 20px gap. The App-Store badge is a
+                  bordered two-line pill (5 stars + "4.8" / "On the
+                  App Store") and sits taller than the other two. */}
               <div
                 className="flex items-center justify-center"
                 style={{ gap: 20, paddingTop: 4 }}
               >
-                <div className="flex items-center" style={{ gap: 8 }}>
-                  {/* 18+ badge — natural viewBox is 35.4×20, so
-                      we render at 36×20 to keep the glyph from
-                      reading squashed. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/assets/welcome/eighteen-plus.svg"
-                    alt="18+"
-                    width={36}
-                    height={20}
-                    style={{ width: 36, height: 20 }}
-                    draggable={false}
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/assets/welcome/gambleaware.svg"
-                    alt="GambleAware"
-                    width={108}
-                    height={20}
-                    style={{ width: 108, height: 20 }}
-                    draggable={false}
-                  />
-                </div>
+                {/* Circular 18+ badge — natural viewBox 20×20. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/assets/welcome/trustpilot.svg"
-                  alt="Trustpilot"
-                  width={82}
+                  src="/assets/welcome/eighteen-plus-round.svg"
+                  alt="18+"
+                  width={20}
                   height={20}
-                  style={{ width: 82, height: 20 }}
+                  style={{ width: 20, height: 20 }}
+                  draggable={false}
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/welcome/gambleaware.svg"
+                  alt="GambleAware"
+                  width={108}
+                  height={20}
+                  style={{ width: 108, height: 20 }}
+                  draggable={false}
+                />
+                {/* App-Store rating badge — natural viewBox
+                    115.431×40.18 (≈2.87 ratio); render at 115×40 so
+                    the baked-in preserveAspectRatio="none" doesn't
+                    squash it. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/welcome/app-store-rating.svg"
+                  alt="Rated 4.8 on the App Store"
+                  width={115}
+                  height={40}
+                  style={{ width: 115, height: 40 }}
                   draggable={false}
                 />
               </div>
