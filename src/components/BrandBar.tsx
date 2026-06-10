@@ -126,7 +126,7 @@ export function BrandBar() {
             className="shrink-0 active:scale-[0.96] transition-transform"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/logo-mrq.svg" alt="MrQ" className="h-[32px] w-[83px]" />
+            <img src="/assets/logo-mrq.svg" alt="MrQ" className="h-[26px] w-[67px]" />
           </Link>
         )}
 
