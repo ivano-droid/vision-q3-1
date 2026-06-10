@@ -171,10 +171,13 @@ export function WelcomeGate() {
               className="flex flex-col items-stretch w-full"
               style={{ gap: 10, marginTop: 4 }}
             >
+              {/* Sign up is intentionally inert for now — sign-up has
+                  no flow yet, so the button is a visual placeholder
+                  that does nothing on tap. Only Log in dismisses the
+                  gate. */}
               <button
                 type="button"
-                onClick={dismiss}
-                className="w-full active:scale-[0.99] transition-transform"
+                className="w-full"
                 style={{
                   height: 48,
                   borderRadius: 12,
