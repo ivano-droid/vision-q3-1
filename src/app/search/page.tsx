@@ -287,6 +287,9 @@ const RECENTLY_SEARCHED: Array<{ src: string; name: string; href?: string }> = [
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  // Condense the search band while scrolling down (shave 2px off top +
+  // bottom padding); restore it on scroll-up or at the top of the page.
+  const [condensed, setCondensed] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Static catalogue-derived data (stable across renders).
@@ -339,6 +342,25 @@ export default function SearchPage() {
     inputRef.current?.blur();
   };
 
+  // Track scroll direction to condense / restore the search band. A
+  // small ±2px threshold avoids jitter from sub-pixel scroll noise.
+  useEffect(() => {
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y <= 0) {
+        setCondensed(false);
+      } else if (y - lastY > 2) {
+        setCondensed(true); // scrolling down
+      } else if (y - lastY < -2) {
+        setCondensed(false); // scrolling up — re-apply padding
+      }
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   // Esc closes the modal.
   useEffect(() => {
     if (!isActive) return;
@@ -361,14 +383,33 @@ export default function SearchPage() {
           underneath is a tap target that just opens the modal; the
           real input lives below and gets focused once the modal is
           mounted. */}
-      <div
-        className="sticky top-[calc(env(safe-area-inset-top)+68px)] z-20 bg-mrq-blue px-[16px] pb-[14px] pt-[2px]"
+      <motion.div
+        // Sticky offset = the BrandBar's exact height (safe-area + 72px)
+        // so the band sticks flush against it from the first pixel of
+        // scroll. Previously 68px, which sat 4px inside the BrandBar and
+        // made the band jump up 4px as scrolling began.
+        //
+        // On entering Explore the band animates open — height 0 → auto —
+        // so the blue area expands downward from under the BrandBar,
+        // pushing the page content down to make room for the search bar.
+        className="sticky top-[calc(env(safe-area-inset-top)+72px)] z-20 bg-mrq-blue px-[16px] overflow-hidden"
         style={{
           borderBottomLeftRadius: "20px",
           borderBottomRightRadius: "20px",
+          // Shave 4px off top + bottom while scrolling down; restore on
+          // scroll-up. Transitioned so the condense reads as a smooth nudge.
+          paddingTop: condensed ? 0 : 4,
+          paddingBottom: condensed ? 10 : 14,
+          transition: "padding 0.18s ease",
         }}
+        initial={{ height: 0 }}
+        animate={{ height: "auto" }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
-        <button
+        {/* Search pill fades + drifts in as the band finishes expanding,
+            so the blue area opens first and the search bar appears
+            inside it. */}
+        <motion.button
           type="button"
           onClick={() => {
             haptics.tap();
@@ -377,13 +418,16 @@ export default function SearchPage() {
           aria-label="Open search"
           className="flex w-full items-center gap-[10px] rounded-full bg-white h-[43px] px-[18px] text-left"
           style={{ border: "1px solid rgba(3, 34, 172, 0.3)" }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <SearchIcon className="size-[18px] shrink-0 text-[#0322ac]" />
           <span className="flex-1 text-[15px] font-bold text-[#0322ac]">
             {query || "Search all games"}
           </span>
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Default-state content under the input. Always mounted; the
           fullscreen overlay just covers it when the modal opens. */}

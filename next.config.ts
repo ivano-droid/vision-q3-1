@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Pin Turbopack's project root to this directory. Otherwise Next walks
+// up and finds a stray ~/package-lock.json, wrongly treating the home
+// folder as the workspace root (causes a dev-mode Turbopack panic).
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: projectRoot,
+  },
   // Hide the dev-mode indicator overlay so screenshots stay clean.
   devIndicators: false,
   images: {

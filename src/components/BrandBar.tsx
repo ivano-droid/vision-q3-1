@@ -133,25 +133,32 @@ export function BrandBar() {
             <ArrowLeftIcon className="size-[22px] text-white" />
           </motion.button>
         ) : backArrow ? (
-          // Translucent white pill mirroring the balance/avatar pill on
-          // the right edge of the bar — matches Figma 177:35024 where
-          // the back arrow sits inside the same glass chrome instead of
-          // floating as a bare chevron.
-          <Link
-            href={backHref}
+          // Same glass back button as the Qoins page (44px lavender pill,
+          // full arrow-left icon, grow-in + whileTap interaction). It
+          // still navigates to the predictable parent destination
+          // (backHref) rather than router.back(), so deep links/shares
+          // land somewhere sensible.
+          <motion.button
+            type="button"
             data-component="Button"
+            onClick={() => router.push(backHref)}
             aria-label={backLabel}
-            className="grid size-[40px] place-items-center rounded-full active:scale-[0.96] transition-transform"
+            className="grid size-[44px] place-items-center rounded-full"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.18)",
-              border: "1px solid rgba(255, 255, 255, 0.20)",
+              transformOrigin: "left center",
+              backgroundColor: "rgba(157, 171, 234, 0.32)",
               backdropFilter: "blur(20px) saturate(140%)",
               WebkitBackdropFilter: "blur(20px) saturate(140%)",
-              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.24)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
             }}
           >
-            <BackIcon className="size-[20px] text-white" />
-          </Link>
+            <ArrowLeftIcon className="size-[22px] text-white" />
+          </motion.button>
         ) : (
           <Link
             href="/"
@@ -327,25 +334,6 @@ export function BrandBar() {
         </div>
       </div>
     </header>
-  );
-}
-
-function BackIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      data-component="Icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-      focusable={false}
-    >
-      <path d="m14 18-6-6 6-6" />
-    </svg>
   );
 }
 

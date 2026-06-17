@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 /**
  * Rewards page — rebuilt from Figma node 29209:1233 (CR Q2 Iterations).
  *
@@ -15,26 +17,32 @@
 
 // ── Data ──────────────────────────────────────────────────────────
 
-const DAILY_TC =
-  "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply.";
-
+// Significant ("sig") terms — kept per item so each reads accurately
+// for its own offer instead of repeating one generic line everywhere.
 const DAILY_GAMES = [
   {
     image: "/assets/rewards/v2/daily-uvsq.png",
     title: "U vs. Q",
     subtitle: "Crack Q before it cracks you",
+    tc: "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply.",
   },
   {
     image: "/assets/rewards/v2/daily-spotkick.png",
     title: "Spot kick",
     subtitle: "Slot it past the keeper",
+    tc: "One free shot a day. Winnings paid as bonus, capped at £10. 3-day expiry. Selected games only.",
   },
 ];
+
+// Sig terms for the in-progress wagering bonus — reflects the live
+// wager-to-unlock mechanic shown on the card.
+const PROGRESS_TC =
+  "Wager £20 on eligible games by 30th May to unlock £50 cash. Min 10p stake. Bonus T&Cs apply.";
 
 const WEEKLY_OFFERS = [
   {
     image: "/assets/rewards/v2/weekly-frenzy.png",
-    title: "Q's Friday Night Frenzy",
+    title: "Friday Night Frenzy",
     subtitle: "Hop on one of the best days of the week with a chance to win big!",
   },
   {
@@ -92,8 +100,8 @@ function FullTcs({ light }: { light?: boolean }) {
 function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
   return (
     <div className="w-full flex flex-col">
-      {/* White game row */}
-      <div className="bg-white flex items-center gap-[12px] rounded-[12px] px-[12px] py-[8px]">
+      {/* White game row — 8px left padding, 8px top/bottom, 12px right */}
+      <div className="bg-white flex items-center gap-[12px] rounded-[12px] pl-[8px] pr-[12px] py-[8px]">
         <div
           className="shrink-0 overflow-hidden rounded-[9px]"
           style={{ width: 56, height: 56 }}
@@ -138,7 +146,7 @@ function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
           opacity: 0.7,
         }}
       >
-        {DAILY_TC} <FullTcs light />
+        {game.tc} <FullTcs light />
       </p>
     </div>
   );
@@ -173,17 +181,29 @@ function InProgressCard() {
             >
               May Megahaul Cash Bonus
             </p>
-            {/* Progress bar */}
+            {/* Progress bar — the fill springs out to the right on
+                mount (slight overshoot) so the in-progress reward gives
+                a small, delightful nudge for attention. */}
             <div
               className="relative w-full overflow-hidden rounded-full"
               style={{ height: 8, backgroundColor: "#ced5f5" }}
             >
-              <div
+              <motion.div
                 className="absolute inset-y-0 left-0 rounded-full"
                 style={{
-                  width: "62%",
                   background:
                     "linear-gradient(90deg, #f05cd2 0%, #d000ca 54%, #8f47f1 99%)",
+                }}
+                // Starts already mostly filled and springs the last
+                // stretch to 62% — a small grow, not a fill-from-empty.
+                initial={{ width: "48%" }}
+                animate={{ width: "62%" }}
+                transition={{
+                  type: "spring",
+                  stiffness: 150,
+                  damping: 10,
+                  mass: 0.8,
+                  delay: 0.35,
                 }}
               />
             </div>
@@ -219,7 +239,7 @@ function InProgressCard() {
         className="font-medium pt-[8px] px-[4px]"
         style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "#ffffff", opacity: 0.7 }}
       >
-        {DAILY_TC} <FullTcs light />
+        {PROGRESS_TC} <FullTcs light />
       </p>
     </div>
   );
@@ -241,16 +261,16 @@ function WeeklyOfferCard({ offer }: { offer: (typeof WEEKLY_OFFERS)[number] }) {
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-[4px]">
           <p
             className="font-extrabold"
-            style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue)" }}
+            style={{ fontSize: 14, lineHeight: 1.2, letterSpacing: 0.2, color: "var(--mrq-blue)" }}
           >
             {offer.title}
           </p>
           <p
             className="font-medium"
-            style={{ fontSize: 9, lineHeight: 1.6, letterSpacing: 0.2, color: "#0e1120" }}
+            style={{ fontSize: 12, lineHeight: 1.3, letterSpacing: 0.2, color: "#0e1120" }}
           >
             {offer.subtitle}
           </p>
@@ -258,8 +278,8 @@ function WeeklyOfferCard({ offer }: { offer: (typeof WEEKLY_OFFERS)[number] }) {
       </div>
       <button
         type="button"
-        className="w-full flex items-center justify-center rounded-[7px] py-[4px] font-extrabold active:scale-[0.98] transition-transform"
-        style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 12, lineHeight: "21px" }}
+        className="w-full flex items-center justify-center rounded-[7px] py-[8px] font-extrabold active:scale-[0.98] transition-transform"
+        style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 14, lineHeight: "21px" }}
       >
         View offer
       </button>
@@ -280,6 +300,38 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Animated brand-blue header (Figma shape 29218:1838). On mount the
+// bottom edge morphs from a straight line into the convex curve and
+// settles with a gentle bounce. viewBox is 100×40 with
+// preserveAspectRatio "none" so it stretches full-width; the edges sit
+// at y=20 and the centre dips to y=40 (control y=60 → quadratic
+// midpoint 40). Calls onDone when the morph finishes.
+function AnimatedHeaderCurve() {
+  const straight = "M0,0 H100 V20 Q50,20 0,20 Z";
+  const curved = "M0,0 H100 V20 Q50,60 0,20 Z";
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 100 40"
+      preserveAspectRatio="none"
+      className="block w-full"
+      // Pull up 12px so the top tucks behind the BrandBar (z-30).
+      // overflow:visible so the spring's overshoot (the curve dipping
+      // past y=40 mid-bounce) isn't clipped by the SVG box.
+      style={{ height: 40, marginTop: -12, overflow: "visible" }}
+    >
+      <motion.path
+        fill="var(--mrq-blue)"
+        initial={{ d: straight }}
+        animate={{ d: curved }}
+        // Soft, fluid spring with a gentle (~20%) overshoot — bouncy but
+        // elegant rather than rubbery.
+        transition={{ type: "spring", stiffness: 170, damping: 12, mass: 1, delay: 0.04 }}
+      />
+    </svg>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────
 
 export default function RewardsPage() {
@@ -291,32 +343,21 @@ export default function RewardsPage() {
         background: "linear-gradient(180deg, #0c2287 0%, #181f43 100%)",
       }}
     >
-      {/* Brand-blue header (Figma shape 29218:1838) — continues the
-          BrandBar's blue and curves down into the gradient. The convex
-          bottom (elliptical bottom radius) dips lowest at the centre and
-          rises at the left/right edges, matching the design. Pure CSS so
-          it stays pinned full-width at any frame size. */}
-      <div
-        aria-hidden
-        style={{
-          height: 40,
-          // Pull up 12px so the shape's top tucks behind the BrandBar
-          // (which paints above it at z-30) and the curve sits higher.
-          marginTop: -12,
-          backgroundColor: "var(--mrq-blue)",
-          borderBottomLeftRadius: "50% 20px",
-          borderBottomRightRadius: "50% 20px",
-        }}
-      />
+      {/* Brand-blue header — morphs straight → curved on entry. */}
+      <AnimatedHeaderCurve />
 
       <div className="flex flex-col gap-[32px] px-[16px] pt-[12px]">
-        {/* Greeting */}
-        <h1
+        {/* Greeting — fades in as the curve is forming, a beat before it
+            fully settles. */}
+        <motion.h1
           className="font-extrabold text-white text-center w-full"
           style={{ fontSize: 24, lineHeight: 1.3, letterSpacing: -0.24 }}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
           Evening, James
-        </h1>
+        </motion.h1>
 
         {/* Pick your daily free game */}
         <section className="flex flex-col gap-[12px]">
@@ -333,8 +374,10 @@ export default function RewardsPage() {
             {DAILY_GAMES.map((game) => (
               <div
                 key={game.title}
-                className="shrink-0 w-full"
-                style={{ flex: "0 0 100%", scrollSnapAlign: "start" }}
+                className="shrink-0"
+                // Slightly narrower than the viewport so a sliver (~24px)
+                // of the next card peeks on the right.
+                style={{ flex: "0 0 calc(100% - 40px)", scrollSnapAlign: "start" }}
               >
                 <DailyGameCard game={game} />
               </div>

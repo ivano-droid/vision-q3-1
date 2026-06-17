@@ -64,6 +64,37 @@ const ICON_LABEL_GAP = 2;
 const LABEL_FONT_SIZE = 11;
 const LABEL_LINE_H = 16;
 
+// ── Tokens (single source of truth) ────────────────────────────────
+// All colours / effects for the bar live here so the component can be
+// isolated and its states + variants shown cleanly (e.g. for handoff).
+type Surface = "light" | "rewards" | "arena";
+
+// Frosted bar surface — per surface. Rewards is a touch less
+// transparent so the bar holds up against its dark background.
+const BAR_BG: Record<Surface, string> = {
+  light: "rgba(255, 255, 255, 0.6)",
+  rewards: "rgba(255, 255, 255, 0.72)",
+  arena: "rgba(255, 255, 255, 0.6)",
+};
+const BAR_BLUR = "blur(20px) saturate(140%)"; // backdrop-filter
+const BAR_SHADOW = "0 4px 22px 0 rgba(17, 17, 17, 0.12)";
+
+// Active-tab pill — lavender on light pages; white on dark surfaces
+// (rewards/arena) where lavender washes out to light blue.
+const PILL_BG_LIGHT = "rgba(188, 202, 233, 0.75)";
+const PILL_BG_DARK = "rgba(255, 255, 255, 0.92)";
+
+// Scrim (the fade behind the floating bar). One entry per surface; the
+// colour matches that page's bottom edge so the fade doesn't smear.
+// `height` is the px height of the colour fade — rewards is a little
+// shorter than the default.
+const SCRIM: Record<Surface, { solid: string; fade: string; height: number }> = {
+  light: { solid: "#ffffff", fade: "rgba(255, 255, 255, 0)", height: 90 },
+  rewards: { solid: "#181f43", fade: "rgba(24, 31, 67, 0)", height: 70 },
+  arena: { solid: "#0C2287", fade: "rgba(12, 34, 135, 0)", height: 90 },
+};
+const DARK_SURFACES: Surface[] = ["rewards", "arena"];
+
 type TabKey = "lobby" | "search" | "rewards";
 
 type Tab = {
@@ -115,25 +146,62 @@ function activeTabFor(pathname: string): TabKey {
   return "lobby";
 }
 
+// Progressive ("gradient") blur — a stack of backdrop-filter layers,
+// each masked to an overlapping band, with the blur strongest at the
+// bottom edge and fading to none toward the top. Behind the floating
+// bottom nav on every route, so content scrolling under the bar
+// dissolves into a frosted fade instead of a hard cut. Percentages are
+// of the layer's own height (the scrim region).
+const PROGRESSIVE_BLUR_LAYERS: { blur: number; mask: string }[] = [
+  { blur: 24, mask: "linear-gradient(to top, #000 0%, #000 12.5%, transparent 25%)" },
+  { blur: 16, mask: "linear-gradient(to top, transparent 0%, #000 12.5%, #000 25%, transparent 37.5%)" },
+  { blur: 10, mask: "linear-gradient(to top, transparent 12.5%, #000 25%, #000 37.5%, transparent 50%)" },
+  { blur: 6, mask: "linear-gradient(to top, transparent 25%, #000 37.5%, #000 50%, transparent 62.5%)" },
+  { blur: 3, mask: "linear-gradient(to top, transparent 37.5%, #000 50%, #000 62.5%, transparent 75%)" },
+  { blur: 1.5, mask: "linear-gradient(to top, transparent 50%, #000 62.5%, #000 75%, transparent 87.5%)" },
+  { blur: 0.5, mask: "linear-gradient(to top, transparent 62.5%, #000 75%, #000 100%)" },
+];
+
+function ProgressiveBlur() {
+  return (
+    // Bottom-anchored, a little shorter than the full scrim region so the
+    // blur band doesn't reach as high up the page.
+    <div
+      aria-hidden
+      className="absolute inset-x-0 bottom-0"
+      style={{ height: "calc(var(--bottom-nav-h) + 16px)" }}
+    >
+      {PROGRESSIVE_BLUR_LAYERS.map((layer, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            backdropFilter: `blur(${layer.blur}px)`,
+            WebkitBackdropFilter: `blur(${layer.blur}px)`,
+            maskImage: layer.mask,
+            WebkitMaskImage: layer.mask,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function BottomNav() {
   const pathname = usePathname();
   const active = activeTabFor(pathname);
-  // Scrim renders on every route EXCEPT /discover (see skipScrim
-  // below). The colour matches the page surface at the bottom edge
-  // so the fade doesn't smear into a different tone behind the nav:
-  //   /rewards            → #181f43 (the bottom stop of the rewards
-  //                         gradient — dark navy)
-  //   /arena              → #0C2287 (Brand/900, arena's gradient floor)
-  //   everything else     → #ffffff (default for #f5f5f5 routes)
-  let scrimSolid = "#ffffff";
-  let scrimFade = "rgba(255, 255, 255, 0)";
-  if (pathname.startsWith("/rewards")) {
-    scrimSolid = "#181f43";
-    scrimFade = "rgba(24, 31, 67, 0)";
-  } else if (pathname.startsWith("/arena")) {
-    scrimSolid = "#0C2287";
-    scrimFade = "rgba(12, 34, 135, 0)";
-  }
+  // Which surface the bar sits on — picks the scrim colour and the
+  // active-pill colour from the tokens above. The scrim renders on
+  // every route EXCEPT /discover (see skipScrim below).
+  const surface: Surface = pathname.startsWith("/rewards")
+    ? "rewards"
+    : pathname.startsWith("/arena")
+      ? "arena"
+      : "light";
+  const { solid: scrimSolid, fade: scrimFade, height: scrimHeight } = SCRIM[surface];
+  const barBg = BAR_BG[surface];
+  const pillBg = DARK_SURFACES.includes(surface) ? PILL_BG_DARK : PILL_BG_LIGHT;
 
   const rowRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<TabKey, HTMLAnchorElement | null>>({
@@ -185,11 +253,15 @@ export function BottomNav() {
           }}
         >
           <div
-            className="absolute inset-x-0 bottom-0 h-[90px]"
+            className="absolute inset-x-0 bottom-0"
             style={{
+              height: scrimHeight,
               background: `linear-gradient(to top, ${scrimSolid} 30%, ${scrimFade} 100%)`,
             }}
           />
+          {/* Progressive blur on top of the colour fade — frosted at the
+              bottom edge, dissolving to clear toward the top. */}
+          <ProgressiveBlur />
         </div>
       )}
 
@@ -218,15 +290,10 @@ export function BottomNav() {
               paddingLeft: BAR_PAD_L,
               paddingRight: BAR_PAD_R,
               gap: TAB_GAP,
-              // 0.6 alpha + 20px backdrop-blur: a touch more
-              // transparent than before (was 0.72) so the frosted-
-              // glass blur of the content scrolling under the bar is
-              // clearly visible, while the bar still reads as a white
-              // surface and keeps the tab icons legible.
-              backgroundColor: "rgba(255, 255, 255, 0.6)",
-              backdropFilter: "blur(20px) saturate(140%)",
-              WebkitBackdropFilter: "blur(20px) saturate(140%)",
-              boxShadow: "0 4px 22px 0 rgba(17, 17, 17, 0.12)",
+              backgroundColor: barBg,
+              backdropFilter: BAR_BLUR,
+              WebkitBackdropFilter: BAR_BLUR,
+              boxShadow: BAR_SHADOW,
             }}
           >
             {/* Active pill — width animates between 80 (outer tabs)
@@ -240,15 +307,9 @@ export function BottomNav() {
                   top: PILL_TOP,
                   left: 0,
                   height: PILL_H,
-                  // Was #dee3f7 → #c5d1ef → #b1c0e6 → #bccae9. The
-                  // solid #bccae9 still felt too bright sitting on
-                  // the translucent-white bar, so we switched to a
-                  // lavender at lower opacity — the same hue family
-                  // shows through softer because the bar's
-                  // backdrop-blur tinted white blends in. 75%
-                  // opacity reads as "lit" without competing with
-                  // the active icon for attention.
-                  backgroundColor: "rgba(188, 202, 233, 0.75)",
+                  // Lavender on light pages, white on dark surfaces —
+                  // see PILL_BG_* tokens at the top of the file.
+                  backgroundColor: pillBg,
                 }}
                 initial={false}
                 animate={{ x: pill.x, width: pill.w }}
