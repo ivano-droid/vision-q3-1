@@ -127,11 +127,8 @@ export function LoginGate() {
           style={{
             left: "var(--frame-right-offset)",
             right: "var(--frame-right-offset)",
-            // Figma modal-curtain: translucent light grey with a 16px
-            // backdrop blur so the My Q lobby shows softly behind.
-            backgroundColor: "rgba(242,243,243,0.9)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
+            // Solid Figma surface/primary — no see-through curtain.
+            backgroundColor: "#f2f3f3",
           }}
           initial={{ opacity: 1 }}
           animate={{ opacity: exiting ? 0 : 1 }}
