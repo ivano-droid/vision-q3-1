@@ -291,21 +291,22 @@ export default function RewardsPage() {
         background: "linear-gradient(180deg, #0c2287 0%, #181f43 100%)",
       }}
     >
-      {/* Brand-blue header shape (Figma "Ellipse 3621", 29209:1234) — sits
-          directly under the BrandBar and curves into the gradient. Full
-          width via preserveAspectRatio="none", so it stays pinned left
-          and right at any frame width. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/rewards/v2/glow.svg"
-        alt=""
+      {/* Brand-blue header (Figma shape 29218:1838) — continues the
+          BrandBar's blue and curves down into the gradient. The convex
+          bottom (elliptical bottom radius) dips lowest at the centre and
+          rises at the left/right edges, matching the design. Pure CSS so
+          it stays pinned full-width at any frame size. */}
+      <div
         aria-hidden
-        draggable={false}
-        className="block w-full select-none pointer-events-none"
-        style={{ height: 44 }}
+        style={{
+          height: 56,
+          backgroundColor: "var(--mrq-blue)",
+          borderBottomLeftRadius: "50% 28px",
+          borderBottomRightRadius: "50% 28px",
+        }}
       />
 
-      <div className="flex flex-col gap-[32px] px-[16px] pt-[8px]">
+      <div className="flex flex-col gap-[32px] px-[16px] pt-[12px]">
         {/* Greeting */}
         <h1
           className="font-extrabold text-white text-center w-full"
