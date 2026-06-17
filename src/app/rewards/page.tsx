@@ -146,82 +146,80 @@ function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
 
 function InProgressCard() {
   return (
-    <div className="bg-white rounded-[16px] overflow-hidden w-full">
-      {/* Padded blue inner card */}
-      <div className="p-[8px]">
-        <div
-          className="flex flex-col gap-[12px] rounded-[12px] p-[12px]"
-          style={{ backgroundColor: "#e6eafa" }}
-        >
-          {/* Header — reward image + title + progress */}
-          <div className="flex items-center gap-[12px] w-full">
-            <div
-              className="shrink-0 overflow-hidden rounded-[12px]"
-              style={{ width: 52, height: 52, border: "2px solid #ffffff" }}
+    <div className="w-full flex flex-col">
+      {/* Light-blue reward card sitting directly on the gradient */}
+      <div
+        className="flex flex-col gap-[12px] rounded-[12px] p-[12px]"
+        style={{ backgroundColor: "#e6eafa" }}
+      >
+        {/* Header — reward image + title + progress */}
+        <div className="flex items-center gap-[12px] w-full">
+          <div
+            className="shrink-0 overflow-hidden rounded-[12px]"
+            style={{ width: 52, height: 52, border: "2px solid #ffffff" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/rewards/v2/progress-reward.png"
+              alt="May Megahaul Cash Bonus"
+              draggable={false}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+            <p
+              className="font-extrabold truncate"
+              style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/assets/rewards/v2/progress-reward.png"
-                alt="May Megahaul Cash Bonus"
-                draggable={false}
-                className="w-full h-full object-cover"
+              May Megahaul Cash Bonus
+            </p>
+            {/* Progress bar */}
+            <div
+              className="relative w-full overflow-hidden rounded-full"
+              style={{ height: 8, backgroundColor: "#ced5f5" }}
+            >
+              <div
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{
+                  width: "62%",
+                  background:
+                    "linear-gradient(90deg, #f05cd2 0%, #d000ca 54%, #8f47f1 99%)",
+                }}
               />
             </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
-              <p
-                className="font-extrabold truncate"
-                style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
-              >
-                May Megahaul Cash Bonus
-              </p>
-              {/* Progress bar */}
-              <div
-                className="relative w-full overflow-hidden rounded-full"
-                style={{ height: 8, backgroundColor: "#ced5f5" }}
-              >
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full"
-                  style={{
-                    width: "70%",
-                    background:
-                      "linear-gradient(90deg, #f05cd2 0%, #d000ca 54%, #8f47f1 99%)",
-                  }}
-                />
-              </div>
-            </div>
           </div>
-
-          {/* Wagered / valid-until row */}
-          <div
-            className="flex items-center justify-between w-full font-medium"
-            style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
-          >
-            <p>
-              Wagered <span className="font-extrabold">£14</span> of{" "}
-              <span className="font-extrabold">£20</span>
-            </p>
-            <p>
-              Valid until <span className="font-extrabold">30th</span> May
-            </p>
-          </div>
-
-          {/* CTA */}
-          <button
-            type="button"
-            className="w-full flex items-center justify-center rounded-[8px] px-[16px] py-[8px] font-extrabold active:scale-[0.99] transition-transform"
-            style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 16, lineHeight: "24px" }}
-          >
-            Complete to unlock £50 cash
-          </button>
         </div>
+
+        {/* Wagered / valid-until row */}
+        <div
+          className="flex items-center justify-between w-full font-medium"
+          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
+        >
+          <p>
+            Wagered <span className="font-extrabold">£14</span> of{" "}
+            <span className="font-extrabold">£20</span>
+          </p>
+          <p>
+            Valid until <span className="font-extrabold">30th</span> May
+          </p>
+        </div>
+
+        {/* CTA */}
+        <button
+          type="button"
+          className="w-full flex items-center justify-center rounded-[8px] px-[16px] py-[8px] font-extrabold active:scale-[0.99] transition-transform"
+          style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 16, lineHeight: "24px" }}
+        >
+          Complete to unlock £50 cash
+        </button>
       </div>
 
-      {/* Footer T&C */}
+      {/* Footer T&C — white on the gradient */}
       <p
-        className="font-medium px-[12px] pt-[4px] pb-[8px]"
-        style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "#0e1120", opacity: 0.7 }}
+        className="font-medium pt-[8px] px-[4px]"
+        style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "#ffffff", opacity: 0.7 }}
       >
-        {DAILY_TC} <FullTcs />
+        {DAILY_TC} <FullTcs light />
       </p>
     </div>
   );
@@ -320,8 +318,13 @@ export default function RewardsPage() {
         <section className="flex flex-col gap-[12px]">
           <SectionTitle>Pick your daily free game</SectionTitle>
           <div
-            className="flex gap-[16px] overflow-x-auto [&::-webkit-scrollbar]:hidden"
-            style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}
+            className="flex gap-[16px] overflow-x-auto -mx-[16px] px-[16px] [&::-webkit-scrollbar]:hidden"
+            style={{
+              scrollbarWidth: "none",
+              scrollSnapType: "x mandatory",
+              scrollPaddingLeft: 16,
+              scrollPaddingRight: 16,
+            }}
           >
             {DAILY_GAMES.map((game) => (
               <div
