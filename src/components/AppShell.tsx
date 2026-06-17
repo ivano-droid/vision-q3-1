@@ -57,9 +57,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   // step around the leaderboard); the shell just provides matching
   // surfaces so the BrandBar curve wedge and any overscroll show
   // the right colour.
-  const isBrandSurface = pathname.startsWith("/arena");
+  const isBrandSurface =
+    pathname.startsWith("/arena") || pathname.startsWith("/rewards");
   const BRAND_TOP_BG = "#0a2ecb"; // brand-blue (matches BrandBar)
-  const BRAND_BOTTOM_BG = "#0C2287"; // Brand/900 — darker blue
+  const BRAND_BOTTOM_BG = "#181f43"; // deep navy — gradient floor for rewards/arena overscroll
 
   // /play/* are full-bleed game pages — they paint their own dark
   // navy backdrop and their own in-game header (back + balance pill),

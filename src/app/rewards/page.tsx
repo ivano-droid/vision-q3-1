@@ -1,121 +1,67 @@
 "use client";
 
 /**
- * Rewards page — rebuilt from Figma node 373-32406.
+ * Rewards page — rebuilt from Figma node 29209:1233 (CR Q2 Iterations).
  *
- * Layout:
- *   1. "For you" — blue header with a compact horizontal reward card
- *   2. "Offers"  — list of offer cards with wide banner images
+ * Dark-blue gradient surface (the BrandBar + BottomNav are provided by
+ * the prototype shell, so they're intentionally omitted here):
+ *   1. "Evening, James"            — greeting
+ *   2. "Pick your daily free game" — horizontal rail of game cards
+ *   3. "In Progress"               — active reward with progress bar
+ *   4. "This weeks offers"         — 2-column grid of offer cards
+ *
+ * The previous design is preserved in ./RewardsPageLegacy.tsx.
  */
 
-// ── For You ───────────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────
 
-const FOR_YOU = {
-  image: "/assets/rewards/u-vs-q-1.png",
-  title: "U vs. Q",
-  subtitle: "Play for free every day",
-  tc: "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply.",
-};
+const DAILY_TC =
+  "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply.";
 
-// ── Offers ────────────────────────────────────────────────────────
-
-const OFFERS = [
+const DAILY_GAMES = [
   {
-    image: "/assets/rewards/offer-friday-frenzy.png",
-    title: "Q's Friday Night Frenzy",
-    subtitle: "Every Friday. 5pm.",
-    cta: "Play Friday",
-    tc: "Free spins drop at 5pm every Friday. Spins expire in 7 days once credited.",
-    hasTCs: true,
-  },
-  {
-    image: "/assets/rewards/offer-big-catch.png",
-    title: "Claim 25 free spins",
-    subtitle: "When you Deposit & Play £50",
-    cta: "Claim Offer",
-    tc: "Deposit & wager £50+. Use code GOONIES25. 25 x 10p free spins credited. Spins expire 24hrs once claimed.",
-    hasTCs: true,
-  },
-  {
-    image: "/assets/rewards/slingoreward.png",
-    title: "Feeling hot or cold? 🔥❄️",
-    subtitle: "Get 10 Free Rounds on Slingo",
-    cta: "Claim Offer",
-    tc: "Deposit & Play £25 on Slingo Fire & Ice with code ICEFIRE & get 10 rounds, each worth £0.20. Ends on 07.06.26",
-    hasTCs: true,
-  },
-  {
-    image: "/assets/rewards/u-vs-q-2.png",
-    title: "Take on Q. Win free spins",
+    image: "/assets/rewards/v2/daily-uvsq.png",
+    title: "U vs. Q",
     subtitle: "Crack Q before it cracks you",
-    cta: "Play for free",
-    tc: "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply.",
-    hasTCs: false,
   },
   {
-    image: "/assets/rewards/offer-lobstermania.png",
-    title: "No wagering. No hoops",
-    subtitle: "We're a casino. Not an obstacle course",
-    cta: "Play",
-    tc: "You win it once. You keep it. No nonsense.",
-    hasTCs: false,
-  },
-  {
-    image: "/assets/rewards/offer-extra-1.png",
-    title: "Thumbs up to emails",
-    subtitle: "Free spins, promos & more",
-    cta: "Update Here",
-    tc: "No spam, just the good stuff. Marketing preferences can be updated at any time.",
-    hasTCs: false,
-  },
-  {
-    image: "/assets/rewards/offer-extra-2.png",
-    title: "Invite a friend. Get spins",
-    subtitle: "You both win (for now)",
-    cta: "Claim offer",
-    tc: "New referees only. £10 lifetime deposit & wager for both. 7-day expiry.",
-    hasTCs: true,
-  },
-  {
-    image: "/assets/rewards/catchreward.png",
-    title: "Do the admin. Get spins.",
-    subtitle: "30 seconds. 10 free spins. Job done.",
-    cta: "Claim offer",
-    tc: "Deposit £10+ for 10 free spins on Squealin' Riches. 24h expiry.",
-    hasTCs: true,
+    image: "/assets/rewards/v2/daily-spotkick.png",
+    title: "Spot kick",
+    subtitle: "Slot it past the keeper",
   },
 ];
 
-// ── Components ────────────────────────────────────────────────────
+const WEEKLY_OFFERS = [
+  {
+    image: "/assets/rewards/v2/weekly-frenzy.png",
+    title: "Q's Friday Night Frenzy",
+    subtitle: "Hop on one of the best days of the week with a chance to win big!",
+  },
+  {
+    image: "/assets/rewards/v2/weekly-slingo.png",
+    title: "Slingo spins",
+    subtitle: "Lobstermania is back in the house!",
+  },
+  {
+    image: "/assets/rewards/v2/weekly-catch.png",
+    title: "Catch 25 free spins",
+    subtitle: "Deposit & Play £50 on The Big Catch 2",
+  },
+  {
+    image: "/assets/rewards/v2/weekly-disco.png",
+    title: "Dab & Disco Bingo",
+    subtitle: "With a bonus Bingo is cool again",
+  },
+];
 
-function GiftIcon() {
-  return (
-    <svg
-      aria-hidden
-      width={12}
-      height={12}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--mrq-blue-dark)"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect x="3" y="8" width="18" height="4" rx="1" />
-      <path d="M12 8v13" />
-      <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-      <path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" />
-    </svg>
-  );
-}
+// ── Icons ─────────────────────────────────────────────────────────
 
 function PlayIcon() {
   return (
     <svg
       aria-hidden
-      width={12}
-      height={13}
+      width={13}
+      height={14}
       viewBox="0 0 12 13"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -129,241 +75,210 @@ function PlayIcon() {
   );
 }
 
-function ForYouCard() {
+// Small T&C line reused under the daily cards and the in-progress card.
+function FullTcs({ light }: { light?: boolean }) {
   return (
-    <div
-      className="mx-[16px] mt-[12px] rounded-[16px] overflow-hidden bg-white"
-      style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.14)" }}
+    <span
+      className="font-extrabold underline"
+      style={{ color: light ? "#ffffff" : "#0e1120" }}
     >
-      {/* Content — light-blue inner box */}
+      Full T&amp;Cs
+    </span>
+  );
+}
+
+// ── Components ────────────────────────────────────────────────────
+
+function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
+  return (
+    <div className="shrink-0 flex flex-col" style={{ width: 328, maxWidth: "86%" }}>
+      {/* White game row */}
+      <div className="bg-white flex items-center gap-[12px] rounded-[12px] px-[12px] py-[8px]">
+        <div
+          className="shrink-0 overflow-hidden rounded-[9px]"
+          style={{ width: 56, height: 56 }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={game.image}
+            alt={game.title}
+            draggable={false}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col" style={{ color: "var(--mrq-blue-dark)" }}>
+          <p className="font-bold truncate" style={{ fontSize: 17, lineHeight: "21px" }}>
+            {game.title}
+          </p>
+          <p
+            className="font-medium truncate"
+            style={{ fontSize: 12, lineHeight: "16px", letterSpacing: 0.2 }}
+          >
+            {game.subtitle}
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label={`Play ${game.title}`}
+          className="shrink-0 inline-flex items-center justify-center rounded-full active:scale-[0.95] transition-transform"
+          style={{ width: 32, height: 32, backgroundColor: "var(--mrq-blue)" }}
+        >
+          <PlayIcon />
+        </button>
+      </div>
+
+      {/* Footer T&C — sits on the gradient, in white */}
+      <p
+        className="font-medium pt-[8px] px-[4px]"
+        style={{
+          fontSize: 10,
+          lineHeight: 1.6,
+          letterSpacing: 0.2,
+          color: "#ffffff",
+          opacity: 0.7,
+        }}
+      >
+        {DAILY_TC} <FullTcs light />
+      </p>
+    </div>
+  );
+}
+
+function InProgressCard() {
+  return (
+    <div className="bg-white rounded-[16px] overflow-hidden w-full">
+      {/* Padded blue inner card */}
       <div className="p-[8px]">
         <div
-          className="flex items-center gap-[16px] rounded-[12px] p-[12px]"
-          style={{ backgroundColor: "#eff2ff" }}
+          className="flex flex-col gap-[12px] rounded-[12px] p-[12px]"
+          style={{ backgroundColor: "#e6eafa" }}
         >
-          {/* Thumbnail with overlapping Free badge */}
-          <div className="relative shrink-0" style={{ width: 56 }}>
+          {/* Header — reward image + title + progress */}
+          <div className="flex items-center gap-[12px] w-full">
             <div
-              className="overflow-hidden rounded-[12px]"
-              style={{ width: 56, height: 56, border: "2px solid white" }}
+              className="shrink-0 overflow-hidden rounded-[12px]"
+              style={{ width: 52, height: 52, border: "2px solid #ffffff" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={FOR_YOU.image}
-                alt={FOR_YOU.title}
+                src="/assets/rewards/v2/progress-reward.png"
+                alt="May Megahaul Cash Bonus"
                 draggable={false}
                 className="w-full h-full object-cover"
               />
             </div>
-            <span
-              className="absolute inline-flex items-center justify-center gap-[4px] h-[20px] rounded-[4px]"
-              style={{
-                left: 8,
-                bottom: -3,
-                paddingLeft: 4,
-                paddingRight: 8,
-                backgroundColor: "#ffffff",
-                boxShadow: "0 4px 4px rgba(10, 46, 203, 0.24)",
-              }}
-            >
-              <GiftIcon />
-              <span
-                className="font-extrabold"
-                style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
+            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+              <p
+                className="font-extrabold truncate"
+                style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
               >
-                Free
-              </span>
-            </span>
+                May Megahaul Cash Bonus
+              </p>
+              {/* Progress bar */}
+              <div
+                className="relative w-full overflow-hidden rounded-full"
+                style={{ height: 8, backgroundColor: "#ced5f5" }}
+              >
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    width: "70%",
+                    background:
+                      "linear-gradient(90deg, #f05cd2 0%, #d000ca 54%, #8f47f1 99%)",
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center gap-[2px]">
-            <p
-              className="font-extrabold truncate"
-              style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue-dark)" }}
-            >
-              {FOR_YOU.title}
+          {/* Wagered / valid-until row */}
+          <div
+            className="flex items-center justify-between w-full font-medium"
+            style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
+          >
+            <p>
+              Wagered <span className="font-extrabold">£14</span> of{" "}
+              <span className="font-extrabold">£20</span>
             </p>
-            <p
-              className="font-medium truncate"
-              style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
-            >
-              {FOR_YOU.subtitle}
+            <p>
+              Valid until <span className="font-extrabold">30th</span> May
             </p>
           </div>
 
-          {/* Play button */}
+          {/* CTA */}
           <button
             type="button"
-            aria-label={`Play ${FOR_YOU.title}`}
-            className="shrink-0 inline-flex items-center justify-center rounded-full active:scale-[0.95] transition-transform"
-            style={{ width: 32, height: 32, backgroundColor: "var(--mrq-blue)" }}
+            className="w-full flex items-center justify-center rounded-[8px] px-[16px] py-[8px] font-extrabold active:scale-[0.99] transition-transform"
+            style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 16, lineHeight: "24px" }}
           >
-            <PlayIcon />
+            Complete to unlock £50 cash
           </button>
         </div>
       </div>
 
       {/* Footer T&C */}
       <p
-        className="px-[12px] pt-[4px] pb-[8px]"
+        className="font-medium px-[12px] pt-[4px] pb-[8px]"
         style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "#0e1120", opacity: 0.7 }}
       >
-        {FOR_YOU.tc}{" "}
-        <span className="font-extrabold underline">Full T&amp;Cs</span>
+        {DAILY_TC} <FullTcs />
       </p>
     </div>
   );
 }
 
-// Compact horizontal reward card (Figma 29094:4800) — game tile +
-// title / expiry / "Read more", with a play button and an "x30" reward
-// badge stacked on the right. Sits below the U vs. Q card on the blue
-// "For you" surface, so it uses its own #e6eafa fill + white border.
-function CompactRewardCard() {
+function WeeklyOfferCard({ offer }: { offer: (typeof WEEKLY_OFFERS)[number] }) {
   return (
-    <div
-      className="mx-[16px] mt-[16px] flex items-center gap-[16px] rounded-[12px] p-[12px]"
-      style={{ backgroundColor: "#e6eafa", border: "2px solid #ffffff" }}
-    >
-      {/* Game tile */}
-      <div
-        className="shrink-0 overflow-hidden rounded-[12px]"
-        style={{ width: 56, height: 56, border: "2px solid #ffffff", backgroundColor: "#cccdd0" }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/assets/rewards/mayan-tower.png"
-          alt="Mayan Tower"
-          draggable={false}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
-        <p
-          className="font-extrabold truncate"
-          style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
-        >
-          Mayan Tower
-        </p>
-        <p
-          className="font-medium truncate"
-          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "#d000ca" }}
-        >
-          Expires in 6 days
-        </p>
-        <p
-          className="font-medium truncate"
-          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
-        >
-          Read more
-        </p>
-      </div>
-
-      {/* Play button + reward badge */}
-      <div className="shrink-0 flex flex-col items-center gap-[4px]">
-        <button
-          type="button"
-          aria-label="Play Mayan Tower"
-          className="inline-flex items-center justify-center rounded-full active:scale-[0.95] transition-transform"
-          style={{ width: 32, height: 32, backgroundColor: "var(--mrq-blue)" }}
-        >
-          <PlayIcon />
-        </button>
-        <span
-          className="inline-flex items-center justify-center rounded-full font-extrabold"
-          style={{
-            paddingLeft: 8,
-            paddingRight: 8,
-            paddingTop: 2,
-            paddingBottom: 2,
-            backgroundColor: "#ced5f5",
-            color: "var(--mrq-blue)",
-            fontSize: 14,
-            lineHeight: 1.6,
-            letterSpacing: 0.1,
-          }}
-        >
-          x30
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function OfferCard({ offer }: { offer: typeof OFFERS[0] }) {
-  return (
-    <div
-      className="rounded-[16px] overflow-hidden bg-white"
-      style={{ boxShadow: "0 1px 2px rgba(14,17,32,0.12)" }}
-    >
-      {/* Banner image — inset 8px, rounded-8 (310×120 aspect from Figma) */}
-      <div className="p-[8px] pb-0">
+    <div className="bg-white rounded-[16px] pt-[8px] px-[8px] pb-[12px] flex flex-col gap-[16px]">
+      <div className="flex-1 flex flex-col gap-[8px]">
         <div
-          className="relative w-full overflow-hidden rounded-[8px]"
-          style={{ aspectRatio: "310/120" }}
+          className="w-full overflow-hidden rounded-[12px]"
+          style={{ aspectRatio: "149.5 / 100", border: "1px solid #ffffff" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={offer.image}
             alt={offer.title}
             draggable={false}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-cover"
           />
         </div>
-      </div>
-
-      {/* Card body */}
-      <div className="px-[16px] pt-[12px] pb-[16px]">
-        {/* Title — 18px ExtraBold brand-dark */}
-        <p
-          className="font-extrabold"
-          style={{ fontSize: 18, lineHeight: 1.6, letterSpacing: "-0.3px", color: "var(--mrq-blue-dark)" }}
-        >
-          {offer.title}
-        </p>
-        {/* Subtitle — 12px Medium pink */}
-        <p
-          className="font-medium"
-          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "#e75be3" }}
-        >
-          {offer.subtitle}
-        </p>
-        {/* Caveat / T&Cs — 12px SemiBold neutral */}
-        <p
-          className="mt-[4px] font-semibold"
-          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "#808289" }}
-        >
-          {offer.tc}
-          {offer.hasTCs && (
-            <>
-              {" "}
-              <span className="font-extrabold underline">Full T&amp;Cs</span>
-            </>
-          )}
-        </p>
-
-        {/* Buttons — equal width, rounded-8, 40px */}
-        <div className="mt-[16px] flex items-center gap-[8px]">
-          <button
-            type="button"
-            className="flex-1 h-[40px] rounded-[8px] font-extrabold active:scale-[0.98] transition-transform"
-            style={{ backgroundColor: "#f2f3f3", color: "var(--mrq-blue)", fontSize: 14, lineHeight: 1.7 }}
+        <div className="flex flex-col">
+          <p
+            className="font-extrabold"
+            style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue)" }}
           >
-            Read more
-          </button>
-          <button
-            type="button"
-            className="flex-1 h-[40px] rounded-[8px] font-extrabold active:scale-[0.98] transition-transform"
-            style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 14, lineHeight: 1.7 }}
+            {offer.title}
+          </p>
+          <p
+            className="font-medium"
+            style={{ fontSize: 9, lineHeight: 1.6, letterSpacing: 0.2, color: "#0e1120" }}
           >
-            {offer.cta}
-          </button>
+            {offer.subtitle}
+          </p>
         </div>
       </div>
+      <button
+        type="button"
+        className="w-full flex items-center justify-center rounded-[7px] py-[4px] font-extrabold active:scale-[0.98] transition-transform"
+        style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 12, lineHeight: "21px" }}
+      >
+        View offer
+      </button>
     </div>
+  );
+}
+
+// ── Section heading ───────────────────────────────────────────────
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="font-extrabold text-white w-full"
+      style={{ fontSize: 16, lineHeight: 1.6 }}
+    >
+      {children}
+    </p>
   );
 }
 
@@ -371,42 +286,52 @@ function OfferCard({ offer }: { offer: typeof OFFERS[0] }) {
 
 export default function RewardsPage() {
   return (
-    <div style={{ backgroundColor: "#f2f3f3", minHeight: "100%" }}>
-
-      {/* For you — blue header section */}
-      <div
-        className="pb-[24px]"
-        style={{
-          backgroundColor: "var(--mrq-blue)",
-          borderBottomLeftRadius: "16px",
-          borderBottomRightRadius: "16px",
-        }}
-      >
-        <p
-          className="px-[16px] pt-[16px] pb-[4px] font-bold text-white"
-          style={{ fontSize: 20, letterSpacing: "-0.3px" }}
+    <div
+      style={{
+        minHeight: "100%",
+        background: "linear-gradient(180deg, #0c2287 0%, #181f43 100%)",
+      }}
+    >
+      <div className="flex flex-col gap-[32px] px-[16px] pt-[12px]">
+        {/* Greeting */}
+        <h1
+          className="font-extrabold text-white text-center w-full"
+          style={{ fontSize: 24, lineHeight: 1.3, letterSpacing: -0.24 }}
         >
-          For you
-        </p>
-        <ForYouCard />
-        <CompactRewardCard />
-      </div>
+          Evening, James
+        </h1>
 
-      {/* Offers */}
-      <div className="px-[16px] pt-[20px] pb-[32px]">
-        <p
-          className="mb-[14px] font-extrabold"
-          style={{ fontSize: 20, color: "var(--mrq-blue)", letterSpacing: "-0.3px" }}
-        >
-          Offers
-        </p>
-        <div className="flex flex-col gap-[16px]">
-          {OFFERS.map((offer) => (
-            <OfferCard key={offer.title} offer={offer} />
-          ))}
-        </div>
-      </div>
+        {/* Pick your daily free game */}
+        <section className="flex flex-col gap-[12px]">
+          <SectionTitle>Pick your daily free game</SectionTitle>
+          <div
+            className="flex gap-[16px] overflow-x-auto -mx-[16px] px-[16px] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}
+          >
+            {DAILY_GAMES.map((game) => (
+              <div key={game.title} style={{ scrollSnapAlign: "start" }}>
+                <DailyGameCard game={game} />
+              </div>
+            ))}
+          </div>
+        </section>
 
+        {/* In Progress */}
+        <section className="flex flex-col gap-[12px]">
+          <SectionTitle>In Progress</SectionTitle>
+          <InProgressCard />
+        </section>
+
+        {/* This weeks offers */}
+        <section className="flex flex-col gap-[12px]">
+          <SectionTitle>This weeks offers</SectionTitle>
+          <div className="grid grid-cols-2 gap-x-[12px] gap-y-[12px]">
+            {WEEKLY_OFFERS.map((offer) => (
+              <WeeklyOfferCard key={offer.title} offer={offer} />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
