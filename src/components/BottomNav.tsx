@@ -121,12 +121,16 @@ export function BottomNav() {
   // Scrim renders on every route EXCEPT /discover (see skipScrim
   // below). The colour matches the page surface at the bottom edge
   // so the fade doesn't smear into a different tone behind the nav:
-  //   /rewards, /arena     → #0C2287 (Brand/900 dark blue, matches
-  //                          the bottom stop of both pages' gradients)
-  //   everything else      → #ffffff (default for #f5f5f5 routes)
+  //   /rewards            → #181f43 (the bottom stop of the rewards
+  //                         gradient — dark navy)
+  //   /arena              → #0C2287 (Brand/900, arena's gradient floor)
+  //   everything else     → #ffffff (default for #f5f5f5 routes)
   let scrimSolid = "#ffffff";
   let scrimFade = "rgba(255, 255, 255, 0)";
-  if (pathname.startsWith("/arena")) {
+  if (pathname.startsWith("/rewards")) {
+    scrimSolid = "#181f43";
+    scrimFade = "rgba(24, 31, 67, 0)";
+  } else if (pathname.startsWith("/arena")) {
     scrimSolid = "#0C2287";
     scrimFade = "rgba(12, 34, 135, 0)";
   }
