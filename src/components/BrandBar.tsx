@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
 import { useShell } from "@/lib/filter-context";
 import { CountUpAmount } from "@/components/CountUpAmount";
+
+// Feature flag — the pink-diamond Season Pass pill. Hidden for now in
+// favour of the Qoins coin pill; flip to `true` to bring it back.
+const SHOW_DIAMOND_BUTTON = false;
 
 // Tappable wallet pill = a flex row that's NOT a button, with the
 // cash text on the left acting as its own button (opens deposit
@@ -62,6 +67,8 @@ function backHrefFor(pathname: string): string {
 export function BrandBar() {
   const { openSideNav, openDeposit, bootDone } = useShell();
   const pathname = usePathname();
+  const router = useRouter();
+  const isQoins = pathname.startsWith("/qoins");
   const backArrow = showsBackArrow(pathname);
   const backHref = backHrefFor(pathname);
   const backLabel =
@@ -100,13 +107,40 @@ export function BrandBar() {
         {/* Left side: logo OR back-arrow, depending on route. Title is
             now rendered by the page itself so the brand bar stays
             visually quiet. */}
-        {backArrow ? (
+        {isQoins ? (
+          // On /qoins the MrQ logo is replaced by a back pill (Figma
+          // 2523:54567) carrying the same glass styling as the balance
+          // pill. Taps return to the previous page.
+          <motion.button
+            type="button"
+            data-component="Button"
+            onClick={() => router.back()}
+            aria-label="Back"
+            className="grid size-[44px] place-items-center rounded-full"
+            // Grows in on mount — i.e. when landing on the Qoins page.
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              transformOrigin: "left center",
+              backgroundColor: "rgba(157, 171, 234, 0.32)",
+              backdropFilter: "blur(20px) saturate(140%)",
+              WebkitBackdropFilter: "blur(20px) saturate(140%)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+            }}
+          >
+            <ArrowLeftIcon className="size-[22px] text-white" />
+          </motion.button>
+        ) : backArrow ? (
           // Translucent white pill mirroring the balance/avatar pill on
           // the right edge of the bar — matches Figma 177:35024 where
           // the back arrow sits inside the same glass chrome instead of
           // floating as a bare chevron.
           <Link
             href={backHref}
+            data-component="Button"
             aria-label={backLabel}
             className="grid size-[40px] place-items-center rounded-full active:scale-[0.96] transition-transform"
             style={{
@@ -125,27 +159,46 @@ export function BrandBar() {
             aria-label="Go to lobby"
             className="shrink-0 active:scale-[0.96] transition-transform"
           >
+            {/* Grows in on mount — i.e. when arriving at a logo route
+                (e.g. tapping the Qoins back button to return to My Q),
+                rather than appearing instantly. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/logo-mrq.svg" alt="MrQ" className="h-[26px] w-[67px]" />
+            <motion.img
+              src="/assets/logo-mrq.svg"
+              alt="MrQ"
+              className="h-[26px] w-[67px]"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              style={{ transformOrigin: "left center" }}
+            />
           </Link>
         )}
 
         {/* Right side: pass pill + wallet pill. */}
         <div className="flex items-center gap-[8px]">
-          {/* Season Pass entry — pink diamond inside the same glass
-              pill family as the balance/avatar. Routes to /passes
-              (Weekly Pass landing, Figma 266:47065). Visible on every
-              route that renders the BrandBar; AppShell already hides
-              the BrandBar entirely on /passes/* and /play/* so the
-              pill doesn't appear where it shouldn't. */}
+          {/* Qoins entry — gold "Q" coin in the same glass pill family
+              as the diamond/balance. Routes to the /qoins page (the
+              Qoins prototype embedded inside the app shell), so it's a
+              normal in-app navigation that keeps the BrandBar +
+              BottomNav in place. */}
           <Link
-            href="/passes"
-            aria-label="Open Season Pass"
-            className="grid h-[48px] place-items-center rounded-full active:scale-[0.95] transition-transform"
+            href="/qoins"
+            aria-label="Open Qoins"
+            data-component="Button"
+            data-qoins-pill
+            className="flex h-[44px] items-center gap-[6px] rounded-full active:scale-[0.95] transition-transform"
             style={{
-              paddingLeft: 18,
-              paddingRight: 18,
-              backgroundColor: "rgba(157, 171, 234, 0.32)",
+              paddingLeft: 12,
+              paddingRight: 16,
+              // Translucent pink pill — Figma bg-pink (2519:54379) —
+              // with the same glass treatment (blur + hairline border +
+              // top inner-highlight) as the balance pill beside it.
+              // design decision needed — this brand-pink hue (rgb 255,99,246)
+              // is not tokenised in the DS; the only DS pink is
+              // --colour-brand-pink-500 (#d000ca), a different magenta, so no
+              // faithful token match. Left as-is pending a DS decision.
+              backgroundColor: "rgba(255, 99, 246, 0.4)",
               backdropFilter: "blur(20px) saturate(140%)",
               WebkitBackdropFilter: "blur(20px) saturate(140%)",
               border: "1px solid rgba(255, 255, 255, 0.18)",
@@ -154,16 +207,50 @@ export function BrandBar() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/assets/nav-icons/diamond.svg"
+              src="/assets/nav-icons/qoin.png"
               alt=""
-              // Source SVG is 23×19 (≈1.21 ratio) — explicit width
-              // + auto height preserves the aspect so the gem
-              // doesn't squash. Sized to ~24px tall to sit
-              // proportionally inside the 48px pill.
-              style={{ width: 26, height: "auto", display: "block" }}
+              data-component="Icon"
+              style={{ width: 24, height: 24, display: "block" }}
               draggable={false}
             />
+            <span data-component="Typography" className="text-white text-[16px] font-extrabold leading-none pt-[2px]">
+              87
+            </span>
           </Link>
+
+          {/* Season Pass entry — pink diamond inside the same glass
+              pill family as the balance/avatar. Routes to /passes
+              (Weekly Pass landing, Figma 266:47065). Hidden for now
+              (replaced by the Qoins coin above); flip
+              SHOW_DIAMOND_BUTTON back to `true` to restore it. */}
+          {SHOW_DIAMOND_BUTTON && (
+            <Link
+              href="/passes"
+              aria-label="Open Season Pass"
+              className="grid h-[48px] place-items-center rounded-full active:scale-[0.95] transition-transform"
+              style={{
+                paddingLeft: 18,
+                paddingRight: 18,
+                backgroundColor: "rgba(157, 171, 234, 0.32)",
+                backdropFilter: "blur(20px) saturate(140%)",
+                WebkitBackdropFilter: "blur(20px) saturate(140%)",
+                border: "1px solid rgba(255, 255, 255, 0.18)",
+                boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/nav-icons/diamond.svg"
+                alt=""
+                // Source SVG is 23×19 (≈1.21 ratio) — explicit width
+                // + auto height preserves the aspect so the gem
+                // doesn't squash. Sized to ~24px tall to sit
+                // proportionally inside the 48px pill.
+                style={{ width: 26, height: "auto", display: "block" }}
+                draggable={false}
+              />
+            </Link>
+          )}
 
           {/* Wallet pill — two tappable halves inside one rounded
               container. The cash text on the left opens the deposit
@@ -173,7 +260,7 @@ export function BrandBar() {
               a button, so each half captures its own taps without
               one stealing from the other. */}
           <div
-            className="flex items-center gap-[12px] h-[48px] pl-[22px] pr-[5px] rounded-full"
+            className="flex items-center gap-[12px] h-[44px] pl-[18px] pr-[5px] rounded-full"
             style={{
               backgroundColor: "rgba(157, 171, 234, 0.32)",
               backdropFilter: "blur(20px) saturate(140%)",
@@ -184,9 +271,10 @@ export function BrandBar() {
           >
           <button
             type="button"
+            data-component="Button"
             onClick={openDeposit}
             aria-label="Make a deposit"
-            className="text-white text-[16px] leading-none font-extrabold pt-[1px] active:scale-[0.95] transition-transform"
+            className="text-white text-[16px] leading-none font-extrabold pt-[2px] active:scale-[0.95] transition-transform"
           >
             {/* Wallet count-up — gated on bootDone so it waits for
                 the SimpleSplashGate (z-65) to clear before the IO
@@ -219,18 +307,19 @@ export function BrandBar() {
           />
           <button
             type="button"
+            data-component="Button"
             onClick={openSideNav}
             aria-label="Open account menu"
-            className="relative size-[38px] rounded-full overflow-hidden bg-white shrink-0 active:scale-[0.95] transition-transform"
+            className="relative size-[36px] rounded-full overflow-hidden bg-white shrink-0 active:scale-[0.95] transition-transform"
             style={{
-              border: "2px solid rgba(8, 24, 100, 0.65)",
+              border: "2px solid #ffffff",
             }}
           >
             <Image
               src="/assets/avatar.png"
               alt=""
               fill
-              sizes="38px"
+              sizes="36px"
               className="object-cover"
               priority
             />
@@ -245,6 +334,7 @@ export function BrandBar() {
 function BackIcon({ className }: { className?: string }) {
   return (
     <svg
+      data-component="Icon"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -256,6 +346,26 @@ function BackIcon({ className }: { className?: string }) {
       focusable={false}
     >
       <path d="m14 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+// Full arrow-left (shaft + head) — Figma "Icons/outline/arrow-left".
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      data-component="Icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+      focusable={false}
+    >
+      <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
   );
 }

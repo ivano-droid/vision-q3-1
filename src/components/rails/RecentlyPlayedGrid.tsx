@@ -63,7 +63,7 @@ export function RecentlyPlayedGrid({
           (16px) lives on the header so the title aligns with the
           rest of the feed. */}
       <div className="px-[16px] pb-[10px]">
-        <h2 className="text-[18px] font-extrabold text-[var(--mrq-blue)]">
+        <h2 data-component="Typography" className="text-[18px] font-extrabold text-[var(--mrq-blue)]">
           {title}
         </h2>
       </div>
@@ -93,6 +93,7 @@ function RecentlyPlayedTile({ game }: { game: RecentlyPlayedGame }) {
 
   return (
     <button
+      data-component="Card"
       type="button"
       aria-label={game.name}
       onClick={() => {

@@ -1,0 +1,549 @@
+/* ============================================================
+   FONTS
+   ============================================================ */
+@font-face { font-family:'Gilroy'; font-weight:400; src:url('./fonts/gilroy-regular.woff2') format('woff2'); font-display:swap; }
+@font-face { font-family:'Gilroy'; font-weight:500; src:url('./fonts/gilroy-medium.woff2') format('woff2'); font-display:swap; }
+@font-face { font-family:'Gilroy'; font-weight:700; src:url('./fonts/gilroy-bold.woff2') format('woff2'); font-display:swap; }
+@font-face { font-family:'Gilroy'; font-weight:800; src:url('./fonts/gilroy-extrabold.woff2') format('woff2'); font-display:swap; }
+@font-face { font-family:'Gilroy'; font-weight:900; src:url('./fonts/gilroy-black.woff2') format('woff2'); font-display:swap; }
+
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --brand500:#0a2ecb;
+  --brand900:#0c2287;
+  --brand-deep:#0322ab;
+  --brand100:#ced5f5;
+  --brand-hairline:#ced5f5;
+  --pink:#f67ad9;          /* hero number */
+  --pink-pill:#ff63f6;     /* nav qoins pill */
+  --cyan:#00b3ff;
+  --yellow:#ffdf00;
+  --ink:#0e1120;
+  --page:#f2f3f3;
+  --card:#ffffff;
+  --muted:#676972;         /* tertiary text */
+  --neutral200:#cccdd0;
+  --neutral100:#e6e6e7;
+  --shadow-card:none;      /* cards layer by colour, not drop shadow */
+  --font:'Gilroy',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --accent:var(--pink);    /* tweakable hero accent */
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font);
+  background:#d8dadf;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ============================================================
+   STAGE — center the 375px phone screen
+   ============================================================ */
+#root{min-height:100vh;}
+.stage{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  background:#d8dadf;
+}
+.screen{
+  position:relative;
+  width:375px;
+  min-height:100vh;
+  background:var(--page);
+  overflow:hidden;
+  box-shadow:0 0 60px rgba(14,17,32,.18);
+}
+.screen *{user-select:none;-webkit-user-select:none;}
+
+/* scrollable content region */
+.scroll{
+  position:relative;
+  height:100vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ============================================================
+   HEADER (blue, rounded bottom)
+   ============================================================ */
+.header{
+  position:relative;
+  background:var(--brand500);
+  border-radius:0 0 24px 24px;
+  padding:0;
+}
+/* balance card + spins cards stacked inside the blue */
+.hero-stack{
+  display:flex;flex-direction:column;gap:0;
+  padding:16px 17px 18px;
+}
+.statusbar{
+  height:54px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:0 24px 6px;
+  color:#fff;
+}
+.statusbar .time{font-weight:800;font-size:15px;letter-spacing:-.2px;}
+.statusbar .sysicons{display:flex;align-items:center;gap:7px;}
+.statusbar .sysicons svg{display:block;}
+
+.nav{
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  margin-top:14px;
+}
+.iconbtn{
+  width:44px;height:44px;border-radius:999px;border:0;
+  background:rgba(255,255,255,.30);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#fff;flex:none;
+  transition:background .18s var(--easeOutBack,ease);
+}
+.iconbtn:hover{background:rgba(255,255,255,.42);}
+.iconbtn:active{transform:none;}
+
+.nav-right{display:flex;align-items:center;gap:10px;}
+.qoins-pill{
+  display:flex;align-items:center;gap:5px;
+  height:44px;padding:0 16px 0 11px;border-radius:999px;
+  background:rgba(255,99,246,.40);
+}
+.pill-glow{animation:pillglow .7s ease;}
+@keyframes pillglow{0%,100%{box-shadow:0 0 0 0 rgba(255,223,0,0);}40%{box-shadow:0 0 0 5px rgba(255,223,0,.5);}}
+.qoins-pill .coin{width:22px;height:22px;}
+.qoins-pill .amt{color:#fff;font-weight:700;font-size:18px;letter-spacing:-.3px;}
+
+.balance-pill{
+  display:flex;align-items:center;gap:0;
+  height:44px;padding:0 4px 0 16px;border-radius:999px;
+  background:rgba(255,255,255,.30);
+}
+.balance-pill .bal{color:#fff;font-weight:700;font-size:16px;white-space:nowrap;}
+.balance-pill .divider{width:1px;height:20px;background:rgba(217,217,217,.85);margin:0 12px;}
+.balance-pill .avatar{
+  width:36px;height:36px;border-radius:50%;overflow:hidden;background:#fff;flex:none;
+  box-shadow:inset 0 0 0 2px var(--brand500),4px 4px 8px 0 rgba(10,46,203,.24);
+}
+.balance-pill .avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;}
+
+/* ============================================================
+   COIN IMAGE helper (crops the whitespace padding)
+   ============================================================ */
+.coin{
+  background-image:url('./assets/qoin.png');
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:90%;
+  flex:none;
+}
+
+/* ============================================================
+   HERO BALANCE CARD
+   ============================================================ */
+.body{
+  position:relative;
+  margin-top:0;
+  padding:0 17px 40px;
+  z-index:2;
+}
+.hero-card{
+  background:var(--card);
+  border-radius:16px;
+  box-shadow:inset 0 0 0 1px var(--brand-hairline);
+  padding:20px 12px 12px;
+  position:relative;
+}
+.hero-top{display:flex;align-items:center;justify-content:center;gap:13px;}
+.hero-coin{width:78px;height:78px;position:relative;}
+.hero-coin::after{
+  content:"";position:absolute;inset:6px;border-radius:50%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.4) 49%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.4) 51%,transparent 60%);
+  background-size:260% 260%;background-position:140% 0;
+  mix-blend-mode:screen;opacity:0;
+  animation:coinShimmer 5s ease-in-out infinite;
+}
+@keyframes coinShimmer{
+  0%{background-position:150% 0;opacity:0;}
+  8%{opacity:.8;}
+  16%{background-position:-50% 0;opacity:.8;}
+  24%,100%{background-position:-50% 0;opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){.hero-coin::after{animation:none;}}
+.hero-info{flex:0 1 auto;min-width:0;}
+.hero-label{font-weight:700;font-size:14px;letter-spacing:-.26px;color:#000;line-height:1.4;}
+.hero-amount{
+  font-weight:800;font-size:49px;line-height:1.05;letter-spacing:-1px;
+  color:var(--accent);margin:1px 0 2px;font-variant-numeric:tabular-nums;
+  transition:color .3s ease;
+}
+.hero-sub{font-size:12px;line-height:1.5;letter-spacing:-.26px;color:#000;}
+.hero-sub b{font-weight:800;}
+.claim-btn{
+  margin-top:13px;width:100%;height:40px;border:0;border-radius:8px;
+  background:var(--brand500);color:#fff;font-family:var(--font);
+  font-weight:800;font-size:15px;letter-spacing:.1px;cursor:pointer;
+  transition:background .18s ease,opacity .2s ease;
+}
+.claim-btn:hover{background:var(--brand900);}
+.claim-btn:disabled{background:var(--brand100);color:#fff;cursor:default;}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.spins-card{
+  position:relative;margin-top:12px;
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border-radius:16px;padding:10px;
+}
+.spins-card.spins-enter{
+  overflow:hidden;transform-origin:top center;
+  animation:spinsEnter .66s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes spinsEnter{
+  0%{ max-height:0;margin-top:0;opacity:0;transform:translateY(-8px) scale(.7); }
+  38%{ max-height:120px;margin-top:12px;opacity:1;transform:translateY(0) scale(.86); }
+  68%{ transform:scale(1.05); }
+  100%{ max-height:120px;margin-top:12px;transform:scale(1); }
+}
+.spins-thumb{
+  flex:none;width:52px;height:52px;border-radius:10px;
+  background:#d2e1ff center/cover no-repeat;
+}
+.spins-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.spins-title{font-weight:800;font-size:16px;letter-spacing:-.3px;color:var(--brand900);line-height:1.1;}
+.spins-sub{font-weight:500;font-size:13px;color:var(--muted);}
+.spins-play{
+  flex:none;height:38px;padding:0 16px;border:0;border-radius:8px;
+  background:var(--brand500);color:#fff;font-family:var(--font);font-weight:800;font-size:14px;
+  cursor:pointer;transition:background .18s ease;
+}
+.spins-play:hover{background:var(--brand900);}
+
+.tabs{
+  display:flex;gap:0;background:#fff;border-radius:999px;padding:4px;margin:40px 0 0;
+}
+.tab{
+  flex:1;height:38px;border:0;border-radius:999px;background:transparent;cursor:pointer;
+  font-family:var(--font);font-weight:800;font-size:14px;letter-spacing:.1px;
+  color:var(--brand900);display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .22s var(--easeOutBack,ease),color .22s ease;
+}
+.tab.active{background:var(--brand900);color:#fff;}
+.tab .tab-count{font-weight:800;font-size:14px;opacity:.85;margin-left:-2px;}
+.tab .badge{
+  min-width:18px;height:18px;border-radius:999px;background:var(--brand500);
+  color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+}
+.tab.active .badge{background:rgba(255,255,255,.22);}
+
+/* ============================================================
+   SECTIONS / RAILS
+   ============================================================ */
+.section{margin-top:18px;}
+.section-first{margin-top:24px;}
+.legal{
+  margin:14px auto 0;max-width:300px;padding:0 8px;
+  text-align:center;font-weight:500;font-size:11px;line-height:1.45;
+  color:var(--neutral400,#9aa0b4);text-wrap:pretty;
+}
+.legal-link{color:inherit;font-weight:800;text-decoration:underline;}
+.section-title{font-weight:800;font-size:18px;letter-spacing:-.3px;color:#0C2287;margin:0 0 14px;}
+
+.rail{
+  display:flex;gap:14px;overflow-x:auto;padding:4px 17px 8px;margin:-4px -17px 0;
+  scroll-snap-type:x proximity;scroll-padding-left:17px;scrollbar-width:none;
+}
+.rail::-webkit-scrollbar{display:none;}
+
+/* reward card */
+.offer{
+  flex:0 0 212px;scroll-snap-align:start;position:relative;
+  background:#fff;border-radius:16px;overflow:hidden;
+  padding:0;display:flex;flex-direction:column;
+}
+.offer.is-best{box-shadow:inset 0 0 0 2px var(--yellow500);}
+.offer-flag{
+  position:absolute;top:10px;left:10px;z-index:2;
+  display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;
+  background:var(--yellow500);color:var(--brand900);
+  font-weight:800;font-size:11px;letter-spacing:-.1px;
+}
+.offer-img{
+  width:100%;height:130px;background:#d2e1ff center/cover no-repeat;
+}
+.offer-img.avatar-bg{background-color:#d2e1ff;background-size:contain;background-position:center;}
+
+/* image swap on purchase (sunglasses) — crossfade, both layers preloaded */
+.offer-img-swap{position:relative;overflow:hidden;background:#d2e1ff;}
+.offer-img-swap .oi{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+}
+.offer-img-swap .oi-top{opacity:0;transition:opacity .3s ease;}
+.offer-img-swap .oi-top.on{opacity:1;}
+@media (prefers-reduced-motion:reduce){.offer-img-swap .oi-top{transition:none;}}
+.offer-body{padding:12px 14px 14px;display:flex;flex-direction:column;}
+.offer-title{font-weight:800;font-size:20px;letter-spacing:-.3px;color:var(--brand500);margin:0 0 4px;line-height:1.2;}
+.offer-desc{font-weight:500;font-size:12px;line-height:1.5;letter-spacing:.2px;color:var(--muted);margin:0;min-height:36px;}
+.cost-btn{
+  margin-top:13px;height:40px;border:0;border-radius:8px;background:var(--brand500);
+  color:#fff;font-family:var(--font);font-weight:800;font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .18s ease;
+}
+.cost-btn:hover{background:var(--brand900);}
+.cost-btn:disabled{background:var(--brand500);color:#fff;cursor:not-allowed;opacity:.4;}
+.cost-btn:disabled:hover{background:var(--brand500);}
+.cost-btn:disabled .coin{opacity:1;}
+.cost-btn .coin{width:26px;height:26px;}
+
+/* purchased state — "Purchased" replaces the desc, "Remove" takes the CTA slot */
+.owned-text{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  color:var(--success500,#00b64c);font-weight:800;font-size:13px;
+}
+.owned-text .check{color:var(--success500,#00b64c);}
+.remove-btn{
+  margin-top:13px;height:40px;border:0;border-radius:8px;
+  background:var(--page);color:var(--muted);
+  font-family:var(--font);font-weight:800;font-size:15px;cursor:pointer;
+  transition:background .18s ease,color .18s ease;
+}
+.remove-btn:hover{background:var(--danger50,#ffe5e5);color:var(--danger500,#d50000);}
+
+/* big free-to-play card */
+.bigcard{
+  background:#fff;border-radius:16px;overflow:hidden;padding:0;
+}
+.bigcard-img{width:100%;height:160px;overflow:hidden;background:#0a2ecb center/cover no-repeat;}
+.bigcard-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.bigcard-body{padding:14px;}
+.bigcard .offer-title{margin-top:0;}
+.bigcard .offer-desc{min-height:auto;max-width:305px;}
+.play-btn{
+  margin-top:18px;width:100%;height:40px;border:0;border-radius:8px;background:var(--brand500);
+  color:#fff;font-family:var(--font);font-weight:800;font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  transition:background .18s ease;
+}
+.play-btn:hover{background:var(--brand900);}
+.play-btn .play-cost{
+  display:flex;align-items:center;gap:6px;padding-left:12px;
+  border-left:1px solid rgba(255,255,255,.28);
+}
+.play-btn .play-cost .coin{width:22px;height:22px;}
+.play-btn:disabled{background:var(--brand500);cursor:not-allowed;opacity:.4;}
+.play-btn:disabled:hover{background:var(--brand500);}
+
+/* how Qoins works — swipeable carousel */
+.how{margin-top:18px;}
+.how.how-lead{margin-top:22px;}
+.how.how-closing{
+  overflow:hidden;
+  animation:howCollapse .42s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes howCollapse{
+  0%{ max-height:340px;opacity:1;transform:translateY(0);margin-top:22px;
+      padding-bottom:0; }
+  40%{ opacity:0;transform:translateY(-6px); }
+  100%{ max-height:0;opacity:0;margin-top:0;transform:translateY(-6px); }
+}
+.how-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;}
+.how-top .section-title{margin:0;line-height:1.1;}
+.how-close{
+  flex:none;border:0;background:none;cursor:pointer;padding:0;
+  color:var(--brand500);font-family:var(--font);font-weight:800;font-size:14px;letter-spacing:-.2px;line-height:1.1;
+  transition:color .18s ease;
+}
+.how-close:hover{color:var(--brand900);}
+.how .section-title{margin-bottom:13px;}
+.how-rail{
+  display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;
+  /* Break out of the body's 17px padding so the carousel scrolls
+     edge-to-edge (full bleed) like the other rails. */
+  margin:0 -17px;padding:0 17px;scroll-padding-left:17px;
+  touch-action:pan-x;overscroll-behavior-x:contain;
+}
+.how-rail::-webkit-scrollbar{display:none;}
+.how-card{flex:0 0 100%;scroll-snap-align:start;padding:0 2px;box-sizing:border-box;}
+.how-inner{
+  background:#fff;border-radius:16px;padding:14px 16px;min-height:0;
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+}
+.how-head{display:flex;align-items:center;gap:10px;}
+.how-icon{
+  width:30px;height:30px;border-radius:9px;flex:none;
+  background:var(--brand50,#e8ecfc);color:var(--brand500);
+  display:flex;align-items:center;justify-content:center;
+}
+.how-h{font-weight:800;font-size:18px;letter-spacing:-.3px;color:var(--brand900);line-height:1.1;}
+.how-p{margin:0;font-weight:500;font-size:14px;line-height:1.45;color:var(--muted);}
+
+/* page dots */
+.dots{display:flex;gap:6px;justify-content:center;margin:16px 0 30px;}
+.how .dots{margin:10px 0 2px;}
+.dots .dot{width:7px;height:7px;border-radius:999px;background:var(--neutral200);transition:background .2s,width .2s;cursor:pointer;}
+.dots .dot.active{background:var(--brand500);width:20px;}
+
+/* ============================================================
+   MY COLLECTION — placeholder empty state
+   ============================================================ */
+.collection{padding:0 0 40px;margin-top:8px;}
+
+/* owned-reward list */
+.col-list{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.col-item{
+  display:flex;align-items:center;gap:13px;background:#fff;border-radius:16px;
+  padding:12px;box-shadow:var(--shadow-card);
+}
+.col-thumb{
+  flex:0 0 64px;width:64px;height:64px;border-radius:10px;overflow:hidden;
+  background:#d2e1ff center/cover no-repeat;
+}
+.col-thumb.avatar{background-size:contain;background-color:#d2e1ff;}
+.col-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.col-title{font-weight:800;font-size:16px;letter-spacing:-.3px;color:var(--brand900);line-height:1.15;}
+.col-sub{font-weight:500;font-size:13px;color:var(--muted);line-height:1.2;}
+.col-chip{
+  align-self:flex-start;margin-top:3px;display:inline-flex;align-items:center;
+  height:22px;padding:0 9px;border-radius:999px;font-weight:700;font-size:11px;letter-spacing:-.1px;
+  background:var(--brand50);color:var(--brand500);
+}
+.col-chip.soon{background:var(--attention50);color:var(--attention900);}
+.col-btn{
+  flex:none;height:38px;padding:0 16px;border:0;border-radius:8px;cursor:pointer;
+  font-family:var(--font);font-weight:800;font-size:14px;transition:background .18s ease,color .18s ease;
+}
+.col-btn.play{background:var(--brand500);color:#fff;}
+.col-btn.play:hover{background:var(--brand900);}
+.col-btn:not(.play){background:var(--brand500);color:#fff;}
+.col-btn:not(.play):hover{background:var(--brand900);}
+.col-btn.is-equipped{background:var(--brand50);color:var(--brand500);}
+.col-btn.is-equipped:hover{background:var(--brand100);}
+.empty{
+  margin-top:40px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:44px 28px;background:#fff;border-radius:16px;box-shadow:inset 0 0 0 1px var(--brand-hairline);
+}
+.empty .ring{
+  width:96px;height:96px;border-radius:50%;background:var(--page);
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  box-shadow:inset 0 0 0 2px var(--brand100);
+}
+.empty .ring .coin{width:60px;height:60px;opacity:.85;}
+.empty h3{margin:0 0 6px;font-weight:800;font-size:20px;letter-spacing:-.3px;color:var(--brand900);}
+.empty p{margin:0 0 20px;font-weight:500;font-size:14px;line-height:1.5;color:var(--muted);max-width:230px;}
+.empty .ghost-btn{
+  height:42px;padding:0 22px;border:0;border-radius:8px;background:var(--brand500);color:#fff;
+  font-family:var(--font);font-weight:800;font-size:15px;cursor:pointer;transition:background .18s ease;
+}
+.empty .ghost-btn:hover{background:var(--brand900);}
+
+/* ============================================================
+   CELEBRATION FX
+   ============================================================ */
+.fx-layer{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+.fx-coin{position:absolute;width:34px;height:34px;will-change:transform,opacity;}
+.fx-confetti{position:absolute;width:9px;height:14px;border-radius:2px;will-change:transform,opacity;}
+.fx-star{position:absolute;width:14px;height:14px;will-change:transform,opacity;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+.fx-ring{position:absolute;width:120px;height:120px;border-radius:50%;border:4px solid var(--brand500);will-change:transform,opacity;}
+.pop{animation:pop .55s var(--easeOutBack,cubic-bezier(.34,1.56,.64,1));}
+@keyframes pop{0%{transform:scale(1);}35%{transform:scale(1.32);}100%{transform:scale(1);}}
+.glow{animation:glow 1s ease;}
+@keyframes glow{0%{text-shadow:0 0 0 rgba(246,122,217,0);}40%{text-shadow:0 0 26px rgba(246,122,217,.85);}100%{text-shadow:0 0 0 rgba(246,122,217,0);}}
+
+/* claimed checkmark flash on button */
+.claim-btn .check{display:inline-flex;vertical-align:-3px;margin-right:6px;}
+
+/* toast — polished collection callout */
+.qtoast{
+  position:absolute;left:16px;right:16px;bottom:24px;
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border-radius:14px;z-index:40;
+  padding:12px 14px;
+  box-shadow:0 10px 30px rgba(12,34,135,.22),inset 0 0 0 1px var(--brand-hairline);
+  animation:toastin .42s var(--easeOutBack,cubic-bezier(.34,1.56,.64,1));
+}
+.qtoast-icon{
+  flex:none;width:38px;height:38px;border-radius:50%;
+  background:var(--success500);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.qtoast-avatar{
+  flex:none;width:40px;height:40px;border-radius:50%;overflow:hidden;background:#fff;
+  box-shadow:inset 0 0 0 2px var(--brand500),3px 3px 7px 0 rgba(10,46,203,.22);
+}
+.qtoast-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;}
+.qtoast-text{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.qtoast-title{font-weight:800;font-size:15px;letter-spacing:-.2px;color:var(--brand900);line-height:1.2;}
+.qtoast-sub{font-weight:500;font-size:13px;color:var(--muted);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+@keyframes toastin{from{opacity:0;transform:translateY(16px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* ============================================================
+   PAGE-LOAD INTRO — blue top bar (carried from the previous
+   screen) grows downward over grey, then the white card fades in,
+   then the rest of the page fades up.
+   ============================================================ */
+@media (prefers-reduced-motion:no-preference){
+  .screen.intro .header{ animation:introHeader .42s cubic-bezier(.4,0,.2,1) .08s both; }
+  .screen.intro .hero-card{ animation:introCard .28s ease .4s both; }
+  .screen.intro .body,
+  .screen.intro .dots{ animation:introBody .3s ease .58s both; }
+}
+@keyframes introHeader{
+  /* Start clipped to the navbar's bottom edge (the strip hidden behind
+     the navbar), so the rounded bottom is fully formed there, then
+     grow down to full height. */
+  0%{ clip-path:inset(0 0 calc(100% - var(--qoins-nav-h)) 0 round 0 0 24px 24px); }
+  100%{ clip-path:inset(0 0 0 0 round 0 0 24px 24px); }
+}
+@keyframes introCard{
+  0%{ opacity:0; }
+  100%{ opacity:1; }
+}
+@keyframes introBody{
+  0%{ opacity:0; transform:translateY(12px); }
+  100%{ opacity:1; transform:none; }
+}
+
+/* ============================================================
+   EMBEDDED-IN-APP OVERRIDES
+   When this prototype runs INSIDE the main MrQ app (ported natively
+   onto the /qoins route), the global BrandBar + BottomNav supply the
+   chrome and the page uses the normal document scroll. Drop the
+   standalone phone-mock framing + the internal 100vh scroller so the
+   blue header scrolls away under the sticky BrandBar, and add bottom
+   clearance so the last content clears the floating BottomNav.
+   ============================================================ */
+.stage{ background:transparent; min-height:0; display:block; }
+.screen{ width:100%; min-height:0; box-shadow:none; overflow:visible; }
+.scroll{ height:auto; overflow:visible; }
+
+/* The blue header extends UP behind the sticky BrandBar (pulled up by
+   the navbar's height, with matching padding so the content stays in
+   place). That hidden strip gives the growing container enough height
+   for its bottom radius to be fully formed right at the navbar's
+   bottom edge — so on entry the rounded blue edge appears to peel down
+   from behind the navbar. */
+.qoins-root{ --qoins-nav-h: calc(env(safe-area-inset-top) + 72px); }
+.header{ margin-top: calc(-1 * var(--qoins-nav-h)); padding-top: var(--qoins-nav-h); }
+
+/* Action buttons use a 12px corner radius (was 8px). */
+.claim-btn,
+.cost-btn,
+.remove-btn,
+.play-btn,
+.spins-play{ border-radius:12px; }

@@ -219,7 +219,7 @@ export function BottomNav() {
               // scrolling under it gives a visible frosted-glass
               // tint through the bar. At 0.95 (the previous value)
               // the bar was too opaque and the blur was invisible.
-              backgroundColor: "rgba(255, 255, 255, 0.82)",
+              backgroundColor: "rgba(255, 255, 255, 0.72)",
               backdropFilter: "blur(18px) saturate(140%)",
               WebkitBackdropFilter: "blur(18px) saturate(140%)",
               boxShadow: "0 4px 22px 0 rgba(17, 17, 17, 0.12)",
@@ -294,6 +294,7 @@ function TabItem({
   return (
     <Link
       ref={anchorRef}
+      data-component="ListItem"
       href={tab.href}
       aria-current={active ? "page" : undefined}
       onPointerDown={() => {
@@ -311,6 +312,7 @@ function TabItem({
       }}
     >
       <div
+        data-component="Icon"
         className="relative"
         style={{ width: ICON_SIZE, height: ICON_SIZE }}
       >
@@ -340,18 +342,18 @@ function TabItem({
                 reduce
                   ? { duration: 0.18 }
                   : {
-                      opacity: { duration: 0.14, ease: [0.22, 1, 0.36, 1] },
+                      opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1] },
                       scale: {
                         type: "spring",
-                        stiffness: 520,
+                        stiffness: 400,
                         damping: 12,
-                        mass: 0.6,
+                        mass: 0.8,
                       },
                       rotate: {
                         type: "spring",
-                        stiffness: 480,
+                        stiffness: 370,
                         damping: 11,
-                        mass: 0.6,
+                        mass: 0.8,
                       },
                     }
               }
@@ -375,6 +377,7 @@ function TabItem({
       </div>
 
       <span
+        data-component="Typography"
         className="font-extrabold whitespace-nowrap"
         style={{
           fontSize: LABEL_FONT_SIZE,

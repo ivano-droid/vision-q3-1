@@ -1,0 +1,195 @@
+/* ===========================================================================
+   reward.css — styles for the "Claim Coins" concept gallery.
+   Relies on styles.css for @font-face Gilroy + brand tokens.
+   =========================================================================== */
+:root{ --rc-blue:#0a2ecb; --rc-blue-deep:#0c2287; --rc-page:#f2f3f3; --rc-ink:#0e1120; }
+
+/* ---- the mini phone screen ---- */
+.rc-screen{
+  width:300px; height:524px; border-radius:30px; overflow:hidden; position:relative;
+  background:var(--rc-page); font-family:var(--font,'Gilroy',sans-serif);
+  display:flex; flex-direction:column; user-select:none;
+  box-shadow:inset 0 0 0 1px rgba(12,34,135,.06);
+}
+.rc-coinimg{
+  display:inline-block; flex:none;
+  background:url('assets/qoin.png') center/188% no-repeat;
+}
+
+/* nav */
+.rc-nav{
+  height:54px; flex:none; display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; background:#fff;
+}
+.rc-brand{ font-weight:800; font-size:18px; letter-spacing:-.4px; color:var(--rc-blue); }
+.rc-wallet{
+  display:flex; align-items:center; gap:6px; height:34px; padding:0 13px 0 9px;
+  border-radius:999px; background:rgba(10,46,203,.08);
+}
+.rc-walletnum{ font-weight:800; font-size:15px; color:var(--rc-blue); font-variant-numeric:tabular-nums; }
+.rc-wallet.rc-glow{ animation:rc-glow .7s ease; }
+@keyframes rc-glow{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,223,0,0); } 40%{ box-shadow:0 0 0 6px rgba(255,223,0,.35); background:rgba(255,223,0,.18);} }
+
+/* blue stage */
+.rc-stage{
+  flex:1; position:relative; background:var(--rc-blue); border-radius:0 0 30px 30px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  padding:24px 18px 28px;
+}
+.rc-card{
+  width:100%; background:#fff; border-radius:18px; padding:24px 18px 20px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.rc-card .rc-coinimg{ margin-bottom:4px; }
+.rc-card-label{ font-weight:700; font-size:13px; color:#000; letter-spacing:-.2px; }
+.rc-balance{
+  font-weight:800; font-size:44px; line-height:1; letter-spacing:-1.5px;
+  color:var(--rc-accent,#f67ad9); font-variant-numeric:tabular-nums;
+}
+
+/* claim button */
+.rc-claim{
+  width:100%; height:50px; border:0; border-radius:12px; cursor:pointer;
+  background:#fff; color:var(--rc-blue); font-family:inherit; font-weight:800; font-size:16px;
+  letter-spacing:-.2px; box-shadow:0 6px 18px rgba(8,20,80,.22);
+  transition:background .18s, color .18s, transform .12s; position:relative; overflow:hidden;
+}
+.rc-claim:hover{ background:#fff7fd; }
+.rc-claim:disabled{ cursor:default; }
+.rc-replay{
+  position:absolute; bottom:10px; right:14px; z-index:6;
+  border:0; background:rgba(255,255,255,.16); color:#fff; font-family:inherit;
+  font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px; cursor:pointer;
+  backdrop-filter:blur(4px);
+}
+.rc-replay:hover{ background:rgba(255,255,255,.28); }
+
+/* light sweep (shimmer concept) */
+.rc-claim.rc-sweep::after{
+  content:''; position:absolute; inset:0; transform:translateX(-120%);
+  background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.85) 50%,transparent 70%);
+  animation:rc-swipe .7s ease forwards;
+}
+@keyframes rc-swipe{ to{ transform:translateX(120%); } }
+
+/* charge button */
+.rc-chargebtn{ background:#fff; }
+.rc-chargebtn.rc-charging{
+  background:linear-gradient(90deg,#ffdf00 var(--charge,0%),#fff var(--charge,0%));
+}
+.rc-chargebtn.rc-charged{ color:var(--rc-blue-deep); }
+
+/* fx layer */
+.rc-fx{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:5; }
+.rc-coin{
+  position:absolute; background:url('assets/qoin.png') center/188% no-repeat;
+  transform:translate(-50%,-50%); will-change:transform,opacity;
+}
+.rc-spark{
+  position:absolute; border-radius:50%; will-change:transform,opacity;
+  clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);
+}
+.rc-ring{
+  position:absolute; width:120px; height:120px; border-radius:50%; border:4px solid #fff;
+  will-change:transform,opacity;
+}
+
+/* reveal overlay (slot + flip share) */
+.rc-reveal{
+  position:absolute; left:0; right:0; top:calc(50% - 56px); z-index:6;
+  display:none; align-items:center; justify-content:center; gap:2px;
+  font-weight:800; color:#fff; pointer-events:none;
+}
+.rc-reveal.show{ display:flex; }
+.rc-reveal-plus{ font-size:48px; line-height:1; color:#ffdf00; margin-right:4px; }
+.rc-reveal:not(:has(.rc-reel)){ font-size:64px; letter-spacing:-2px; color:#ffdf00; text-shadow:0 4px 18px rgba(0,0,0,.25); }
+
+/* slot reels */
+.rc-reel{
+  display:inline-block; height:1.05em; width:.72em; overflow:hidden; font-size:64px; line-height:1.05;
+  text-align:center; color:#ffdf00; letter-spacing:-2px;
+}
+.rc-reelcol{ display:flex; flex-direction:column; }
+.rc-reelcol span{ height:1.05em; }
+
+/* treasure chest (CSS) */
+.rc-chest{
+  position:absolute; left:50%; top:calc(50% - 30px); transform:translateX(-50%);
+  width:120px; height:96px; z-index:6;
+}
+.rc-chest-base{
+  position:absolute; bottom:0; left:0; width:120px; height:60px; border-radius:8px 8px 12px 12px;
+  background:linear-gradient(#9a5a25,#6e3d16); box-shadow:inset 0 -6px 10px rgba(0,0,0,.3);
+}
+.rc-chest-lid{
+  position:absolute; bottom:54px; left:0; width:120px; height:46px;
+  border-radius:14px 14px 4px 4px; background:linear-gradient(#b3702f,#8a4f1e);
+  transform-origin:bottom center; box-shadow:inset 0 6px 8px rgba(255,255,255,.12);
+}
+.rc-chest-band{
+  position:absolute; left:50%; top:0; transform:translateX(-50%); width:18px; height:100%;
+  background:linear-gradient(#ffdf00,#e3a900); border-radius:3px;
+}
+.rc-chest-lock{
+  position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); width:18px; height:18px;
+  border-radius:4px; background:#ffdf00; box-shadow:0 0 0 2px #8a4f1e;
+}
+.rc-chest-rays{
+  position:absolute; left:50%; bottom:40px; transform:translateX(-50%);
+  width:220px; height:220px; opacity:0; pointer-events:none;
+  background:conic-gradient(from 0deg, rgba(255,223,0,.0) 0deg, rgba(255,223,0,.55) 8deg, rgba(255,223,0,0) 16deg,
+    rgba(255,223,0,.55) 32deg, rgba(255,223,0,0) 40deg, rgba(255,223,0,.55) 60deg, rgba(255,223,0,0) 68deg,
+    rgba(255,223,0,.55) 92deg, rgba(255,223,0,0) 100deg, rgba(255,223,0,.55) 128deg, rgba(255,223,0,0) 136deg,
+    rgba(255,223,0,.55) 160deg, rgba(255,223,0,0) 168deg, rgba(255,223,0,.55) 200deg, rgba(255,223,0,0) 208deg,
+    rgba(255,223,0,.55) 240deg, rgba(255,223,0,0) 248deg, rgba(255,223,0,.55) 280deg, rgba(255,223,0,0) 288deg,
+    rgba(255,223,0,.55) 320deg, rgba(255,223,0,0) 328deg, rgba(255,223,0,0) 360deg);
+  -webkit-mask:radial-gradient(circle, #000 18%, transparent 60%);
+  mask:radial-gradient(circle, #000 18%, transparent 60%);
+}
+
+/* mystery flip */
+.rc-flip{ background:transparent; box-shadow:none; perspective:700px; padding:0; }
+.rc-flip .rc-flip-face{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  border-radius:12px; backface-visibility:hidden; transition:transform .42s cubic-bezier(.34,1.56,.64,1);
+}
+.rc-flip-front{ background:#fff; color:var(--rc-blue); box-shadow:0 6px 18px rgba(8,20,80,.22); }
+.rc-flip-back{
+  background:linear-gradient(135deg,#d000ca,#7a00c2); color:#fff; font-size:30px;
+  transform:rotateY(180deg); box-shadow:0 6px 18px rgba(120,0,180,.34);
+}
+.rc-flip.flip0 .rc-flip-front{ transform:rotateY(0); }
+.rc-flip.flip0 .rc-flip-back{ transform:rotateY(180deg); }
+.rc-flip.flip1 .rc-flip-front,
+.rc-flip.flip2 .rc-flip-front{ transform:rotateY(180deg); }
+.rc-flip.flip1 .rc-flip-back{ transform:rotateY(0); }
+.rc-flip.flip2 .rc-flip-back{ transform:rotateY(360deg); }
+
+/* gold shimmer on the number */
+.rc-balance.rc-shine{
+  background:linear-gradient(110deg,var(--rc-accent,#f67ad9) 35%,#ffdf00 50%,var(--rc-accent,#f67ad9) 65%);
+  background-size:220% 100%; -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; animation:rc-shineMove 1s ease forwards;
+}
+@keyframes rc-shineMove{ from{ background-position:140% 0; } to{ background-position:-40% 0; } }
+
+/* =========================== NOTES PANEL =========================== */
+.rc-notes{
+  width:300px; background:#fff; border-radius:18px; padding:16px 16px 18px;
+  box-shadow:inset 0 0 0 1px rgba(12,34,135,.08); font-family:var(--font,'Gilroy',sans-serif);
+}
+.rc-notes-head{ display:flex; align-items:baseline; gap:9px; }
+.rc-num{ font-weight:800; font-size:13px; color:#b9c0d6; letter-spacing:1px; }
+.rc-notes h3{ margin:0; font-weight:800; font-size:18px; letter-spacing:-.4px; color:var(--rc-blue-deep); }
+.rc-badges{ display:flex; gap:7px; margin:11px 0 13px; }
+.rc-badge{ font-weight:800; font-size:11px; padding:4px 9px; border-radius:999px; }
+.rc-int{ background:rgba(10,46,203,.1); color:var(--rc-blue); }
+.rc-cx-easy{ background:#e6f7ee; color:#00964a; }
+.rc-cx-med{ background:#fff3d6; color:#9a6b00; }
+.rc-cx-hard{ background:#ffe3e3; color:#c4002b; }
+.rc-meta{ margin:0; display:grid; grid-template-columns:auto 1fr; gap:5px 12px; }
+.rc-meta dt{ font-weight:800; font-size:11px; color:#9aa0b4; text-transform:uppercase; letter-spacing:.4px; padding-top:1px; }
+.rc-meta dd{ margin:0; font-weight:500; font-size:13px; line-height:1.42; color:#3a3f4d; }
+
+/* artboard column */
+.rc-col{ display:flex; flex-direction:column; gap:14px; }

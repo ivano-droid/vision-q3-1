@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { Button } from "@/components/ui/Button";
 
 /**
  * Q Rewards summary card — Figma 29003:5542.
@@ -28,6 +28,8 @@ type FreeReward = {
   src: string;
   title: string;
   sub: string;
+  /** T&Cs caption shown below the card. */
+  caveat: string;
 };
 
 type ProgressReward = {
@@ -47,7 +49,9 @@ const REWARDS: Reward[] = [
     kind: "free",
     src: "/assets/qrewards/u-vs-q.png",
     title: "U vs. Q",
-    sub: "Play for free every day",
+    sub: "Play for FREE every day",
+    caveat:
+      "Play daily. Max 20 spins. 24h credit. Expiry & game restrictions apply. ",
   },
   {
     kind: "progress",
@@ -72,8 +76,10 @@ export function QRewardsCard() {
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
       <div
+        data-component="Card"
         className="relative w-full overflow-hidden rounded-[16px]"
-        style={{ backgroundColor: "#0b2fcb", padding: 15 }}
+        // brand surface → --colour-brand-blue-500; padding → 16 (DS scale)
+        style={{ backgroundColor: "#0a2ecb", padding: 16 }}
       >
         <span
           aria-hidden
@@ -89,6 +95,7 @@ export function QRewardsCard() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            data-component="Icon"
             src="/assets/qrewards/gift-box.svg"
             alt=""
             width={86}
@@ -100,6 +107,7 @@ export function QRewardsCard() {
 
         <div className="relative flex items-center" style={{ height: 32, gap: 6 }}>
           <span
+            data-component="Typography"
             className="font-extrabold"
             style={{ color: "#ffdf00", fontSize: 22, lineHeight: 1.6, letterSpacing: 0.15 }}
           >
@@ -107,6 +115,7 @@ export function QRewardsCard() {
           </span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            data-component="Icon"
             src="/assets/qrewards/q-letter.svg"
             alt=""
             width={26}
@@ -115,6 +124,7 @@ export function QRewardsCard() {
             draggable={false}
           />
           <span
+            data-component="Typography"
             className="font-extrabold"
             style={{ color: "#ffdf00", fontSize: 22, lineHeight: 1.6, letterSpacing: 0.15 }}
           >
@@ -122,7 +132,7 @@ export function QRewardsCard() {
           </span>
         </div>
 
-        <div className="relative flex flex-col" style={{ gap: 13, marginTop: 14 }}>
+        <div className="relative flex flex-col" style={{ gap: 18, marginTop: 13 }}>
           {REWARDS.map((reward, i) =>
             reward.kind === "free" ? (
               <FreeRewardRow key={i} reward={reward} />
@@ -132,24 +142,11 @@ export function QRewardsCard() {
           )}
         </div>
 
-        <Link
-          href="/rewards"
-          className="relative mt-[13px] flex items-center justify-center rounded-[12px] active:scale-[0.99] transition-transform"
-          style={{
-            paddingTop: 12,
-            paddingBottom: 12,
-            paddingLeft: 32,
-            paddingRight: 32,
-            backgroundColor: "#ffffff",
-            color: "#0a2ecb",
-            fontSize: 18,
-            fontWeight: 800,
-            letterSpacing: -0.2,
-            lineHeight: "24px",
-          }}
-        >
-          See all Rewards
-        </Link>
+        {/* Connected to the design-system Button via Figma Code Connect
+            (node 29164:893). */}
+        <div className="relative" style={{ marginTop: 24 }}>
+          <Button text="See all Rewards" hierarchy="white" size="large" href="/rewards" />
+        </div>
       </div>
     </motion.section>
   );
@@ -157,95 +154,105 @@ export function QRewardsCard() {
 
 function FreeRewardRow({ reward }: { reward: FreeReward }) {
   return (
-    <div
-      className="flex items-center"
-      style={{
-        paddingTop: 8,
-        paddingBottom: 8,
-        paddingLeft: 12,
-        paddingRight: 12,
-        gap: 12,
-        backgroundColor: "#0a2392",
-        borderRadius: 12,
-      }}
-    >
-      <span
-        className="relative shrink-0 overflow-hidden rounded-[8px]"
-        style={{ width: 52, height: 52 }}
+    <div className="flex flex-col">
+      <div
+        data-component="Reward"
+        className="flex items-center"
+        style={{
+          paddingTop: 8,
+          paddingBottom: 8,
+          paddingLeft: 12,
+          paddingRight: 12,
+          gap: 12,
+          backgroundColor: "#0c2287",
+          borderRadius: 12,
+        }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={reward.src}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </span>
-      <div className="flex flex-1 flex-col min-w-0">
-        <p
-          className="leading-tight"
-          style={{ color: "#ffffff", fontSize: 17, fontWeight: 700 }}
+        <span
+          className="relative shrink-0 overflow-hidden rounded-[8px]"
+          style={{ width: 52, height: 52 }}
         >
-          {reward.title}
-        </p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={reward.src}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </span>
+        <div className="flex flex-1 flex-col min-w-0">
+          <p
+            data-component="Typography"
+            className="leading-tight"
+            style={{ color: "#ffffff", fontSize: 17, fontWeight: 700 }}
+          >
+            {reward.title}
+          </p>
+          <p
+            data-component="Typography"
+            className="leading-[1.6] mt-[2px]"
+            style={{ color: "#f2f3f3", fontSize: 12, fontWeight: 500, letterSpacing: 0.2 }}
+          >
+            {reward.sub.split(/(FREE)/).map((part, i) =>
+              part === "FREE" ? (
+                <span key={i} style={{ fontWeight: 700 }}>
+                  {part}
+                </span>
+              ) : (
+                part
+              )
+            )}
+          </p>
+        </div>
+        <PlayButton />
+      </div>
+
+      {/* T&Cs caption (Figma 29164:872 — footer container under the card). */}
+      <div className="flex items-center justify-center px-[4px] pt-[8px]">
         <p
-          className="leading-[1.6] mt-[2px]"
-          style={{ color: "#f2f3f3", fontSize: 12, fontWeight: 500, letterSpacing: 0.2 }}
+          data-component="Typography"
+          className="flex-1 min-w-0 leading-[1.6]"
+          style={{
+            color: "#ffffff",
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: 0.2,
+            opacity: 0.7,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
         >
-          {reward.sub}
+          {reward.caveat}
+          <span className="font-extrabold underline">Full T&amp;Cs</span>
         </p>
       </div>
-      <FreeBadge />
     </div>
   );
 }
 
-function FreeBadge() {
+function PlayButton() {
+  // White circular play button (Figma 29177:273) — decorative CTA affordance
+  // on the free reward card. The play glyph is brand-blue (#0A2ECB).
   return (
     <span
-      className="shrink-0 inline-flex items-center justify-center"
-      style={{
-        gap: 4,
-        paddingTop: 2,
-        paddingBottom: 2,
-        paddingLeft: 8,
-        paddingRight: 8,
-        backgroundColor: "#ffffff",
-        borderRadius: 4,
-        boxShadow: "0 4px 4px rgba(10, 46, 203, 0.24)",
-      }}
-    >
-      <GiftIcon />
-      <span
-        style={{
-          color: "#0c2287",
-          fontSize: 12,
-          fontWeight: 800,
-          letterSpacing: 0.2,
-          lineHeight: 1.6,
-        }}
-      >
-        Free
-      </span>
-    </span>
-  );
-}
-
-function GiftIcon() {
-  return (
-    <svg
       aria-hidden
-      width={12}
-      height={12}
-      viewBox="0 0 12 12"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      data-component="Button"
+      className="shrink-0 inline-flex items-center justify-center rounded-full bg-white"
+      style={{ width: 32, height: 32 }}
     >
-      <path
-        d="M10 4H8.85a1.75 1.75 0 0 0-2.85-2 1.75 1.75 0 0 0-2.85 2H2a1 1 0 0 0-1 1v1.5a.5.5 0 0 0 .5.5H2v3.5A1 1 0 0 0 3 11.5h6a1 1 0 0 0 1-1V7h.5a.5.5 0 0 0 .5-.5V5a1 1 0 0 0-1-1ZM7 3a.75.75 0 1 1 1.5 0c0 .55-.5 1-1.25 1H7V3Zm-3.5 0A.75.75 0 0 1 4.25 2.25.75.75 0 0 1 5 3v1h-.25C4 4 3.5 3.55 3.5 3ZM2 5h3.5v1H2V5Zm1 5.5V7h2.5v3.5H3Zm3.5 0V7H9v3.5H6.5ZM10 6H6.5V5H10v1Z"
-        fill="#0c2287"
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        data-component="Icon"
+        src="/assets/qrewards/play.svg"
+        alt=""
+        width={17}
+        height={17}
+        draggable={false}
+        style={{ width: 17.455, height: 17.455, marginLeft: 3 }}
       />
-    </svg>
+    </span>
   );
 }
 
@@ -254,6 +261,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
 
   return (
     <div
+      data-component="Reward"
       className="flex flex-col"
       style={{
         paddingTop: 8,
@@ -261,7 +269,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
         paddingLeft: 12,
         paddingRight: 12,
         gap: 12,
-        backgroundColor: "#0a2392",
+        backgroundColor: "#0c2287",
         borderRadius: 12,
       }}
     >
@@ -271,7 +279,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
           style={{
             width: 52,
             height: 52,
-            borderRadius: 7.172,
+            borderRadius: 8, // --radiusMd
             border: "1.57px solid rgba(255, 255, 255, 0.6)",
           }}
         >
@@ -285,6 +293,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
         </span>
         <div className="flex flex-1 flex-col min-w-0" style={{ gap: 8 }}>
           <p
+            data-component="Typography"
             style={{
               color: "#ffffff",
               fontSize: 14,
@@ -306,7 +315,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
                 width: `${pct * 100}%`,
                 borderRadius: 100,
                 background:
-                  "linear-gradient(to right, #f05cd2 0%, #d000ca 54.327%, #8f47f1 99.038%)",
+                  "linear-gradient(90deg, #f05cd2 0%, #d000ca 54.33%, #1944ff 99.04%)",
               }}
             />
           </div>
@@ -315,6 +324,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
 
       <div className="flex items-center justify-between" style={{ width: "100%" }}>
         <p
+          data-component="Typography"
           style={{
             color: "#ffffff",
             fontSize: 12,
@@ -328,6 +338,7 @@ function ProgressRewardRow({ reward }: { reward: ProgressReward }) {
           {reward.target}
         </p>
         <p
+          data-component="Typography"
           style={{
             color: "rgba(255, 255, 255, 0.6)",
             fontSize: 12,

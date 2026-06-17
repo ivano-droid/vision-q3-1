@@ -1,8 +1,50 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Anton } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ShellProvider } from "@/lib/filter-context";
 import { AppShell } from "@/components/AppShell";
+
+// Spectre beacon — reports which design-system components (tagged with
+// `data-component`) this prototype renders, so the host tool can detect them.
+// Broadcasts on load, on demand (when Spectre posts `__spectreScan`), and once
+// more after a delay to catch client-rendered content.
+const SPECTRE_BEACON = `
+(function () {
+  var STYLE_PROPS = ['border-radius','background-color','color','font-family','font-size','font-weight','padding','border','box-shadow'];
+  function stylesOf(el) {
+    var cs = getComputedStyle(el), out = {};
+    STYLE_PROPS.forEach(function (p) { var v = cs.getPropertyValue(p); if (v) out[p] = v.trim(); });
+    return out;
+  }
+  function collect() {
+    var map = new Map();
+    document.querySelectorAll('[data-component]').forEach(function (el) {
+      var name = el.getAttribute('data-component');
+      if (!name) return;
+      var e = map.get(name) || { name: name, count: 0, classes: new Set(), styles: null };
+      e.count++;
+      (typeof el.className === 'string' ? el.className.split(/\\s+/) : [])
+        .forEach(function (c) { if (c) e.classes.add(c); });
+      if (!e.styles) e.styles = stylesOf(el);
+      map.set(name, e);
+    });
+    return Array.from(map.values()).map(function (e) {
+      return { name: e.name, count: e.count, classes: Array.from(e.classes).slice(0, 30), styles: e.styles };
+    });
+  }
+  function broadcast() {
+    try {
+      parent.postMessage({ __spectreComponents: true, url: location.href, components: collect() }, '*');
+    } catch (_) {}
+  }
+  window.addEventListener('load', broadcast);
+  window.addEventListener('message', function (e) {
+    if (e && e.data && e.data.__spectreScan) broadcast();
+  });
+  setTimeout(broadcast, 1500); // catch client-rendered content
+})();
+`;
 
 // Manrope: free stand-in for Gilroy ExtraBold (the proprietary brand font).
 const manrope = Manrope({
@@ -96,6 +138,9 @@ export default function RootLayout({
         <ShellProvider>
           <AppShell>{children}</AppShell>
         </ShellProvider>
+        <Script id="spectre-beacon" strategy="afterInteractive">
+          {SPECTRE_BEACON}
+        </Script>
       </body>
     </html>
   );

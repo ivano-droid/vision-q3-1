@@ -49,10 +49,11 @@ export function GameRail({
     >
       {/* Header row */}
       <div className="flex items-center justify-between px-[16px] pb-[10px]">
-        <h2 className="text-[18px] font-extrabold text-[var(--mrq-blue)]">{title}</h2>
+        <h2 data-component="Typography" className="text-[18px] font-extrabold text-[var(--mrq-blue)]">{title}</h2>
         {showSeeAll && (
           <button
             type="button"
+            data-component="Button"
             onClick={onSeeAll}
             className="text-[14px] font-extrabold text-[var(--mrq-blue)]"
           >
@@ -98,6 +99,7 @@ function GameTile({
   return (
     <button
       type="button"
+      data-component="Card"
       aria-label={alt}
       onClick={() => {
         // Tap the tile → launch the game (when we know how) or

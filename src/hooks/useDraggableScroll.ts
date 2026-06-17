@@ -25,6 +25,7 @@ export function useDraggableScroll<T extends HTMLElement>() {
     const el = ref.current;
     if (!el) return;
 
+    let pressed = false;
     let dragging = false;
     let startX = 0;
     let startScroll = 0;
@@ -44,20 +45,34 @@ export function useDraggableScroll<T extends HTMLElement>() {
       if (e.pointerType !== "mouse") return; // touch uses native scrolling
       if ((e.target as HTMLElement).closest("a")) return;
       cancelInertia();
-      dragging = true;
+      // Don't capture the pointer yet. Capturing on pointerdown redirects
+      // the synthesized click away from buttons/links inside the rail, so
+      // a plain tap/click on a card never fires its handler. We promote to
+      // a real drag (and capture) only once the pointer passes the
+      // movement threshold in onPointerMove.
+      pressed = true;
+      dragging = false;
       hasMoved = false;
       startX = e.clientX;
       startScroll = el.scrollLeft;
       samples = [{ x: e.clientX, t: performance.now() }];
-      el.style.cursor = "grabbing";
-      el.style.userSelect = "none";
-      el.setPointerCapture(e.pointerId);
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!dragging) return;
+      if (!pressed) return;
       const dx = e.clientX - startX;
-      if (Math.abs(dx) > 3) hasMoved = true;
+      if (!dragging) {
+        if (Math.abs(dx) <= 3) return; // still a potential click, not a drag
+        dragging = true;
+        hasMoved = true;
+        el.style.cursor = "grabbing";
+        el.style.userSelect = "none";
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+      }
       el.scrollLeft = startScroll - dx;
 
       const now = performance.now();
@@ -69,7 +84,9 @@ export function useDraggableScroll<T extends HTMLElement>() {
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      if (!dragging) return;
+      if (!pressed) return;
+      pressed = false;
+      if (!dragging) return; // pure click — let it reach the card/button
       dragging = false;
       el.style.cursor = "grab";
       el.style.userSelect = "";

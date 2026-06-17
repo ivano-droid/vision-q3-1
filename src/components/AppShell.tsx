@@ -12,6 +12,10 @@ import { ResumePlayingBar } from "./ResumePlayingBar";
 import { SimpleSplashGate } from "./SimpleSplashGate";
 import { WelcomeGate } from "./WelcomeGate";
 
+// Feature flag — the floating "Resume playing" card pinned above the
+// BottomNav. Hidden for now; flip back to `true` to re-enable it.
+const SHOW_RESUME_PLAYING_BAR = false;
+
 /**
  * App-wide chrome that wraps every route under `/app/layout.tsx`.
  *
@@ -94,12 +98,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   // so skip the y:6→0 transition for these routes.
   const isCasinoSurface = pathname.startsWith("/casino") || pathname.startsWith("/live");
 
+  // /qoins renders a position:fixed iframe pinned below the BrandBar.
+  // A transform on the motion wrapper would make `fixed` anchor to the
+  // wrapper instead of the viewport (same trap as sticky), so skip the
+  // entrance transition here.
+  const isQoinsSurface = pathname.startsWith("/qoins");
+
+  // /rewards paints its own brand-blue "For you" header right under the
+  // BrandBar; the y:6→0 fade wrapper makes that band drift on load,
+  // which reads as a glitchy entrance. Skip it.
+  const isRewardsSurface = pathname.startsWith("/rewards");
+
   const skipPageTransition =
     ownsChrome ||
     isDiscoverSurface ||
     isSearchSurface ||
     isCasinoSurface ||
     isBrandSurface ||
+    isQoinsSurface ||
+    isRewardsSurface ||
     reduce === true;
 
   return (
@@ -178,7 +195,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             leave it briefly visible on top of the in-game chrome.
             Its own AnimatePresence handles the soft exit on every
             other route. */}
-        {!ownsChrome && <ResumePlayingBar />}
+        {SHOW_RESUME_PLAYING_BAR && !ownsChrome && <ResumePlayingBar />}
         <SideNav />
         <DepositSheet />
       </div>

@@ -216,6 +216,83 @@ function ForYouCard() {
   );
 }
 
+// Compact horizontal reward card (Figma 29094:4800) — game tile +
+// title / expiry / "Read more", with a play button and an "x30" reward
+// badge stacked on the right. Sits below the U vs. Q card on the blue
+// "For you" surface, so it uses its own #e6eafa fill + white border.
+function CompactRewardCard() {
+  return (
+    <div
+      className="mx-[16px] mt-[16px] flex items-center gap-[16px] rounded-[12px] p-[12px]"
+      style={{ backgroundColor: "#e6eafa", border: "2px solid #ffffff" }}
+    >
+      {/* Game tile */}
+      <div
+        className="shrink-0 overflow-hidden rounded-[12px]"
+        style={{ width: 56, height: 56, border: "2px solid #ffffff", backgroundColor: "#cccdd0" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/rewards/mayan-tower.png"
+          alt="Mayan Tower"
+          draggable={false}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
+        <p
+          className="font-extrabold truncate"
+          style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
+        >
+          Mayan Tower
+        </p>
+        <p
+          className="font-medium truncate"
+          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "#d000ca" }}
+        >
+          Expires in 6 days
+        </p>
+        <p
+          className="font-medium truncate"
+          style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
+        >
+          Read more
+        </p>
+      </div>
+
+      {/* Play button + reward badge */}
+      <div className="shrink-0 flex flex-col items-center gap-[4px]">
+        <button
+          type="button"
+          aria-label="Play Mayan Tower"
+          className="inline-flex items-center justify-center rounded-full active:scale-[0.95] transition-transform"
+          style={{ width: 32, height: 32, backgroundColor: "var(--mrq-blue)" }}
+        >
+          <PlayIcon />
+        </button>
+        <span
+          className="inline-flex items-center justify-center rounded-full font-extrabold"
+          style={{
+            paddingLeft: 8,
+            paddingRight: 8,
+            paddingTop: 2,
+            paddingBottom: 2,
+            backgroundColor: "#ced5f5",
+            color: "var(--mrq-blue)",
+            fontSize: 14,
+            lineHeight: 1.6,
+            letterSpacing: 0.1,
+          }}
+        >
+          x30
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function OfferCard({ offer }: { offer: typeof OFFERS[0] }) {
   return (
     <div
@@ -297,7 +374,14 @@ export default function RewardsPage() {
     <div style={{ backgroundColor: "#f2f3f3", minHeight: "100%" }}>
 
       {/* For you — blue header section */}
-      <div className="pb-[24px]" style={{ backgroundColor: "var(--mrq-blue)" }}>
+      <div
+        className="pb-[24px]"
+        style={{
+          backgroundColor: "var(--mrq-blue)",
+          borderBottomLeftRadius: "16px",
+          borderBottomRightRadius: "16px",
+        }}
+      >
         <p
           className="px-[16px] pt-[16px] pb-[4px] font-bold text-white"
           style={{ fontSize: 20, letterSpacing: "-0.3px" }}
@@ -305,6 +389,7 @@ export default function RewardsPage() {
           For you
         </p>
         <ForYouCard />
+        <CompactRewardCard />
       </div>
 
       {/* Offers */}

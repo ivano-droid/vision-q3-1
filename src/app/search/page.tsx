@@ -9,17 +9,9 @@ import { ThemesGrid, type Theme } from "@/components/rails/ThemesGrid";
 import { CATEGORIES as CASINO_SUBCATEGORIES } from "@/lib/casino-categories";
 import {
   SEARCHABLE_GAMES,
-  getAllProviders,
   type SearchableGame,
 } from "@/lib/searchable-games";
-import {
-  applyFilters,
-  countActiveFilters,
-  EMPTY_FILTERS,
-  type GameFilters,
-  type SortKey,
-} from "@/lib/game-filters";
-import { FilterBar } from "@/components/search/FilterBar";
+import { applyFilters, EMPTY_FILTERS } from "@/lib/game-filters";
 import { haptics } from "@/lib/haptics";
 
 /**
@@ -297,22 +289,17 @@ export default function SearchPage() {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // ----- Filtering state -----
-  const [filters, setFilters] = useState<GameFilters>(EMPTY_FILTERS);
-  const [sort, setSort] = useState<SortKey>("relevance");
-
   // Static catalogue-derived data (stable across renders).
   const allGames = useMemo<SearchableGame[]>(() => SEARCHABLE_GAMES, []);
-  const providers = useMemo(() => getAllProviders(), []);
 
-  const hasQueryOrFilters =
-    query.trim().length > 0 || countActiveFilters(filters) > 0;
+  const hasQuery = query.trim().length > 0;
 
-  // The composed result set: text query + facets + sort. Updates live
-  // as the user taps a chip — no apply step.
+  // The result set is a plain text-query match — the filter/sort facet
+  // bar has been removed from the modal, so we always apply the empty
+  // filter set with the default "relevance" sort.
   const results = useMemo(
-    () => applyFilters(allGames, query, filters, sort),
-    [allGames, query, filters, sort],
+    () => applyFilters(allGames, query, EMPTY_FILTERS, "relevance"),
+    [allGames, query],
   );
 
   // Note: no auto-focus on mount. The user should LAND on the
@@ -349,8 +336,6 @@ export default function SearchPage() {
     haptics.selection();
     setQuery("");
     setFocused(false);
-    setFilters(EMPTY_FILTERS);
-    setSort("relevance");
     inputRef.current?.blur();
   };
 
@@ -514,23 +499,10 @@ export default function SearchPage() {
               </button>
             </div>
 
-            {/* Inline facet bar — one scrollable line of filter chips.
-                Tapping a chip expands its options just below; picking a
-                value filters the list live (no sheet, no apply step). */}
-            <FilterBar
-              filters={filters}
-              onChange={setFilters}
-              sort={sort}
-              onSortChange={setSort}
-              providers={providers}
-              canSort={hasQueryOrFilters}
-            />
-
             <div className="flex-1 overflow-y-auto">
-              {/* No query AND no filters → Recently Searched history
-                  fallback. Otherwise show the composed (filtered +
-                  sorted) results list — updates live as chips change. */}
-              {!hasQueryOrFilters ? (
+              {/* No query → Recently Searched history fallback.
+                  Otherwise show the text-matched results list. */}
+              {!hasQuery ? (
                 <RecentlySearched
                   items={RECENTLY_SEARCHED}
                   onRemove={(name) => {

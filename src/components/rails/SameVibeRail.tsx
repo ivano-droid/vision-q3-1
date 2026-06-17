@@ -30,6 +30,7 @@ function SameVibeCardTile({ card }: { card: SameVibeCard }) {
 
   return (
     <div
+      data-component="Card"
       className="relative shrink-0 snap-start overflow-hidden rounded-[14px]"
       style={{
         width: "min(82%, calc(var(--mobile-width) - 60px))",
@@ -85,7 +86,10 @@ export function SameVibeRail({
       animate={reduce ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
     >
-      <h2 className="px-[16px] pb-[10px] text-[18px] font-extrabold text-[var(--mrq-blue)]">
+      <h2
+        data-component="Typography"
+        className="px-[16px] pb-[10px] text-[18px] font-extrabold text-[var(--mrq-blue)]"
+      >
         {title}
       </h2>
       <div

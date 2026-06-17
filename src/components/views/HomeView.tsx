@@ -1,7 +1,12 @@
 import { HeroCarousel } from "@/components/carousel/HeroCarousel";
+import { PromoCarousel } from "@/components/carousel/PromoCarousel";
 import { GameRail } from "@/components/rails/GameRail";
 import { RecentlyPlayedGrid } from "@/components/rails/RecentlyPlayedGrid";
 import { SameVibeRail } from "@/components/rails/SameVibeRail";
+import {
+  LiveCasinoRail,
+  CONTINUE_PLAYING_TABLES,
+} from "@/components/rails/LiveCasinoRail";
 import { QRewardsCard } from "@/components/QRewardsCard";
 
 /**
@@ -23,6 +28,10 @@ import { QRewardsCard } from "@/components/QRewardsCard";
  * Each section component owns its own padding + title style; this
  * file just sequences them.
  */
+
+// Feature flag — the original PNG-based hero carousel. Hidden for now
+// in favour of the new PromoCarousel; flip to `true` to switch back.
+const SHOW_HERO_CAROUSEL = false;
 
 const G = (i: number, alt: string) => ({
   src: `/assets/games/slot-${String(i).padStart(2, "0")}.png`,
@@ -71,13 +80,28 @@ const HOT_RIGHT_NOW = [
   G(8, "Tiki Tumble"),
 ];
 
+// "Popular with Fruit Party players" — square-tile rail of slot art
+// (same 109×109 GameRail footprint as the other lobby rails).
+const POPULAR_FRUIT_PARTY = [
+  { src: "/assets/games/slot-10.png", alt: "Fruit Warp" },
+  { src: "/assets/games/slot-08.png", alt: "Tiki Tumble" },
+  { src: "/assets/games/thumb-02.png", alt: "Fluffy Favourites" },
+  { src: "/assets/games/slot-09.png", alt: "Western Gold" },
+  { src: "/assets/games/thumb-05.png", alt: "Wolf Gold" },
+  { src: "/assets/games/slot-02.png", alt: "Spaceman" },
+  { src: "/assets/games/slot-12.png", alt: "Western Gold 2" },
+  { src: "/assets/games/birds-on-a-wire.png", alt: "Birds on a Wire" },
+];
+
 export function HomeView() {
   return (
     <>
       {/* Small breathing room so the hero card doesn't crash into the
-          brand bar's rounded bottom edge. */}
+          brand bar's rounded bottom edge. The original PNG HeroCarousel
+          is kept behind SHOW_HERO_CAROUSEL; the new PromoCarousel is
+          the current default. */}
       <div className="pt-[10px]">
-        <HeroCarousel />
+        {SHOW_HERO_CAROUSEL ? <HeroCarousel /> : <PromoCarousel />}
       </div>
 
       <RecentlyPlayedGrid
@@ -86,9 +110,13 @@ export function HomeView() {
         showSeeAll={false}
       />
 
-      <SameVibeRail
-        title="Same Vibe as Tiki Tumble"
-        items={SAME_VIBE_TIKI_TUMBLE}
+      {/* Continue Playing Live Casino — square live-table tiles with a
+          live player-count badge (no "See all"). Same component as the
+          Explore "Live Casino" rail, fed the recent-tables set. */}
+      <LiveCasinoRail
+        title="Continue Playing Live Casino"
+        tables={CONTINUE_PLAYING_TABLES}
+        showSeeAll={false}
       />
 
       {/* Q Rewards summary — Figma 255:37506. Brand-blue card with
@@ -98,6 +126,21 @@ export function HomeView() {
           expand QClubCard treatment with a tighter, on-brand
           rewards summary at the bottom of the feed. */}
       <QRewardsCard />
+
+      {/* Popular with Fruit Party players — square-tile recommendation
+          rail (no "See all"), keyed off the user's recent slot play. */}
+      <GameRail
+        title="Popular with Fruit Party players"
+        tiles={POPULAR_FRUIT_PARTY}
+        tileWidth={109}
+        tileHeight={109}
+        showSeeAll={false}
+      />
+
+      <SameVibeRail
+        title="Same Vibe as Tiki Tumble"
+        items={SAME_VIBE_TIKI_TUMBLE}
+      />
 
       <GameRail
         title="Picked For You, By Q"
