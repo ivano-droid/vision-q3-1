@@ -123,12 +123,15 @@ export function LoginGate() {
           // z-[55] — below LoadingSplash (z-[60]) so the splash
           // dissolves first and the gate is revealed beneath.
           // --frame-right-offset clamps to the mobile-frame column.
-          className="fixed top-0 bottom-0 z-[55] overflow-y-auto"
+          className="fixed top-0 bottom-0 z-[55] flex flex-col"
           style={{
             left: "var(--frame-right-offset)",
             right: "var(--frame-right-offset)",
-            // Figma surface: #f2f3f3 light grey.
-            backgroundColor: "#f2f3f3",
+            // Figma modal-curtain: translucent light grey with a 16px
+            // backdrop blur so the My Q lobby shows softly behind.
+            backgroundColor: "rgba(242,243,243,0.9)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
           }}
           initial={{ opacity: 1 }}
           animate={{ opacity: exiting ? 0 : 1 }}
@@ -137,15 +140,13 @@ export function LoginGate() {
           role="dialog"
           aria-label="Log in"
         >
-          {/* Outer column — flex centred vertically so the form sits
-              in the middle of the viewport with the safe-area still
-              accounted for at the top + bottom. */}
+          {/* Scrollable content column — logo + form sit near the top;
+              flex-1 grows to push the compliance footer to the bottom
+              edge of the curtain. */}
           <div
-            className="flex flex-col items-center justify-center w-full"
+            className="flex-1 flex flex-col items-center w-full overflow-y-auto"
             style={{
-              minHeight: "100dvh",
-              paddingTop: "calc(env(safe-area-inset-top) + 24px)",
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
+              paddingTop: "calc(env(safe-area-inset-top) + 20px)",
               paddingLeft: 16,
               paddingRight: 16,
               gap: 32,
@@ -157,9 +158,9 @@ export function LoginGate() {
                   with the Mr Q personality inside (top hat, yellow
                   shirt, pointing). Replaces the previous flat
                   wordmark so the gate feels personal rather than
-                  utilitarian. 170-px width anchors the top of the
-                  screen without dominating the welcome heading
-                  below. */}
+                  utilitarian. 120-px width matches the Figma logo
+                  container so the heading below stays the focal
+                  point. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/assets/logo_head.png"
@@ -167,7 +168,7 @@ export function LoginGate() {
                 draggable={false}
                 style={{
                   display: "block",
-                  width: 170,
+                  width: 120,
                   height: "auto",
                   objectFit: "contain",
                 }}
@@ -219,7 +220,7 @@ export function LoginGate() {
 
             {/* Form */}
             <form
-              className="w-full flex flex-col items-stretch px-[8px]"
+              className="w-full flex flex-col items-stretch px-[24px]"
               style={{ gap: 8 }}
               onSubmit={(e) => {
                 e.preventDefault();
@@ -235,7 +236,7 @@ export function LoginGate() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white outline-none"
+                  className="w-full bg-white outline-none placeholder:text-[#9dabea]"
                   style={{
                     height: 42,
                     paddingLeft: 16,
@@ -265,7 +266,7 @@ export function LoginGate() {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="flex-1 bg-transparent outline-none"
+                    className="flex-1 bg-transparent outline-none placeholder:text-[#9dabea]"
                     style={{
                       fontSize: 16,
                       fontWeight: 500,
@@ -285,13 +286,12 @@ export function LoginGate() {
                 </div>
               </div>
 
-              {/* CTA stack — tighter 12-px gap pulls 'Log in' and
-                  'Log in with Google' close to each other with
-                  the 'or' divider as a small visual breather
-                  rather than a hard separator. */}
+              {/* CTA stack — 20-px gaps separate 'Log in', the 'or'
+                  divider, and the social-login card, matching the
+                  Figma button-container spacing. */}
               <div
                 className="flex flex-col items-stretch w-full"
-                style={{ gap: 12, paddingTop: 12 }}
+                style={{ gap: 20, paddingTop: 12 }}
               >
                 <button
                   type="submit"
@@ -310,9 +310,25 @@ export function LoginGate() {
                   Log in
                 </button>
 
-                {/* Social login — sits directly under the
-                    primary 'Log in' CTA with the parent flex
-                    gap as the only separator, no 'or' divider. */}
+                {/* 'or' divider — hairline tertiary-grey rules either
+                    side of a centred 'or' label. */}
+                <div className="flex items-center w-full" style={{ gap: 10 }}>
+                  <div style={{ flex: 1, height: 1, backgroundColor: "#cccdd0" }} />
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      lineHeight: 1.6,
+                      letterSpacing: 0.1,
+                      color: "#000",
+                    }}
+                  >
+                    or
+                  </span>
+                  <div style={{ flex: 1, height: 1, backgroundColor: "#cccdd0" }} />
+                </div>
+
+                {/* Social login card */}
                 <button
                   type="button"
                   onClick={dismiss}
@@ -374,6 +390,36 @@ export function LoginGate() {
                 </div>
               </div>
             </form>
+          </div>
+
+          {/* Compliance footer — payment + GambleAware badges pinned
+              to the bottom edge of the curtain, divided from the form
+              by a hairline top border (Figma footer node). */}
+          <div
+            className="flex items-center justify-center w-full shrink-0"
+            style={{
+              gap: 24,
+              borderTop: "1px solid #cccdd0",
+              paddingTop: 20,
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/login/payment.svg"
+              alt=""
+              width={24}
+              height={24}
+              style={{ width: 24, height: 24 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/login/gambleaware.svg"
+              alt="Be Gamble Aware"
+              width={129}
+              height={24}
+              style={{ width: 129, height: 24 }}
+            />
           </div>
         </motion.div>
       )}
