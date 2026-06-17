@@ -299,10 +299,10 @@ export default function RewardsPage() {
       <div
         aria-hidden
         style={{
-          height: 56,
+          height: 40,
           backgroundColor: "var(--mrq-blue)",
-          borderBottomLeftRadius: "50% 28px",
-          borderBottomRightRadius: "50% 28px",
+          borderBottomLeftRadius: "50% 20px",
+          borderBottomRightRadius: "50% 20px",
         }}
       />
 

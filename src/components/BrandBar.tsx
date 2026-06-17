@@ -83,13 +83,12 @@ export function BrandBar() {
   // /search and the search band picks up the 20px radius at the
   // bottom of the combined blue panel instead.
   //
-  // On /rewards the rounded bottom is kept — but AppShell paints
-  // the mobile-frame surface brand-blue on that route, so the
-  // small wedge of "behind the BrandBar" that the curve exposes
-  // shows blue (matching the BrandBar) instead of #f5f5f5.
-  // Flat on /search (search bar follows seamlessly) and /rewards
-  // (the "For you" blue section continues the BrandBar's blue).
-  const roundedBottom = pathname !== "/search" && !pathname.startsWith("/rewards");
+  // Rounded bottom corners everywhere except /search (where the page's
+  // own blue search band follows the BrandBar seamlessly). On /rewards
+  // the corners read against the navy gradient the page paints — AppShell
+  // paints the mobile-frame navy on that route so the wedge behind the
+  // curve shows navy (like the #f5f5f5 that My Q reveals).
+  const roundedBottom = pathname !== "/search";
 
   return (
     <header

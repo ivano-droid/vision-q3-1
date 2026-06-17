@@ -131,9 +131,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         style={
           isGameSurface
             ? { background: GAME_BG }
-            : isBrandSurface
-              ? { background: BRAND_TOP_BG }
-              : undefined
+            : isRewardsSurface
+              ? // navy gradient-top so the BrandBar's rounded bottom
+                // corners read against it (blue bar over navy)
+                { background: "#0c2287" }
+              : isBrandSurface
+                ? { background: BRAND_TOP_BG }
+                : undefined
         }
       >
         {!ownsChrome && <BrandBar />}
