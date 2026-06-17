@@ -300,6 +300,9 @@ export default function RewardsPage() {
         aria-hidden
         style={{
           height: 40,
+          // Pull up 12px so the shape's top tucks behind the BrandBar
+          // (which paints above it at z-30) and the curve sits higher.
+          marginTop: -12,
           backgroundColor: "var(--mrq-blue)",
           borderBottomLeftRadius: "50% 20px",
           borderBottomRightRadius: "50% 20px",
