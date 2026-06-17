@@ -91,7 +91,7 @@ function FullTcs({ light }: { light?: boolean }) {
 
 function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
   return (
-    <div className="shrink-0 flex flex-col" style={{ width: 328, maxWidth: "86%" }}>
+    <div className="w-full flex flex-col">
       {/* White game row */}
       <div className="bg-white flex items-center gap-[12px] rounded-[12px] px-[12px] py-[8px]">
         <div
@@ -287,12 +287,27 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function RewardsPage() {
   return (
     <div
+      className="relative"
       style={{
         minHeight: "100%",
         background: "linear-gradient(180deg, #0c2287 0%, #181f43 100%)",
       }}
     >
-      <div className="flex flex-col gap-[32px] px-[16px] pt-[12px]">
+      {/* Brand-blue header shape (Figma "Ellipse 3621", 29209:1234) — sits
+          directly under the BrandBar and curves into the gradient. Full
+          width via preserveAspectRatio="none", so it stays pinned left
+          and right at any frame width. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/rewards/v2/glow.svg"
+        alt=""
+        aria-hidden
+        draggable={false}
+        className="block w-full select-none pointer-events-none"
+        style={{ height: 44 }}
+      />
+
+      <div className="flex flex-col gap-[32px] px-[16px] pt-[8px]">
         {/* Greeting */}
         <h1
           className="font-extrabold text-white text-center w-full"
@@ -305,11 +320,15 @@ export default function RewardsPage() {
         <section className="flex flex-col gap-[12px]">
           <SectionTitle>Pick your daily free game</SectionTitle>
           <div
-            className="flex gap-[16px] overflow-x-auto -mx-[16px] px-[16px] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-[16px] overflow-x-auto [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}
           >
             {DAILY_GAMES.map((game) => (
-              <div key={game.title} style={{ scrollSnapAlign: "start" }}>
+              <div
+                key={game.title}
+                className="shrink-0 w-full"
+                style={{ flex: "0 0 100%", scrollSnapAlign: "start" }}
+              >
                 <DailyGameCard game={game} />
               </div>
             ))}
