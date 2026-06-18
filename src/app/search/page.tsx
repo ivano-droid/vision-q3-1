@@ -287,9 +287,6 @@ const RECENTLY_SEARCHED: Array<{ src: string; name: string; href?: string }> = [
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  // Condense the search band while scrolling down (shave 2px off top +
-  // bottom padding); restore it on scroll-up or at the top of the page.
-  const [condensed, setCondensed] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Static catalogue-derived data (stable across renders).
@@ -342,25 +339,6 @@ export default function SearchPage() {
     inputRef.current?.blur();
   };
 
-  // Track scroll direction to condense / restore the search band. A
-  // small ±2px threshold avoids jitter from sub-pixel scroll noise.
-  useEffect(() => {
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y <= 0) {
-        setCondensed(false);
-      } else if (y - lastY > 2) {
-        setCondensed(true); // scrolling down
-      } else if (y - lastY < -2) {
-        setCondensed(false); // scrolling up — re-apply padding
-      }
-      lastY = y;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   // Esc closes the modal.
   useEffect(() => {
     if (!isActive) return;
@@ -396,11 +374,8 @@ export default function SearchPage() {
         style={{
           borderBottomLeftRadius: "20px",
           borderBottomRightRadius: "20px",
-          // Shave 4px off top + bottom while scrolling down; restore on
-          // scroll-up. Transitioned so the condense reads as a smooth nudge.
-          paddingTop: condensed ? 0 : 4,
-          paddingBottom: condensed ? 10 : 14,
-          transition: "padding 0.18s ease",
+          paddingTop: 4,
+          paddingBottom: 14,
         }}
         initial={{ height: 0 }}
         animate={{ height: "auto" }}
