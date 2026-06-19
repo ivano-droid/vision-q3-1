@@ -39,80 +39,71 @@ import { haptics } from "@/lib/haptics";
  * Bottom nav is unchanged per the brief.
  */
 
-// Start Browsing tile spec. Each sticker is now a single self-contained
-// SVG (Figma 216:46506) — the body fill, outline, and detail layers are
-// all baked into the file, so the BrowseTile component just sets it as
-// one positioned image on the right side of each tile.
+// Start Browsing tile spec. Each sticker is a single flattened PNG
+// exported from Figma (2567:56567), trimmed to its transparent art
+// bounds. Per the design each sticker is absolutely positioned hugging
+// the tile's right edge — bigger than the tile so it bleeds off the
+// right (and slightly off the bottom) and is cropped by overflow-clip.
 type TileSpec = {
   label: string;
   /** Optional href. Tiles without one render as inert buttons — used
    *  while Live/Bingo/Arena pages are unbuilt so the tiles still show
    *  visually but don't navigate to a 404. */
   href?: string;
-  /** SVG sticker dropped on the right of the tile. */
+  /** Flattened sticker PNG. */
   icon: string;
-  /** Sticker bounding-box width in px. */
+  /** Sticker display width in px (Figma export ÷ 3 — must match the
+   *  PNG's aspect ratio exactly or the art stretches). */
   iconW: number;
-  /** Sticker bounding-box height in px. */
+  /** Sticker display height in px (Figma export ÷ 3). */
   iconH: number;
-  /** Offset from the right edge of the tile (px). Negative pushes
-   *  the sticker outside the tile boundary so the playful "stuck on"
-   *  feel survives. */
+  /** px from the tile's right edge to the sticker's right edge. */
   iconRight: number;
-  /** Offset from the top of the tile (px). */
-  iconTop: number;
-  /** Rotation in degrees. */
-  iconRotate: number;
+  /** px from the tile's bottom edge to the sticker's bottom edge. */
+  iconBottom: number;
 };
 
-// All four Figma SVGs share the same 65×45 viewBox, so each tile
-// gets the same icon footprint. Tile height is 54px — small enough
-// that the sticker doesn't crash into the label on the left.
-const TILE_H = 54;
-const ICON_RATIO = 65 / 45; // viewBox width / height
-const ICON_H = TILE_H;
-const ICON_W = Math.round(ICON_H * ICON_RATIO); // 78
-
+// Per-tile sticker footprints + placement, mapped from the Figma frame
+// (2567:56567). The stickers overflow the tile and were exported
+// already cropped at the tile boundary, so anchoring them flush to the
+// bottom-right reproduces the design's clipped "peeking" look. Sizes
+// are the export ÷ 3 (kept at the exact aspect ratio to avoid stretch).
 const BROWSE: TileSpec[] = [
   {
     label: "Casino",
     href: "/casino",
-    icon: "/assets/search/casino.svg",
-    iconW: ICON_W,
-    iconH: ICON_H,
-    iconRight: 0,
-    iconTop: 0,
-    iconRotate: 0,
+    icon: "/assets/search/tile-casino.png",
+    iconW: 53.33,
+    iconH: 55,
+    iconRight: 1.3,
+    iconBottom: 0,
   },
   {
-    label: "Live Casino",
+    label: "Live casino",
     href: "/live",
-    icon: "/assets/search/live.svg",
-    iconW: ICON_W,
-    iconH: ICON_H,
+    icon: "/assets/search/tile-live.png",
+    iconW: 62.33,
+    iconH: 51,
     iconRight: 0,
-    iconTop: 0,
-    iconRotate: 0,
+    iconBottom: 0,
   },
   {
     label: "Bingo",
     href: "/bingo",
-    icon: "/assets/search/bingo.svg",
-    iconW: ICON_W,
-    iconH: ICON_H,
+    icon: "/assets/search/tile-bingo.png",
+    iconW: 53.33,
+    iconH: 43,
     iconRight: 0,
-    iconTop: 0,
-    iconRotate: 0,
+    iconBottom: 0,
   },
   {
     label: "Arena",
     href: "/arena",
-    icon: "/assets/search/arena.svg",
-    iconW: ICON_W,
-    iconH: ICON_H,
+    icon: "/assets/search/tile-arena.png",
+    iconW: 64,
+    iconH: 57.67,
     iconRight: 0,
-    iconTop: 0,
-    iconRotate: 0,
+    iconBottom: 0,
   },
 ];
 
@@ -222,42 +213,25 @@ const CASINO_CARDS: Theme[] = CASINO_SUBCATEGORIES.map((cat) => ({
     ],
 }));
 
-// Group 2 — Live Casino sub-categories. Mid-tone brand blue
-// (#3D5BE0) so the row is visually a step lighter than the regular
-// Casino group above. No href — the dedicated Live Casino routes
-// haven't been built yet.
-const LIVE_CASINO_BLUE = "#3D5BE0";
+// Group 2 — Live Casino sub-categories. Same brand-blue gradient as
+// the Casino group (Figma 2564:67579 renders every card on the shared
+// gradient). No href — the dedicated Live Casino routes haven't been
+// built yet.
 const LIVE_CASINO_CARDS: Theme[] = [
-  { key: "blackjack",  label: "Blackjack",   subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS.blackjack },
-  { key: "roulette",   label: "Roulette",    subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS.roulette },
-  { key: "baccarat",   label: "Baccarat",    subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS.baccarat },
-  { key: "gameshows",  label: "Game Shows",  subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS.gameshows },
-  { key: "poker",      label: "Poker",       subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS.poker },
-  { key: "mega-wheel", label: "Mega Wheel",  subtitle: "Live Casino", color: LIVE_CASINO_BLUE, thumbs: CATEGORY_THUMBS["mega-wheel"] },
+  { key: "blackjack",  label: "Blackjack",   subtitle: "Live Casino", thumbs: CATEGORY_THUMBS.blackjack },
+  { key: "roulette",   label: "Roulette",    subtitle: "Live Casino", thumbs: CATEGORY_THUMBS.roulette },
+  { key: "baccarat",   label: "Baccarat",    subtitle: "Live Casino", thumbs: CATEGORY_THUMBS.baccarat },
+  { key: "gameshows",  label: "Game Shows",  subtitle: "Live Casino", thumbs: CATEGORY_THUMBS.gameshows },
+  { key: "poker",      label: "Poker",       subtitle: "Live Casino", thumbs: CATEGORY_THUMBS.poker },
+  { key: "mega-wheel", label: "Mega Wheel",  subtitle: "Live Casino", thumbs: CATEGORY_THUMBS["mega-wheel"] },
 ];
 
-// Group 3 — closing verticals. Bingo (violet) + Arena (amber).
-//
-// Previous bright pink (#DB2777) + bright red (#DC2626) jumped out
-// of the blue brand palette above them — they read as "this used
-// to be a different design" rather than "next vertical". The new
-// pair stays on-brand:
-//
-//   • Bingo  → #7C3AED  Violet 600 — purple is the natural sibling
-//                       of brand blue (analogous on the wheel),
-//                       reads playful + complements rather than
-//                       fights the brand-blue Casino cards above.
-//   • Arena  → #B45309  Amber 700 — warm complement to the cool
-//                       blue palette, ties back to the splash
-//                       gate's yellow brand accent (#ffd400). The
-//                       warmth signals "competition / prizes",
-//                       differentiating Arena from the cool
-//                       lobby browsing verticals.
-//
-// Both still link to their dedicated lobby pages.
+// Group 3 — closing verticals (Bingo, Arena). Single-line cards on the
+// same shared brand-blue gradient as the rest of the grid (Figma
+// 2564:67579). Both link to their dedicated lobby pages.
 const VERTICAL_CARDS: Theme[] = [
-  { key: "bingo", label: "Bingo", color: "#7C3AED", href: "/bingo", thumbs: CATEGORY_THUMBS.bingo },
-  { key: "arena", label: "Arena", color: "#B45309", href: "/arena", thumbs: CATEGORY_THUMBS.arena },
+  { key: "bingo", label: "Bingo", href: "/bingo", thumbs: CATEGORY_THUMBS.bingo },
+  { key: "arena", label: "Arena", href: "/arena", thumbs: CATEGORY_THUMBS.arena },
 ];
 
 const BROWSE_CATEGORIES: Theme[] = [
@@ -726,36 +700,36 @@ function StartBrowsing({ items }: { items: typeof BROWSE }) {
 }
 
 function BrowseTile({ item }: { item: TileSpec }) {
-  // 54px tile height — small enough that the right-side sticker
-  // (sized to fill the tile height) doesn't crash into the label
-  // on the left at the narrow 2-column grid width.
+  // 64px tile (Figma 2565:54419): brand-blue, 16px radius, label on the
+  // left and a 48px icon slot on the right. overflow-clip keeps the
+  // rounded corners crisp — the stickers are authored on the same blue
+  // so any overflow blends into the tile invisibly.
   const className =
-    "relative h-[54px] overflow-hidden rounded-[10px] active:scale-[0.98] transition-transform";
-  const style = { backgroundColor: "#0322ac" } as const;
+    "relative flex h-[64px] items-center gap-[10px] overflow-hidden rounded-[16px] px-[12px] py-[8px] active:scale-[0.98] transition-transform";
+  const style = { backgroundColor: "var(--mrq-blue)" } as const;
 
   // Tile interior is identical for linked vs inert tiles — only the
   // wrapping element changes.
   const inner = (
     <>
-      <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-[13px] font-extrabold text-white z-10">
+      <span className="min-w-0 flex-1 text-[16px] font-bold tracking-[0.1px] text-white">
         {item.label}
       </span>
-      {/* Single flattened SVG sticker, rotated + offset per the
-          per-tile spec. The Figma mask group is already baked in so
-          there's no compositing left to do here. */}
+      {/* Sticker pinned to the right edge; sized larger than the tile so
+          it bleeds off the right (and partly the bottom) and is cropped
+          by the tile's overflow-clip — the design's "peeking" look. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={item.icon}
         alt=""
         aria-hidden
         draggable={false}
-        className="absolute pointer-events-none select-none"
+        className="absolute max-w-none select-none pointer-events-none"
         style={{
-          right: `${item.iconRight}px`,
-          top: `${item.iconTop}px`,
           width: `${item.iconW}px`,
           height: `${item.iconH}px`,
-          transform: `rotate(${item.iconRotate}deg)`,
+          right: `${item.iconRight}px`,
+          bottom: `${item.iconBottom}px`,
         }}
       />
     </>

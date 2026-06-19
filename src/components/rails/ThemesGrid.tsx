@@ -73,38 +73,66 @@ export function ThemesGrid({
   );
 }
 
+// Brand-blue diagonal gradient shared by every card (Figma 2564:67580).
+const CARD_GRADIENT =
+  "linear-gradient(123.64deg, rgb(10, 46, 203) 38.564%, rgb(13, 36, 134) 95.26%)";
+
 function ThemeCard({ theme }: { theme: Theme }) {
   const ariaLabel = theme.subtitle
     ? `${theme.label} (${theme.subtitle})`
     : `Browse ${theme.label} games`;
   const inner = (
     <>
-      {/* Label + optional sub-line, vertically centred on the left. */}
-      <span className="absolute left-[14px] top-1/2 -translate-y-1/2 flex flex-col text-left text-white">
-        <span className="text-[16px] font-extrabold leading-tight">
+      {/* Label + optional sub-line, top-aligned on the left. */}
+      <span className="flex flex-col text-left text-white">
+        <span className="text-[16px] font-extrabold leading-[1.2]">
           {theme.label}
         </span>
         {theme.subtitle && (
-          <span className="text-[12px] font-bold leading-tight opacity-75">
+          <span className="text-[14px] font-medium leading-[1.2] tracking-[0.1px]">
             {theme.subtitle}
           </span>
         )}
       </span>
 
-      {/* Right-hand fanned thumbnail cluster — three small tiles,
-          each tilted slightly, overlapping. Mirrors the Figma's
-          "collection" frame on each card. */}
-      <span className="absolute right-[6px] top-1/2 -translate-y-1/2 size-[64px] pointer-events-none">
-        <Thumb src={theme.thumbs[0]} className="left-0 top-[8px] size-[32px] rotate-[-12deg]" />
-        <Thumb src={theme.thumbs[1]} className="left-[12px] top-[14px] size-[40px] rotate-[-2deg]" />
-        <Thumb src={theme.thumbs[2]} className="left-[18px] top-[20px] size-[46px] rotate-[8deg]" />
+      {/* Right-hand fanned thumbnail cluster — three tiles, each tilted
+          and overlapping, pinned to the bottom-right of the card.
+          Geometry mirrors the Figma "collection" frame (62×62 box). */}
+      <span className="relative size-[62px] shrink-0 self-end pointer-events-none">
+        {/* Back tile — upright, upper-right. */}
+        <Thumb
+          src={theme.thumbs[0]}
+          className="absolute left-[16.79px] top-[6.46px] size-[31.495px] rounded-[6.299px] border-[1.575px]"
+        />
+        {/* Middle tile — rotated clockwise. */}
+        <span className="absolute left-[24.54px] top-[18.08px] flex size-[39.955px] items-center justify-center">
+          <span className="rotate-[18.77deg]">
+            <Thumb
+              src={theme.thumbs[1]}
+              className="size-[31.495px] rounded-[6.299px] border-[1.575px]"
+            />
+          </span>
+        </span>
+        {/* Front tile — largest, rotated counter-clockwise. */}
+        <span className="absolute left-[-0.87px] top-[13.8px] flex size-[46.821px] items-center justify-center">
+          <span className="-rotate-[15deg]">
+            <Thumb
+              src={theme.thumbs[2]}
+              className="size-[38.229px] rounded-[7.646px] border-[1.911px]"
+            />
+          </span>
+        </span>
       </span>
     </>
   );
 
   const className =
-    "relative h-[84px] overflow-hidden rounded-[12px] active:scale-[0.98] transition-transform";
-  const style = { backgroundColor: theme.color ?? "#0a2ecb" } as const;
+    "relative flex min-h-[100px] items-start justify-between overflow-hidden rounded-[16px] p-[12px] active:scale-[0.98] transition-transform";
+  // Default to the brand-blue gradient; a solid `color` override (used
+  // to differentiate non-Casino verticals) wins when supplied.
+  const style = theme.color
+    ? ({ backgroundColor: theme.color } as const)
+    : ({ backgroundImage: CARD_GRADIENT } as const);
 
   if (theme.href) {
     return (
@@ -123,11 +151,8 @@ function ThemeCard({ theme }: { theme: Theme }) {
 function Thumb({ src, className }: { src: string; className?: string }) {
   return (
     <span
-      className={`absolute overflow-hidden rounded-[6px] ${className ?? ""}`}
-      style={{
-        boxShadow: "0 2px 6px -2px rgba(0, 0, 0, 0.25)",
-        border: "1.5px solid #ffffff",
-      }}
+      className={`block overflow-hidden border-solid border-white ${className ?? ""}`}
+      style={{ boxShadow: "0 2px 6px -2px rgba(0, 0, 0, 0.25)" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

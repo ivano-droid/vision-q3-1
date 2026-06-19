@@ -8,8 +8,8 @@ import { motion } from "framer-motion";
  * Dark-blue gradient surface (the BrandBar + BottomNav are provided by
  * the prototype shell, so they're intentionally omitted here):
  *   1. "Evening, James"            — greeting
- *   2. "Pick your daily free game" — horizontal rail of game cards
- *   3. "In Progress"               — active reward with progress bar
+ *   2. "In Progress"               — active reward with progress bar
+ *   3. "Pick your daily free game" — horizontal rail of game cards
  *   4. "This weeks offers"         — 2-column grid of offer cards
  *
  * The previous design is preserved in ./RewardsPageLegacy.tsx.
@@ -32,12 +32,44 @@ const DAILY_GAMES = [
     subtitle: "Slot it past the keeper",
     tc: "One free shot a day. Winnings paid as bonus, capped at £10. 3-day expiry. Selected games only.",
   },
+  {
+    image: "/assets/games/wild-swarm.png",
+    title: "Wild Swarm",
+    subtitle: "Free daily spins in the hive",
+    tc: "One free play a day. Winnings paid as bonus, capped at £10. 3-day expiry. Selected games only.",
+  },
 ];
 
-// Sig terms for the in-progress wagering bonus — reflects the live
-// wager-to-unlock mechanic shown on the card.
-const PROGRESS_TC =
-  "Wager £20 on eligible games by 30th May to unlock £50 cash. Min 10p stake. Bonus T&Cs apply.";
+// In-progress wagering bonuses — each reflects a live wager-to-unlock
+// mechanic. `from`/`to` drive the progress-bar fill (the spring nudges
+// from `from` to `to` on mount), so a smaller `to` reads as a shorter
+// bar / earlier-stage reward.
+const PROGRESS_ITEMS = [
+  {
+    image: "/assets/rewards/v2/progress-reward.png",
+    title: "May Megahaul Cash Bonus",
+    from: "48%",
+    to: "62%",
+    wagered: "£14",
+    target: "£20",
+    validDay: "30th",
+    validMonth: "May",
+    cta: "Complete to unlock £50 cash",
+    tc: "Wager £20 on eligible games by 30th May to unlock £50 cash. Min 10p stake. Bonus T&Cs apply.",
+  },
+  {
+    image: "/assets/games/south-park.png",
+    title: "Weekend Wager Boost",
+    from: "12%",
+    to: "24%",
+    wagered: "£6",
+    target: "£25",
+    validDay: "7th",
+    validMonth: "June",
+    cta: "Complete to unlock £25 cash",
+    tc: "Wager £25 on eligible games by 7th June to unlock £25 cash. Min 10p stake. Bonus T&Cs apply.",
+  },
+];
 
 const WEEKLY_OFFERS = [
   {
@@ -152,7 +184,7 @@ function DailyGameCard({ game }: { game: (typeof DAILY_GAMES)[number] }) {
   );
 }
 
-function InProgressCard() {
+function InProgressCard({ item }: { item: (typeof PROGRESS_ITEMS)[number] }) {
   return (
     <div className="w-full flex flex-col">
       {/* Light-blue reward card sitting directly on the gradient */}
@@ -168,8 +200,8 @@ function InProgressCard() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/assets/rewards/v2/progress-reward.png"
-              alt="May Megahaul Cash Bonus"
+              src={item.image}
+              alt={item.title}
               draggable={false}
               className="w-full h-full object-cover"
             />
@@ -179,7 +211,7 @@ function InProgressCard() {
               className="font-extrabold truncate"
               style={{ fontSize: 14, lineHeight: 1.6, letterSpacing: 0.1, color: "var(--mrq-blue)" }}
             >
-              May Megahaul Cash Bonus
+              {item.title}
             </p>
             {/* Progress bar — the fill springs out to the right on
                 mount (slight overshoot) so the in-progress reward gives
@@ -194,10 +226,11 @@ function InProgressCard() {
                   background:
                     "linear-gradient(90deg, #f05cd2 0%, #d000ca 54%, #8f47f1 99%)",
                 }}
-                // Starts already mostly filled and springs the last
-                // stretch to 62% — a small grow, not a fill-from-empty.
-                initial={{ width: "48%" }}
-                animate={{ width: "62%" }}
+                // Starts already partly filled and springs the last
+                // stretch to its target — a small grow, not a
+                // fill-from-empty.
+                initial={{ width: item.from }}
+                animate={{ width: item.to }}
                 transition={{
                   type: "spring",
                   stiffness: 150,
@@ -216,11 +249,11 @@ function InProgressCard() {
           style={{ fontSize: 12, lineHeight: 1.6, letterSpacing: 0.2, color: "var(--mrq-blue-dark)" }}
         >
           <p>
-            Wagered <span className="font-extrabold">£14</span> of{" "}
-            <span className="font-extrabold">£20</span>
+            Wagered <span className="font-extrabold">{item.wagered}</span> of{" "}
+            <span className="font-extrabold">{item.target}</span>
           </p>
           <p>
-            Valid until <span className="font-extrabold">30th</span> May
+            Valid until <span className="font-extrabold">{item.validDay}</span> {item.validMonth}
           </p>
         </div>
 
@@ -230,7 +263,7 @@ function InProgressCard() {
           className="w-full flex items-center justify-center rounded-[8px] px-[16px] py-[8px] font-extrabold active:scale-[0.99] transition-transform"
           style={{ backgroundColor: "var(--mrq-blue)", color: "white", fontSize: 16, lineHeight: "24px" }}
         >
-          Complete to unlock £50 cash
+          {item.cta}
         </button>
       </div>
 
@@ -239,7 +272,7 @@ function InProgressCard() {
         className="font-medium pt-[8px] px-[4px]"
         style={{ fontSize: 10, lineHeight: 1.6, letterSpacing: 0.2, color: "#ffffff", opacity: 0.7 }}
       >
-        {PROGRESS_TC} <FullTcs light />
+        {item.tc} <FullTcs light />
       </p>
     </div>
   );
@@ -359,6 +392,32 @@ export default function RewardsPage() {
           Evening, James
         </motion.h1>
 
+        {/* In Progress — horizontal rail (mirrors the daily-game row) */}
+        <section className="flex flex-col gap-[12px]">
+          <SectionTitle>In Progress</SectionTitle>
+          <div
+            className="flex gap-[16px] overflow-x-auto -mx-[16px] px-[16px] [&::-webkit-scrollbar]:hidden"
+            style={{
+              scrollbarWidth: "none",
+              scrollSnapType: "x mandatory",
+              scrollPaddingLeft: 16,
+              scrollPaddingRight: 16,
+            }}
+          >
+            {PROGRESS_ITEMS.map((item) => (
+              <div
+                key={item.title}
+                className="shrink-0"
+                // Slightly narrower than the viewport so a sliver (~24px)
+                // of the next card peeks on the right.
+                style={{ flex: "0 0 calc(100% - 40px)", scrollSnapAlign: "start" }}
+              >
+                <InProgressCard item={item} />
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Pick your daily free game */}
         <section className="flex flex-col gap-[12px]">
           <SectionTitle>Pick your daily free game</SectionTitle>
@@ -383,12 +442,6 @@ export default function RewardsPage() {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* In Progress */}
-        <section className="flex flex-col gap-[12px]">
-          <SectionTitle>In Progress</SectionTitle>
-          <InProgressCard />
         </section>
 
         {/* This weeks offers */}
